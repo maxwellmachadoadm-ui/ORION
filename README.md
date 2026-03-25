@@ -1,2 +1,3 @@
-# MAXXXI
-PLATAFORMA DE GESTÃO MAXXXI 
+# MAXXXI - Plataforma de Gestão
+
+Dashboard executivo completo para gestão do ecossistema Max.

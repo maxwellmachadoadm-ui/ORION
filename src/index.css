@@ -1,5 +1,0 @@
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap');
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'DM Sans',-apple-system,sans-serif;background:#0d0d0d;color:#f0ead8;min-height:100vh}
-::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:#0d0d0d}::-webkit-scrollbar-thumb{background:rgba(201,168,76,0.2);border-radius:2px}
-textarea,input{font-family:inherit}

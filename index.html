@@ -2,1775 +2,1199 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>ORION — Plataforma de Gestão Executiva</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
-<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg-base:#0f172a;
-  --bg-sidebar:#0a1021;
-  --bg-card:#1e293b;
-  --bg-card-hover:#263347;
-  --bg-active:#172554;
-  --border:#1e293b;
-  --border-subtle:#263347;
-  --blue:#3b82f6;
-  --blue-light:#93c5fd;
-  --blue-dark:#1d4ed8;
-  --green:#22c55e;
-  --red:#ef4444;
-  --amber:#f59e0b;
-  --purple:#a78bfa;
-  --text-primary:#f1f5f9;
-  --text-secondary:#94a3b8;
-  --text-muted:#475569;
-  --text-dim:#334155;
+  --bg:#0f172a;--s1:#1e293b;--s2:#243044;--s3:#2d3f5a;
+  --blue:#3b82f6;--blue2:#1d4ed8;--blue3:#60a5fa;
+  --green:#10b981;--red:#ef4444;--amber:#f59e0b;--purple:#8b5cf6;--pink:#ec4899;
+  --tx:#f1f5f9;--tx2:#94a3b8;--tx3:#64748b;
+  --br:rgba(255,255,255,0.07);--br2:rgba(59,130,246,0.3);
+  --r:12px;--r2:8px;
 }
-html,body,#root{height:100%;margin:0}
-body{background:var(--bg-base);font-family:'DM Sans',system-ui,sans-serif;color:var(--text-primary);font-size:14px;overflow:hidden}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;font-size:15px}
 ::-webkit-scrollbar{width:4px;height:4px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--border-subtle);border-radius:4px}
-input,select,textarea,button{font-family:'DM Sans',system-ui,sans-serif}
-input[type=number]::-webkit-inner-spin-button{opacity:.3}
-::placeholder{color:var(--text-muted)}
+::-webkit-scrollbar-thumb{background:var(--s3);border-radius:2px}
+input,textarea,select,button{font-family:inherit;font-size:14px}
+button{cursor:pointer}
+a{color:inherit;text-decoration:none}
 
-/* Animations */
-@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
-@keyframes spin{to{transform:rotate(360deg)}}
-@keyframes slideIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
-.fade-in{animation:fadeIn .25s ease forwards}
+/* LAYOUT */
+.app{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.topbar{
+  height:58px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 18px;background:var(--s1);
+  border-bottom:1px solid var(--br);z-index:200;gap:10px;
+}
+.main{display:flex;flex:1;overflow:hidden}
+.sidebar{
+  width:208px;flex-shrink:0;background:var(--s1);
+  border-right:1px solid var(--br);
+  display:flex;flex-direction:column;overflow-y:auto;
+}
+.content{flex:1;overflow-y:auto;padding:24px 28px;background:var(--bg)}
 
-/* Scrollable areas */
-.scroll-y{overflow-y:auto;overflow-x:hidden}
+/* TOPBAR */
+.logo{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.logo-mark{
+  width:34px;height:34px;border-radius:9px;
+  background:#1e40af;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  border:1px solid rgba(96,165,250,0.3);
+}
+.logo-name{font-family:'Syne',sans-serif;font-weight:900;font-size:17px;color:#fff;letter-spacing:2px}
+.logo-sub{font-size:9px;color:var(--tx3);letter-spacing:3px;text-transform:uppercase;margin-top:1px}
+.tb-btn{
+  display:flex;align-items:center;gap:7px;padding:7px 12px;
+  border-radius:var(--r2);border:1px solid var(--br);
+  background:transparent;color:var(--tx2);font-size:13px;font-weight:500;
+  transition:all .15s;white-space:nowrap;
+}
+.tb-btn:hover{border-color:var(--br2);color:var(--tx);background:rgba(59,130,246,0.08)}
+.user-btn{
+  display:flex;align-items:center;gap:8px;padding:5px 10px 5px 5px;
+  border-radius:var(--r2);border:1px solid var(--br);background:transparent;
+  color:var(--tx);font-size:13px;font-weight:500;transition:all .15s;
+}
+.user-btn:hover{border-color:var(--br2);background:rgba(59,130,246,0.06)}
+.avatar{
+  width:30px;height:30px;border-radius:7px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--blue2),var(--purple));
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Syne',sans-serif;font-size:11px;font-weight:900;color:#fff;
+  overflow:hidden;
+}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.notif{position:relative;padding:7px 9px;border-radius:var(--r2);border:1px solid var(--br);background:transparent;color:var(--tx2)}
+.notif-dot{position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:50%;background:var(--red)}
+
+/* SIDEBAR */
+.sb-section{padding:8px 0}
+.sb-lbl{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--tx3);padding:0 14px;margin-bottom:4px}
+.sb-item{
+  display:flex;align-items:center;gap:9px;padding:8px 14px;
+  font-size:13px;font-weight:500;color:var(--tx2);
+  cursor:pointer;transition:all .12s;border-left:2px solid transparent;
+}
+.sb-item:hover{color:var(--tx);background:rgba(255,255,255,0.04)}
+.sb-item.active{color:var(--blue3);background:rgba(59,130,246,0.1);border-left-color:var(--blue)}
+.sb-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.sb-score{font-size:11px;font-weight:700;margin-left:auto;flex-shrink:0}
+.sb-score.good{color:var(--green)}
+.sb-score.warn{color:var(--amber)}
+.sb-score.bad{color:var(--red)}
+.sb-div{height:1px;background:var(--br);margin:4px 0}
+.sb-add{display:flex;align-items:center;gap:7px;padding:7px 14px;font-size:12px;color:var(--tx3);cursor:pointer;transition:.15s}
+.sb-add:hover{color:var(--blue3)}
+.sb-maxxxi{margin-top:auto;padding:10px;border-top:1px solid var(--br)}
+.maxxxi-pill{
+  display:flex;align-items:center;gap:9px;padding:9px 12px;
+  border-radius:var(--r2);
+  background:linear-gradient(135deg,rgba(59,130,246,0.12),rgba(139,92,246,0.12));
+  border:1px solid rgba(99,102,241,0.25);cursor:pointer;transition:.2s;
+}
+.maxxxi-pill:hover{border-color:rgba(99,102,241,0.5)}
+.maxxxi-name{font-size:12px;font-weight:700;color:var(--blue3);letter-spacing:.5px}
+.maxxxi-status{font-size:10px;color:var(--green);display:flex;align-items:center;gap:4px;margin-top:1px}
+.pulse{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;flex-shrink:0}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* CARDS */
+.card{background:var(--s1);border:1px solid var(--br);border-radius:var(--r);padding:18px}
+.card-sm{background:var(--s2);border:1px solid var(--br);border-radius:var(--r2);padding:14px}
+.lbl{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--tx3);margin-bottom:5px}
+.val{font-family:'Syne',sans-serif;font-size:26px;font-weight:900;line-height:1.1}
+.val-sm{font-family:'Syne',sans-serif;font-size:18px;font-weight:800}
+.delta-up{font-size:12px;color:var(--green);margin-top:4px}
+.delta-dn{font-size:12px;color:var(--red);margin-top:4px}
+.delta-neu{font-size:12px;color:var(--tx3);margin-top:4px}
+
+/* GRID */
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.g21{display:grid;grid-template-columns:2fr 1fr;gap:16px}
+.mb{margin-bottom:20px}
+.mb-sm{margin-bottom:12px}
+.mt{margin-top:20px}
+.slbl{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--tx3);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.slbl::after{content:'';flex:1;height:1px;background:var(--br)}
+
+/* EMPRESA CARDS (home) */
+.emp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
+.emp-card{
+  background:var(--s1);border:1px solid var(--br);border-radius:var(--r);
+  padding:18px 20px;cursor:pointer;transition:all .15s;position:relative;overflow:hidden;
+}
+.emp-card:hover{border-color:rgba(255,255,255,0.14);transform:translateY(-1px)}
+.emp-card.active{border-color:var(--emp-c)}
+.emp-top{position:absolute;top:0;left:0;right:0;height:3px;background:var(--emp-c);border-radius:12px 12px 0 0}
+.emp-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
+.emp-sig{
+  width:36px;height:36px;border-radius:9px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Syne',sans-serif;font-size:12px;font-weight:900;
+  background:rgba(var(--emp-rgb),.12);color:var(--emp-c);
+}
+.emp-name{font-size:15px;font-weight:700;color:var(--tx);margin-bottom:2px}
+.emp-desc{font-size:11px;color:var(--tx3)}
+.stag{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:3px 9px;border-radius:99px}
+.emp-nums{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px}
+.emp-nlbl{font-size:10px;color:var(--tx3);margin-bottom:2px}
+.emp-nval{font-size:14px;font-weight:700;font-family:'Syne',sans-serif}
+.pbar{height:4px;background:rgba(255,255,255,0.07);border-radius:99px;overflow:hidden}
+.pfill{height:100%;border-radius:99px;transition:width .5s}
+.hring{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:28px;height:28px;border-radius:50%;border:2px solid var(--emp-c);
+  font-family:'Syne',sans-serif;font-size:11px;font-weight:900;color:var(--emp-c);
+}
+
+/* TABS */
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--br);margin-bottom:20px}
+.tab{
+  padding:9px 16px;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;
+  color:var(--tx3);background:transparent;border:none;border-bottom:2px solid transparent;
+  cursor:pointer;transition:all .12s;margin-bottom:-1px;
+}
+.tab:hover{color:var(--tx)}
+.tab.active{color:var(--blue3);border-bottom-color:var(--blue)}
+
+/* WORKSPACE */
+.ws-header{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:18px 20px;background:var(--s1);border:1px solid var(--br);
+  border-radius:var(--r);margin-bottom:18px;
+}
+.ws-sig{
+  width:46px;height:46px;border-radius:12px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Syne',sans-serif;font-size:14px;font-weight:900;
+}
+.ws-n{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:#fff}
+.ws-d{font-size:13px;color:var(--tx3);margin-top:2px}
+.ws-kn .nl{font-size:10px;color:var(--tx3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px}
+.ws-kn .nv{font-family:'Syne',sans-serif;font-size:20px;font-weight:900}
+
+/* ITEMS */
+.task-item{
+  display:flex;align-items:center;gap:12px;padding:12px 16px;
+  background:var(--s2);border:1px solid var(--br);border-radius:var(--r2);
+  margin-bottom:8px;border-left:3px solid transparent;
+}
+.task-item.alta{border-left-color:var(--red)}
+.task-item.media{border-left-color:var(--amber)}
+.task-item.baixa{border-left-color:var(--tx3)}
+.task-item.done{opacity:.55;border-left-color:var(--green)}
+.ptag{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:2px 9px;border-radius:99px;flex-shrink:0}
+.okr-item{background:var(--s2);border:1px solid var(--br);border-radius:var(--r2);padding:16px;margin-bottom:10px}
+.contract-item,.risk-item,.dec-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:13px 16px;background:var(--s2);border:1px solid var(--br);
+  border-radius:var(--r2);margin-bottom:8px;gap:12px;
+}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.kpi-card{background:var(--s2);border:1px solid var(--br);border-radius:var(--r2);padding:16px}
+.kpi-icon{font-size:22px;margin-bottom:8px}
+
+/* CRM */
+.crm-wrap{display:flex;gap:12px;overflow-x:auto;padding-bottom:8px}
+.crm-col{min-width:160px;flex:1}
+.crm-hdr{padding:7px 12px;border-radius:var(--r2) var(--r2) 0 0;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
+.crm-card{background:var(--s2);border:1px solid var(--br);border-radius:var(--r2);padding:10px 12px;margin-bottom:6px}
+.crm-cname{font-size:13px;font-weight:600;margin-bottom:3px}
+.crm-cv{font-size:12px;color:var(--tx3)}
+
+/* AGENDA */
+.ag-item{
+  display:flex;align-items:center;gap:14px;padding:12px 14px;
+  background:var(--s2);border:1px solid var(--br);border-radius:var(--r2);
+  margin-bottom:8px;border-left:3px solid var(--green);
+}
+.ag-date{text-align:center;min-width:42px;flex-shrink:0}
+.ag-day{font-size:9px;color:var(--tx3);text-transform:uppercase;letter-spacing:2px}
+.ag-num{font-family:'Syne',sans-serif;font-size:22px;font-weight:900;color:var(--blue3);line-height:1}
+
+/* CHECKIN */
+.checkin{
+  background:linear-gradient(135deg,#0d1e3d,var(--s1));
+  border:1px solid rgba(59,130,246,0.2);border-radius:var(--r);padding:18px;
+}
+.checkin-bar{width:4px;height:36px;background:var(--blue);border-radius:2px;flex-shrink:0}
+.checkin textarea{
+  width:100%;background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.15);
+  border-radius:var(--r2);padding:9px 12px;color:var(--tx);resize:none;outline:none;
+  line-height:1.5;transition:border-color .2s;
+}
+.checkin textarea:focus{border-color:rgba(59,130,246,0.4)}
+.checkin textarea::placeholder{color:var(--tx3)}
+
+/* ALERTS */
+.alert-r{padding:10px 14px;border-radius:var(--r2);margin-bottom:8px;border-left:3px solid var(--red);background:rgba(239,68,68,0.07);font-size:13px;line-height:1.4}
+.alert-a{padding:10px 14px;border-radius:var(--r2);margin-bottom:8px;border-left:3px solid var(--amber);background:rgba(245,158,11,0.07);font-size:13px;line-height:1.4}
+
+/* LIVE FEED */
+.live-header{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--red);animation:pulse 1s infinite;flex-shrink:0}
+.feed-line{padding:5px 0;border-bottom:1px solid var(--br);font-size:13px;color:var(--tx2);display:flex;gap:8px}
+.feed-time{font-size:10px;color:var(--tx3);flex-shrink:0;margin-top:2px}
+
+/* CEO */
+.ceo-row{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--s2);border:1px solid var(--br);border-radius:var(--r2);margin-bottom:8px}
+.ceo-pos{font-family:'Syne',sans-serif;font-size:16px;font-weight:900;color:var(--tx3);width:20px;text-align:center;flex-shrink:0}
+.ceo-n{font-size:14px;font-weight:600;flex:1}
+.ceo-v{font-family:'Syne',sans-serif;font-size:15px;font-weight:800}
+.ceo-mg{font-size:12px;color:var(--tx3);text-align:right;min-width:50px}
+
+/* MAXXXI CHAT */
+.mx-panel{position:fixed;bottom:24px;right:24px;z-index:500}
+.mx-fab{
+  width:52px;height:52px;border-radius:14px;
+  background:linear-gradient(135deg,var(--blue2),var(--purple));
+  border:1px solid rgba(139,92,246,0.4);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  cursor:pointer;box-shadow:0 8px 24px rgba(59,130,246,0.3);transition:all .2s;
+}
+.mx-fab:hover{transform:scale(1.05);box-shadow:0 12px 32px rgba(59,130,246,0.4)}
+.mx-fab .fi{font-size:20px}
+.mx-fab .fl{font-size:7px;font-weight:800;color:rgba(255,255,255,.8);letter-spacing:1.5px}
+.mx-chat{
+  position:absolute;bottom:64px;right:0;width:360px;height:480px;
+  background:var(--s1);border:1px solid rgba(99,102,241,0.35);border-radius:16px;
+  display:flex;flex-direction:column;overflow:hidden;
+  box-shadow:0 24px 48px rgba(0,0,0,.7);
+}
+.mx-hdr{
+  padding:13px 16px;border-bottom:1px solid var(--br);
+  background:linear-gradient(135deg,rgba(29,78,216,.2),var(--s1));
+  display:flex;justify-content:space-between;align-items:center;
+}
+.mx-hname{font-size:13px;font-weight:700;color:var(--blue3);letter-spacing:1px}
+.mx-hsub{font-size:10px;color:var(--tx3);letter-spacing:2px}
+.mx-msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
+.msg-ai{align-self:flex-start;max-width:88%}
+.msg-u{align-self:flex-end;max-width:88%}
+.msg-from{font-size:9px;letter-spacing:2px;color:var(--blue3);text-transform:uppercase;margin-bottom:3px}
+.msg-bubble-ai{padding:10px 13px;border-radius:10px;font-size:13px;line-height:1.55;background:rgba(255,255,255,0.06);color:var(--tx)}
+.msg-bubble-u{padding:10px 13px;border-radius:10px;font-size:13px;line-height:1.55;background:linear-gradient(135deg,var(--blue2),var(--purple));color:#fff}
+.mx-quick{padding:0 14px 8px;display:flex;flex-wrap:wrap;gap:6px}
+.qbtn{font-size:11px;padding:5px 10px;border-radius:99px;border:1px solid var(--br2);background:transparent;color:var(--tx2);cursor:pointer;transition:.15s}
+.qbtn:hover{background:rgba(59,130,246,0.1);color:var(--tx)}
+.mx-input{padding:12px;border-top:1px solid var(--br);display:flex;gap:8px}
+.mx-input input{flex:1;background:rgba(255,255,255,0.06);border:1px solid var(--br);border-radius:var(--r2);padding:8px 12px;color:var(--tx);outline:none}
+.mx-input input:focus{border-color:var(--br2)}
+.mx-input input::placeholder{color:var(--tx3)}
+.mx-send{padding:8px 14px;background:linear-gradient(135deg,var(--blue2),var(--purple));border:none;border-radius:var(--r2);color:#fff;font-weight:700;font-size:14px}
+
+/* FILE UPLOAD */
+.file-zone{
+  border:1px dashed rgba(59,130,246,.3);border-radius:var(--r);
+  padding:32px;text-align:center;transition:.2s;cursor:pointer;
+}
+.file-zone:hover{border-color:var(--blue);background:rgba(59,130,246,.05)}
+.file-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--s2);border:1px solid var(--br);border-radius:var(--r2);margin-bottom:6px}
+
+/* LOGIN */
+.login-screen{
+  min-height:100vh;background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+}
+.login-box{
+  width:420px;background:var(--s1);border:1px solid var(--br);
+  border-radius:16px;padding:40px;
+}
+.login-logo{display:flex;align-items:center;gap:12px;margin-bottom:32px;justify-content:center}
+.login-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:900;color:#fff;text-align:center;margin-bottom:8px}
+.login-sub{font-size:13px;color:var(--tx3);text-align:center;margin-bottom:28px}
+.inp{width:100%;background:var(--s2);border:1px solid var(--br);border-radius:var(--r2);padding:11px 14px;color:var(--tx);outline:none;transition:.2s;margin-bottom:12px;font-size:14px}
+.inp:focus{border-color:var(--br2);background:var(--s1)}
+.inp::placeholder{color:var(--tx3)}
+.btn-primary{
+  width:100%;padding:12px;border-radius:var(--r2);border:none;
+  background:linear-gradient(135deg,var(--blue2),var(--purple));
+  color:#fff;font-weight:700;font-size:15px;cursor:pointer;transition:.2s;
+}
+.btn-primary:hover{opacity:.9}
+.login-switch{text-align:center;margin-top:20px;font-size:13px;color:var(--tx3)}
+.login-switch span{color:var(--blue3);cursor:pointer}
+.login-switch span:hover{text-decoration:underline}
+
+/* UTILS */
+.hidden{display:none!important}
+.flex{display:flex}
+.aic{align-items:center}
+.jsb{justify-content:space-between}
+.gap8{gap:8px}
+.gap12{gap:12px}
+.gap16{gap:16px}
+.fw7{font-weight:700}
+.syne{font-family:'Syne',sans-serif}
+.txt-green{color:var(--green)}.txt-red{color:var(--red)}.txt-amber{color:var(--amber)}.txt-blue{color:var(--blue3)}.txt-muted{color:var(--tx3)}
 </style>
 </head>
 <body>
-<div id="root"></div>
-<script type="text/babel">
-const {useState,useRef,useEffect,useCallback,useMemo}=React;
 
-// ═══════════════════════════════════════════
-// CONSTANTS & DATA
-// ═══════════════════════════════════════════
-const DRIVE_LINKS={
-  "Forme Seguro":"https://drive.google.com/drive/folders/1OnjLvt2-wl_f-KParYc6e7CJ0EPbw4O2",
-  "Original Fotografia":"https://drive.google.com/drive/folders/1OnjLvt2-wl_f-KParYc6e7CJ0EPbw4O2",
-  "Doctor Wealth":"https://drive.google.com/drive/folders/1OnjLvt2-wl_f-KParYc6e7CJ0EPbw4O2",
-  "CDL":"https://drive.google.com/drive/folders/1OnjLvt2-wl_f-KParYc6e7CJ0EPbw4O2",
-};
+<!-- LOGIN -->
+<div id="login-screen" class="login-screen">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="logo-mark" style="width:40px;height:40px;border-radius:10px">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none">
+          <circle cx="12" cy="12" r="2.5" fill="white"/>
+          <circle cx="5" cy="6" r="1.5" fill="rgba(255,255,255,.7)"/>
+          <circle cx="19" cy="6" r="1.5" fill="rgba(255,255,255,.7)"/>
+          <circle cx="19" cy="18" r="1.5" fill="rgba(255,255,255,.5)"/>
+          <circle cx="5" cy="18" r="1" fill="rgba(255,255,255,.4)"/>
+          <line x1="12" y1="12" x2="5" y2="6" stroke="rgba(255,255,255,.35)" stroke-width="1"/>
+          <line x1="12" y1="12" x2="19" y2="6" stroke="rgba(255,255,255,.35)" stroke-width="1"/>
+          <line x1="12" y1="12" x2="19" y2="18" stroke="rgba(255,255,255,.25)" stroke-width="1"/>
+          <line x1="5" y1="6" x2="19" y2="6" stroke="rgba(255,255,255,.2)" stroke-width=".8"/>
+        </svg>
+      </div>
+      <div>
+        <div style="font-family:'Syne',sans-serif;font-weight:900;font-size:20px;color:#fff;letter-spacing:2px">ORION</div>
+        <div style="font-size:9px;color:var(--tx3);letter-spacing:3px;text-transform:uppercase">Gestão Executiva</div>
+      </div>
+    </div>
+    <div id="login-form">
+      <div class="login-title">Bem-vindo de volta</div>
+      <div class="login-sub">Acesse sua plataforma executiva</div>
+      <input class="inp" id="login-email" type="email" placeholder="E-mail"/>
+      <input class="inp" id="login-pass" type="password" placeholder="Senha"/>
+      <button class="btn-primary" onclick="doLogin()">Entrar na plataforma</button>
+      <div class="login-switch">Não tem conta? <span onclick="showRegister()">Criar acesso</span></div>
+    </div>
+    <div id="register-form" class="hidden">
+      <div class="login-title">Criar conta</div>
+      <div class="login-sub">Preencha seus dados</div>
+      <input class="inp" id="reg-name" type="text" placeholder="Nome completo"/>
+      <input class="inp" id="reg-email" type="email" placeholder="E-mail"/>
+      <input class="inp" id="reg-phone" type="tel" placeholder="Celular"/>
+      <input class="inp" id="reg-cpf" type="text" placeholder="CPF (opcional)"/>
+      <input class="inp" id="reg-pass" type="password" placeholder="Senha"/>
+      <button class="btn-primary" onclick="doRegister()">Criar conta</button>
+      <div class="login-switch">Já tem conta? <span onclick="showLogin()">Entrar</span></div>
+    </div>
+  </div>
+</div>
 
-const INIT_COMPANIES=["Forme Seguro","Original Fotografia","Doctor Wealth","CDL"];
-const INIT_AREAS=["Financeiro","Estratégico","Comercial","Projetos","Marketing"];
-const CONTRACT_STATUS=["Ativo","A vencer","Vencido","Em negociação","Encerrado"];
-const STATUS_COLORS={"Ativo":"#22c55e","A vencer":"#f59e0b","Vencido":"#ef4444","Em negociação":"#a78bfa","Encerrado":"#475569"};
-const RISK_LABELS=["Baixo","Médio","Alto","Crítico"];
-const RISK_COLORS=["#22c55e","#f59e0b","#ef4444","#dc2626"];
-const MESES_FULL=["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
-const CATS=["Alimentação","Combustível","Fornecedores","Folha","Marketing","Infraestrutura","Deslocamento","Financeiro","Impostos","Outros"];
-const FILE_ACCEPT=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.jpg,.jpeg,.png,.webp,.heic";
+<!-- PLATAFORMA -->
+<div id="platform" class="app hidden">
 
-const fmt=v=>(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
-const fmtPct=v=>`${(v||0).toFixed(1)}%`;
-const today=new Date().toISOString().slice(0,10);
-const todayFmt=new Date().toLocaleDateString("pt-BR",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="flex aic gap12">
+    <div class="logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
+          <circle cx="12" cy="12" r="2.5" fill="white"/>
+          <circle cx="5" cy="6" r="1.5" fill="rgba(255,255,255,.7)"/>
+          <circle cx="19" cy="6" r="1.5" fill="rgba(255,255,255,.7)"/>
+          <circle cx="19" cy="18" r="1.5" fill="rgba(255,255,255,.5)"/>
+          <circle cx="5" cy="18" r="1" fill="rgba(255,255,255,.4)"/>
+          <line x1="12" y1="12" x2="5" y2="6" stroke="rgba(255,255,255,.35)" stroke-width="1"/>
+          <line x1="12" y1="12" x2="19" y2="6" stroke="rgba(255,255,255,.35)" stroke-width="1"/>
+          <line x1="12" y1="12" x2="19" y2="18" stroke="rgba(255,255,255,.25)" stroke-width="1"/>
+          <line x1="5" y1="6" x2="19" y2="6" stroke="rgba(255,255,255,.2)" stroke-width=".8"/>
+        </svg>
+      </div>
+      <div class="logo-text">
+        <div class="logo-name">ORION</div>
+        <div class="logo-sub">Gestão Executiva</div>
+      </div>
+    </div>
+    <button class="tb-btn" id="drive-btn" onclick="openDrive()">📁 <span id="drive-lbl">ORION Drive</span></button>
+    <button class="tb-btn">⌘ Busca rápida</button>
+  </div>
+  <div class="flex aic gap8">
+    <button class="notif" onclick="toggleAlerts()">🔔<span class="notif-dot"></span></button>
+    <button class="user-btn" onclick="openProfile()">
+      <div class="avatar" id="user-avatar">MM</div>
+      <span id="user-name-display">Maxwell Machado</span>
+    </button>
+  </div>
+</header>
 
-const LS={
-  get:(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch{return d;}},
-  set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch{}},
-};
+<div class="main">
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sb-section">
+    <div class="sb-lbl">Navegação</div>
+    <div class="sb-item active" id="nav-home" onclick="goHome()">🏠 Home</div>
+    <div class="sb-item" id="nav-ceo" onclick="goCEO()">📊 Visão CEO</div>
+  </div>
+  <div class="sb-div"></div>
+  <div class="sb-section">
+    <div class="sb-lbl">Portfólio</div>
+    <div class="sb-item" id="sb-dw" onclick="openEmp('dw')">
+      <div class="sb-dot" style="background:#3b82f6"></div>
+      <span style="flex:1;font-size:13px">Doctor Wealth</span>
+      <span class="sb-score good">80</span>
+    </div>
+    <div class="sb-item" id="sb-of" onclick="openEmp('of')">
+      <div class="sb-dot" style="background:#f59e0b"></div>
+      <span style="flex:1;font-size:13px">Original Foto.</span>
+      <span class="sb-score warn">52</span>
+    </div>
+    <div class="sb-item" id="sb-fs" onclick="openEmp('fs')">
+      <div class="sb-dot" style="background:#8b5cf6"></div>
+      <span style="flex:1;font-size:13px">Forme Seguro</span>
+      <span class="sb-score txt-blue">65</span>
+    </div>
+    <div class="sb-item" id="sb-cdl" onclick="openEmp('cdl')">
+      <div class="sb-dot" style="background:#10b981"></div>
+      <span style="flex:1;font-size:13px">CDL Divinópolis</span>
+      <span class="sb-score good">88</span>
+    </div>
+    <div class="sb-add" onclick="addEmpresa()">+ Nova empresa</div>
+  </div>
+  <div class="sb-div"></div>
+  <div class="sb-section">
+    <div class="sb-item" id="sb-gp" onclick="openEmp('gp')">💰 Gestão Pessoal</div>
+  </div>
+  <div class="sb-maxxxi">
+    <div class="maxxxi-pill" onclick="toggleMX()">
+      <span style="font-size:20px">🤖</span>
+      <div>
+        <div class="maxxxi-name">MAXXXI</div>
+        <div class="maxxxi-status"><div class="pulse"></div> Online</div>
+      </div>
+    </div>
+  </div>
+</nav>
 
-// ═══════════════════════════════════════════
-// HEALTH SCORE
-// ═══════════════════════════════════════════
-function calcHealth(k){
-  let s=50;
-  if(k.fat>0){
-    const m=(k.fat-k.custo)/k.fat;
-    s+=m>0.3?20:m>0.15?10:m>0?0:-15;
-    const ip=(k.inadimplencia||0)/k.fat;
-    s+=ip<0.03?10:ip<0.05?5:ip<0.1?0:-10;
-    if(k.meta>0)s+=(k.fat/k.meta)>=1?15:(k.fat/k.meta)>=0.8?5:-10;
-  }
-  if(k.caixa>0)s+=5;else if(k.caixa<0)s-=15;
-  return Math.max(0,Math.min(100,Math.round(s)));
-}
-function healthColor(s){return s>=75?"#22c55e":s>=50?"#3b82f6":s>=30?"#f59e0b":"#ef4444";}
-function healthLabel(s){return s>=75?"Saudável":s>=50?"Estável":s>=30?"Atenção":"Crítico";}
+<!-- CONTENT -->
+<main class="content" id="content">
 
-// ═══════════════════════════════════════════
-// ORION LOGO SVG
-// ═══════════════════════════════════════════
-function OrionLogo({size=36}){
-  return(
-    <svg width={size} height={size} viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="36" height="36" rx="10" fill="#1d4ed8"/>
-      <rect width="36" height="36" rx="10" fill="url(#og)" opacity="0.4"/>
-      {/* Cinturão de Orion — 3 estrelas centrais */}
-      <circle cx="11" cy="19" r="2" fill="#bfdbfe"/>
-      <circle cx="18" cy="15" r="2.5" fill="#eff6ff"/>
-      <circle cx="25" cy="19" r="2" fill="#bfdbfe"/>
-      {/* Linhas do cinturão */}
-      <line x1="13" y1="19" x2="16" y2="16" stroke="#93c5fd" strokeWidth="1" opacity="0.8"/>
-      <line x1="20" y1="16" x2="23" y2="19" stroke="#93c5fd" strokeWidth="1" opacity="0.8"/>
-      {/* Betelgeuse (estrela superior esquerda) */}
-      <circle cx="12" cy="11" r="1.5" fill="#60a5fa" opacity="0.9"/>
-      <line x1="12" y1="13" x2="12" y2="17" stroke="#3b82f6" strokeWidth="0.8" opacity="0.5"/>
-      {/* Rigel (estrela inferior direita) */}
-      <circle cx="25" cy="27" r="1.5" fill="#60a5fa" opacity="0.9"/>
-      <line x1="25" y1="21" x2="25" y2="25" stroke="#3b82f6" strokeWidth="0.8" opacity="0.5"/>
-      <defs>
-        <linearGradient id="og" x1="0" y1="0" x2="36" y2="36">
-          <stop offset="0%" stopColor="#fff"/>
-          <stop offset="100%" stopColor="#1d4ed8"/>
-        </linearGradient>
-      </defs>
-    </svg>
-  );
-}
+<!-- HOME -->
+<div id="page-home">
+  <div style="margin-bottom:20px">
+    <div style="font-size:12px;color:var(--blue3);font-weight:600;letter-spacing:4px;text-transform:uppercase;margin-bottom:4px">BOM DIA, MAXWELL</div>
+    <h1 style="font-family:'Syne',sans-serif;font-size:26px;font-weight:900;color:#fff;line-height:1.1">Qual empresa vamos trabalhar agora?</h1>
+    <div style="font-size:13px;color:var(--tx3);margin-top:4px" id="home-date"></div>
+  </div>
 
-// ═══════════════════════════════════════════
-// MAXXXI ROBOT ICON
-// ═══════════════════════════════════════════
-function MaxxxiBot({size=20,active=false}){
-  return(
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      {/* Head */}
-      <rect x="4" y="7" width="16" height="12" rx="4" fill={active?"#3b82f6":"#475569"}/>
-      {/* Antenna */}
-      <line x1="12" y1="7" x2="12" y2="3" stroke={active?"#60a5fa":"#64748b"} strokeWidth="1.5" strokeLinecap="round"/>
-      <circle cx="12" cy="2.5" r="1.5" fill={active?"#93c5fd":"#64748b"}/>
-      {/* Eyes */}
-      <circle cx="9" cy="13" r="2" fill={active?"#bfdbfe":"#94a3b8"}/>
-      <circle cx="15" cy="13" r="2" fill={active?"#bfdbfe":"#94a3b8"}/>
-      <circle cx="9.5" cy="13" r="0.8" fill={active?"#1d4ed8":"#1e293b"}/>
-      <circle cx="15.5" cy="13" r="0.8" fill={active?"#1d4ed8":"#1e293b"}/>
-      {/* Mouth */}
-      <rect x="8" y="16" width="8" height="1.5" rx="0.75" fill={active?"#93c5fd":"#64748b"}/>
-    </svg>
-  );
-}
+  <!-- KPIs -->
+  <div class="g4 mb">
+    <div class="card"><div class="lbl">Faturamento do Ecossistema</div><div class="val txt-blue">R$ 126,5k</div><div class="delta-up">▲ +8,2% vs mês anterior</div></div>
+    <div class="card"><div class="lbl">Resultado Líquido</div><div class="val txt-green">R$ 46,7k</div><div class="delta-up">▲ +12,1% vs mês anterior</div></div>
+    <div class="card"><div class="lbl">Health Score Médio</div><div class="val" style="color:#a78bfa">71</div><div class="delta-neu">4 empresas ativas</div></div>
+    <div class="card"><div class="lbl">Alertas Ativos</div><div class="val txt-red">4</div><div class="delta-neu">2 críticos · 2 atenção</div></div>
+  </div>
 
-// ═══════════════════════════════════════════
-// STYLES HELPERS
-// ═══════════════════════════════════════════
-const S={
-  inp:{background:"#0f172a",border:"1px solid #1e293b",borderRadius:8,padding:"9px 13px",color:"#f1f5f9",fontSize:13,outline:"none",width:"100%",boxSizing:"border-box",transition:"border-color .15s"},
-  btn:{background:"linear-gradient(135deg,#2563eb,#3b82f6)",border:"none",borderRadius:8,padding:"9px 18px",color:"#fff",fontWeight:600,fontSize:13,cursor:"pointer",letterSpacing:"0.2px",transition:"opacity .15s"},
-  ghost:{background:"none",border:"1px solid #1e293b",borderRadius:8,padding:"7px 14px",color:"#94a3b8",fontSize:13,cursor:"pointer",transition:"all .15s"},
-  danger:{background:"none",border:"1px solid #dc262633",borderRadius:8,padding:"7px 14px",color:"#ef4444",fontSize:13,cursor:"pointer"},
-  lbl:{fontSize:10,letterSpacing:"2px",color:"#475569",textTransform:"uppercase",marginBottom:8,fontWeight:500},
-  del:{background:"none",border:"none",color:"#475569",cursor:"pointer",fontSize:14,padding:"2px 6px",borderRadius:4,lineHeight:1,transition:"color .15s"},
-  sel:{background:"#0f172a",border:"1px solid #1e293b",borderRadius:8,padding:"9px 13px",color:"#f1f5f9",fontSize:13,outline:"none",width:"100%"},
-  card:{background:"#1e293b",borderRadius:12,padding:"18px 20px",border:"1px solid #263347"},
-  badge:(c)=>({background:c+"22",color:c,fontSize:11,fontWeight:600,padding:"3px 10px",borderRadius:20,border:`1px solid ${c}44`}),
-};
+  <!-- EMPRESAS -->
+  <div class="slbl">Selecione uma empresa</div>
+  <div class="emp-grid" id="emp-grid"></div>
 
-// ═══════════════════════════════════════════
-// BADGE COMPONENT
-// ═══════════════════════════════════════════
-function Badge({label,color}){
-  return <span style={S.badge(color||"#3b82f6")}>{label}</span>;
-}
-
-// ═══════════════════════════════════════════
-// MINI BAR CHART
-// ═══════════════════════════════════════════
-function BarChart({data,height=60}){
-  const max=Math.max(...data.map(d=>d.v),1);
-  return(
-    <div style={{display:"flex",alignItems:"flex-end",gap:4,height}}>
-      {data.map((d,i)=>(
-        <div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
-          <div style={{width:"100%",background:d.c||"#3b82f6",borderRadius:"3px 3px 0 0",height:`${(d.v/max)*100}%`,minHeight:d.v>0?2:0,transition:"height .4s"}}/>
-          <div style={{fontSize:9,color:"#475569",whiteSpace:"nowrap",overflow:"hidden",maxWidth:"100%",textAlign:"center"}}>{d.l}</div>
+  <!-- AGENDA + LIVE -->
+  <div class="g2 mb">
+    <div class="card">
+      <div class="flex aic jsb mb-sm">
+        <div class="flex aic gap8">
+          <span style="font-size:16px">📅</span>
+          <div>
+            <div class="lbl" style="margin:0">Agenda</div>
+            <div style="font-size:11px;color:var(--green);font-weight:600;letter-spacing:1px">Google Calendar</div>
+          </div>
         </div>
-      ))}
+        <div class="flex gap8">
+          <button class="tb-btn" style="font-size:11px;padding:5px 10px">🔗 Link</button>
+          <button class="tb-btn" style="font-size:11px;padding:5px 10px;color:var(--blue3);border-color:var(--br2)">+ Evento</button>
+        </div>
+      </div>
+      <div id="agenda-list"></div>
     </div>
-  );
+    <div class="card">
+      <div class="live-header">
+        <div class="live-dot"></div>
+        <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--tx2)">MAXXXI Live — Radar de Mercado</div>
+        <button class="tb-btn" style="margin-left:auto;font-size:11px;padding:4px 10px" onclick="startLive()">▶ Iniciar</button>
+      </div>
+      <div id="live-feed" style="font-size:13px;color:var(--tx3);font-style:italic">Clique em ▶ para o MAXXXI varrer notícias de mercado e economia em tempo real.</div>
+    </div>
+  </div>
+
+  <!-- CHECKIN -->
+  <div class="checkin mb">
+    <div class="flex aic gap12" style="margin-bottom:14px">
+      <div class="checkin-bar"></div>
+      <div>
+        <div style="font-size:10px;letter-spacing:4px;color:var(--tx3);text-transform:uppercase">Check-in do Dia</div>
+        <div style="font-size:12px;color:var(--blue3);font-weight:600" id="checkin-date"></div>
+      </div>
+    </div>
+    <div class="g3">
+      <div><div class="lbl">O que é prioridade hoje?</div><textarea rows="3" placeholder="Digite aqui..." id="ci1" oninput="saveCI()"></textarea></div>
+      <div><div class="lbl">Qual decisão não pode esperar?</div><textarea rows="3" placeholder="Digite aqui..." id="ci2" oninput="saveCI()"></textarea></div>
+      <div><div class="lbl">Que resultado vou entregar hoje?</div><textarea rows="3" placeholder="Digite aqui..." id="ci3" oninput="saveCI()"></textarea></div>
+    </div>
+  </div>
+
+  <!-- ALERTAS -->
+  <div>
+    <div class="slbl">Central de Alertas</div>
+    <div class="alert-r">🔴 Original Fotografia — Inadimplência em 8,7% (limite: 5%)</div>
+    <div class="alert-r">🔴 Original Fotografia — Contrato cliente XYZ inadimplente há 60 dias</div>
+    <div class="alert-a">🟡 Forme Seguro — Meta mensal: apenas 30% atingida (R$ 15k / R$ 50k)</div>
+    <div class="alert-a">🟡 Doctor Wealth — 3 tarefas de alta prioridade pendentes</div>
+  </div>
+</div>
+
+<!-- CEO -->
+<div id="page-ceo" class="hidden">
+  <div style="margin-bottom:20px">
+    <h1 style="font-family:'Syne',sans-serif;font-size:24px;font-weight:900">Visão CEO Consolidada</h1>
+    <div style="font-size:13px;color:var(--tx3);margin-top:4px">Performance do Ecossistema — Março 2026</div>
+  </div>
+  <div class="g2 mb">
+    <div class="card">
+      <div class="slbl">Ranking por Faturamento</div>
+      <div id="ceo-rank"></div>
+    </div>
+    <div class="card">
+      <div class="slbl">Distribuição de Receita</div>
+      <div id="ceo-dist"></div>
+    </div>
+  </div>
+  <div class="g4">
+    <div class="card"><div class="lbl">Maior Margem</div><div class="val-sm txt-green">CDL</div><div class="delta-neu">34,3% líquida</div></div>
+    <div class="card"><div class="lbl">Maior Crescimento</div><div class="val-sm txt-blue">Forme Seguro</div><div class="delta-up">▲ +50% vs mês ant.</div></div>
+    <div class="card"><div class="lbl">Em Atenção</div><div class="val-sm txt-amber">Original Foto.</div><div class="delta-dn">▼ −4,2% + inadimpl.</div></div>
+    <div class="card"><div class="lbl">Clientes no Ecossistema</div><div class="val-sm" style="color:#a78bfa">72</div><div class="delta-up">▲ +6 vs mês ant.</div></div>
+  </div>
+</div>
+
+<!-- WORKSPACE -->
+<div id="page-ws" class="hidden">
+  <div id="ws-emp-tabs" style="display:flex;gap:8px;margin-bottom:18px;overflow-x:auto;padding-bottom:4px"></div>
+  <div class="ws-header" id="ws-header"></div>
+  <div class="tabs" id="ws-tabs"></div>
+  <div id="ws-content"></div>
+</div>
+
+</main>
+</div>
+
+<!-- MAXXXI -->
+<div class="mx-panel" id="mx-panel">
+  <div class="mx-chat hidden" id="mx-chat">
+    <div class="mx-hdr">
+      <div>
+        <div class="mx-hname">🤖 MAXXXI</div>
+        <div class="mx-hsub">INTELIGÊNCIA EXECUTIVA ORION</div>
+      </div>
+      <button onclick="toggleMX()" style="background:none;border:none;color:var(--tx3);font-size:20px;line-height:1">×</button>
+    </div>
+    <div class="mx-msgs" id="mx-msgs">
+      <div class="msg-ai">
+        <div class="msg-from">MAXXXI</div>
+        <div class="msg-bubble-ai">Olá, Maxwell. Sou o MAXXXI — seu agente executivo. Posso analisar empresas, responder sobre a plataforma, gerar briefings e muito mais. O que precisa?</div>
+      </div>
+    </div>
+    <div class="mx-quick">
+      <button class="qbtn" onclick="qSend('Como uso a plataforma?')">Como usar?</button>
+      <button class="qbtn" onclick="qSend('Qual empresa precisa de mais atenção agora?')">Prioridades</button>
+      <button class="qbtn" onclick="qSend('Faça um briefing executivo do ecossistema')">Briefing CEO</button>
+      <button class="qbtn" onclick="qSend('Como funciona o módulo CRM?')">CRM</button>
+    </div>
+    <div class="mx-input">
+      <input type="text" id="mx-in" placeholder="Consulte o MAXXXI..." onkeydown="if(event.key==='Enter')sendMX()"/>
+      <button class="mx-send" onclick="sendMX()">→</button>
+    </div>
+  </div>
+  <div class="mx-fab" onclick="toggleMX()">
+    <div class="fi">🤖</div>
+    <div class="fl">MAXXXI</div>
+  </div>
+</div>
+
+</div><!-- /platform -->
+
+<script>
+// ── DADOS ──────────────────────────────────────────────────────────────────
+const EMPS = {
+  dw:{id:'dw',nome:'Doctor Wealth',sigla:'DW',desc:'Ecossistema Financeiro Médico',
+    cor:'#3b82f6',rgb:'59,130,246',score:80,status:'Crescimento',statusCor:'#10b981',
+    fat:48500,meta:60000,result:22000,cresc:18.4,
+    drive:'https://drive.google.com',
+    kpis:[{i:'👥',l:'Clientes Ativos',v:'47 / 60'},{i:'🔄',l:'Receita Recorrente',v:'R$ 38k/mês'},{i:'⚠',l:'Inadimplência',v:'3,2%'},{i:'🎯',l:'Ticket Médio',v:'R$ 1.031'}],
+    okrs:[{o:'Atingir 60 clientes médicos',p:78},{o:'Reduzir inadimplência para 2%',p:45},{o:'Lançar DW Academy',p:30}],
+    tarefas:[{t:'Pitch para 3 clínicas — BH',p:'alta',k:false},{t:'Onboarding Dr. Felipe e Dra. Ana',p:'alta',k:false},{t:'Proposta Dr. Marcos Vinícius',p:'media',k:false},{t:'Calendário Instagram Abril',p:'baixa',k:true}],
+    contratos:[{n:'Contrato Padrão Médicos',v:'R$ 890/mês',s:'ativo',d:'Dez/2026'},{n:'Plano Elite — Dr. Carvalho',v:'R$ 2.400/mês',s:'ativo',d:'Jun/2026'}],
+    riscos:[{r:'Entrada de concorrente especializado no nicho médico',n:'alto'},{r:'Regulação CFC sobre contadores especializados',n:'medio'}],
+    decisoes:[{d:'Lançar vertical de planejamento patrimonial',dt:'Mar/2026'},{d:'Contratar 2º contador sênior',dt:'Abr/2026'}],
+    crm:[{fase:'Lead',cor:'#3b82f6',itens:[{n:'Dr. Bruno Alves',v:'R$ 1.200/mês'},{n:'Clínica Santa Clara',v:'R$ 3.500/mês'}]},{fase:'Proposta',cor:'#8b5cf6',itens:[{n:'Dr. Renata Souza',v:'R$ 890/mês'}]},{fase:'Negociação',cor:'#f59e0b',itens:[{n:'Dr. Marcos Vinícius',v:'R$ 2.100/mês'}]},{fase:'Fechado',cor:'#10b981',itens:[{n:'Dr. Felipe Costa',v:'R$ 890/mês'}]}]},
+  of:{id:'of',nome:'Original Fotografia',sigla:'OF',desc:'Estúdio & Eventos Visuais',
+    cor:'#f59e0b',rgb:'245,158,11',score:52,status:'Turnaround',statusCor:'#f59e0b',
+    fat:28000,meta:35000,result:4200,cresc:-4.2,
+    drive:'https://drive.google.com',
+    kpis:[{i:'👥',l:'Clientes Ativos',v:'22 / 30'},{i:'📊',l:'Margem Líquida',v:'15%'},{i:'🚨',l:'Inadimplência',v:'8,7%'},{i:'🏢',l:'Custo Fixo',v:'R$ 18,5k/mês'}],
+    okrs:[{o:'Reduzir inadimplência para 4%',p:35},{o:'Atingir 30 clientes ativos',p:73},{o:'Lançar pacote corporativo',p:20}],
+    tarefas:[{t:'Cobranças — 3 clientes atrasados',p:'alta',k:false},{t:'Reunião equipe — corte de custos',p:'alta',k:false},{t:'Calendário de ensaios Q2',p:'media',k:false},{t:'Revisão contrato fornecedor',p:'media',k:true}],
+    contratos:[{n:'Parceria Evento Casa Casada',v:'R$ 3.500/evento',s:'ativo',d:'Dez/2026'},{n:'Cliente Corporativo XYZ',v:'R$ 1.800/mês',s:'inadim',d:'Mai/2026'}],
+    riscos:[{r:'Sazonalidade — queda Q1 e Q3 todo ano',n:'alto'},{r:'Equipamento principal precisa revisão urgente',n:'medio'}],
+    decisoes:[{d:'Reestruturação completa de precificação',dt:'Mar/2026'},{d:'Definir nicho: corporativo vs social',dt:'Abr/2026'}],
+    crm:[{fase:'Lead',cor:'#3b82f6',itens:[{n:'Turma Direito UFMG 2027',v:'Projeto 3 anos'},{n:'Evento Empresa XYZ',v:'R$ 4.500'}]},{fase:'Proposta',cor:'#8b5cf6',itens:[{n:'Formatura Medicina BH',v:'Projeto 4 anos'}]},{fase:'Fechado',cor:'#10b981',itens:[{n:'Casamento Silva',v:'R$ 8.000'}]}]},
+  fs:{id:'fs',nome:'Forme Seguro',sigla:'FS',desc:'Fundos de Formatura Premium',
+    cor:'#8b5cf6',rgb:'139,92,246',score:65,status:'Lançamento',statusCor:'#06b6d4',
+    fat:15000,meta:50000,result:8500,cresc:50,
+    drive:'https://drive.google.com',
+    kpis:[{i:'🎓',l:'Fundos Gerenciados',v:'3 turmas'},{i:'💰',l:'Capital Gerenciado',v:'R$ 420k'},{i:'✅',l:'Inadimplência',v:'0%'},{i:'🚀',l:'Pipeline',v:'5 turmas'}],
+    okrs:[{o:'Fechar 12 contratos em 2026',p:25},{o:'Atingir R$ 2M gerenciados',p:21},{o:'Lançar app Forme Digital',p:10}],
+    tarefas:[{t:'Fechar UNIFENAS — Medicina 2026',p:'alta',k:false},{t:'Proposta para UNIFAL',p:'alta',k:false},{t:'Configurar agente IA WhatsApp',p:'media',k:false},{t:'Planilha fundos ativos',p:'media',k:true}],
+    contratos:[{n:'Fundo UNIFENAS Med 2026',v:'R$ 5.000/mês',s:'ativo',d:'Dez/2026'},{n:'Fundo UNILAVRAS Med 2025',v:'R$ 6.200/mês',s:'ativo',d:'Jun/2025'}],
+    riscos:[{r:'Concorrência de bancos tradicionais nos fundos',n:'medio'},{r:'Dependência total de captação via indicação',n:'alto'}],
+    decisoes:[{d:'Contratar comercial dedicado para novas turmas',dt:'Abr/2026'},{d:'Criar landing page Forme Seguro',dt:'Mar/2026'}],
+    crm:[{fase:'Lead',cor:'#3b82f6',itens:[{n:'UNIFAL Medicina 2027',v:'Projeto 5 anos'},{n:'UFLA Medicina 2026',v:'Projeto 4 anos'}]},{fase:'Proposta',cor:'#8b5cf6',itens:[{n:'UNIFENAS Odonto 2026',v:'Projeto 3 anos'}]},{fase:'Negociação',cor:'#f59e0b',itens:[{n:'UNIMONTES Med 2026',v:'Projeto 4 anos'}]},{fase:'Fechado',cor:'#10b981',itens:[{n:'UNIFENAS Med 2026',v:'R$ 5.000/mês'}]}]},
+  cdl:{id:'cdl',nome:'CDL Divinópolis',sigla:'CDL',desc:'Câmara de Dirigentes Lojistas',
+    cor:'#10b981',rgb:'16,185,129',score:88,status:'Estável',statusCor:'#10b981',
+    fat:35000,meta:40000,result:12000,cresc:5.3,
+    drive:'https://drive.google.com',
+    kpis:[{i:'🏪',l:'Associados',v:'1.100'},{i:'💼',l:'Receita Associativa',v:'R$ 30k/mês'},{i:'✅',l:'Taxa Adimplência',v:'97,9%'},{i:'📅',l:'Eventos no Ano',v:'12'}],
+    okrs:[{o:'Atingir 1.200 associados',p:92},{o:'Lançar Hub CDL — Sebrae',p:60},{o:'Digitalizar 80% dos processos',p:40}],
+    tarefas:[{t:'Reunião Hub CDL com Sebrae',p:'alta',k:false},{t:'Aprovação pauta assembleia Abril',p:'alta',k:false},{t:'Relatório mensal para diretoria',p:'media',k:true},{t:'Captação novos associados',p:'baixa',k:false}],
+    contratos:[{n:'Parceria Sebrae — Hub Inovação',v:'Institucional',s:'negoc',d:'Abr/2026'},{n:'Contrato Feira do Empreendedor',v:'R$ 8.000',s:'ativo',d:'Mai/2026'}],
+    riscos:[{r:'Queda no varejo regional impacta associações',n:'medio'},{r:'Renovação de diretoria Nov/2026',n:'baixo'}],
+    decisoes:[{d:'Aprovar projeto Hub CDL',dt:'Abr/2026'},{d:'Parceria SENAC para cursos',dt:'Mar/2026'}],
+    crm:[{fase:'Lead',cor:'#3b82f6',itens:[{n:'Grupo Supermercados BH',v:'Novo associado'},{n:'Rede Farmácias Local',v:'Novo associado'}]},{fase:'Negociação',cor:'#f59e0b',itens:[{n:'Franquia Fast Food',v:'R$ 280/mês'}]},{fase:'Fechado',cor:'#10b981',itens:[{n:'Loja Roupas Centro',v:'R$ 185/mês'}]}]},
+  gp:{id:'gp',nome:'Gestão Pessoal',sigla:'GP',desc:'Patrimônio & Finanças Pessoais',
+    cor:'#ec4899',rgb:'236,72,153',score:75,status:'Saudável',statusCor:'#10b981',
+    fat:0,meta:0,result:0,cresc:0,
+    drive:'https://drive.google.com',
+    kpis:[{i:'🏦',l:'Patrimônio Estimado',v:'R$ 1,2M'},{i:'💰',l:'Renda Total',v:'R$ 52k/mês'},{i:'📈',l:'Investimentos',v:'R$ 380k'},{i:'🎯',l:'Taxa de Poupança',v:'42%'}],
+    okrs:[{o:'Atingir R$ 1,5M patrimônio',p:80},{o:'Investir R$ 10k/mês',p:65},{o:'Quitar financiamento imóvel',p:45}],
+    tarefas:[{t:'Declaração IRPF 2026',p:'alta',k:false},{t:'Revisar carteira de investimentos',p:'media',k:false},{t:'Renovar seguro de vida',p:'media',k:false},{t:'Planejamento viagem família',p:'baixa',k:false}],
+    contratos:[{n:'Financiamento Imóvel — CEF',v:'R$ 2.100/mês',s:'ativo',d:'Dez/2031'},{n:'Previdência Privada PGBL',v:'R$ 1.500/mês',s:'ativo',d:'Vitalício'}],
+    riscos:[{r:'Concentração de renda em empresas próprias',n:'alto'},{r:'Falta de diversificação internacional',n:'medio'}],
+    decisoes:[{d:'Aportar em FII — MXRF11',dt:'Mar/2026'},{d:'Contratar assessor de investimentos',dt:'Abr/2026'}],
+    crm:[]}
+};
+
+const AGENDA = [
+  {titulo:'Antonio Idea BH',dia:'QUA',num:'25',hora:'11:00 — 12:00',cor:'#3b82f6'},
+  {titulo:'Dra Júlia — Consulta',dia:'QUA',num:'25',hora:'16:30 — 17:30',cor:'#10b981'},
+  {titulo:'Stay at Nobile Suites Diamond',dia:'DOM',num:'29',hora:'Dia inteiro',cor:'#f59e0b'},
+  {titulo:'Reunião CDL — Assembleia',dia:'TER',num:'01',hora:'09:00 — 11:00',cor:'#10b981'},
+];
+
+const NEWS = [
+  'Selic mantida em 10,75% — Copom sinaliza manutenção para próxima reunião',
+  'Reforma tributária: PIS/Cofins unificados impactam prestadores de serviços médicos',
+  'CFM regulamenta telemedicina — oportunidade para Doctor Wealth expandir base',
+  'Crédito para PME cresce 8% no trimestre — BNDES amplia linha para microempresas',
+  'Mercado de eventos cresce 22% no pós-pandemia — oportunidade para Original Fotografia',
+  'Formandos de medicina crescem 15% ao ano — pipeline Forme Seguro aquecido',
+  'CDL Nacional reporta aumento de 12% em associações no interior de MG',
+  'FII de logística sobe 3,2% na semana — MXRF11 entre os destaques',
+  'Inadimplência do consumidor cai 0,3% — cenário favorável para cobranças',
+  'IPCA desacelera para 4,8% — inflação controlada beneficia planejamento financeiro',
+];
+
+const fmt = v => {
+  if(!v && v!==0) return '—';
+  if(v===0) return 'R$ 0';
+  if(v>=1000000) return 'R$ '+(v/1000000).toFixed(1)+'M';
+  if(v>=1000) return 'R$ '+(v/1000).toFixed(0)+'k';
+  return 'R$ '+v.toLocaleString('pt-BR');
+};
+
+// ── STATE ──────────────────────────────────────────────────────────────────
+let curEmp = null;
+let curTab = 'KPIs';
+let mxOpen = false;
+let mxHistory = [{role:'assistant',content:'Olá, Maxwell. Sou o MAXXXI — seu agente executivo. Posso analisar empresas, responder sobre a plataforma, gerar briefings e muito mais. O que precisa?'}];
+let liveInterval = null;
+let liveIdx = 0;
+
+// ── AUTH ──────────────────────────────────────────────────────────────────
+function LS(k,v){if(v===undefined)return localStorage.getItem('orion_'+k);localStorage.setItem('orion_'+k,v)}
+
+function showLogin(){
+  document.getElementById('login-form').classList.remove('hidden');
+  document.getElementById('register-form').classList.add('hidden');
+}
+function showRegister(){
+  document.getElementById('login-form').classList.add('hidden');
+  document.getElementById('register-form').classList.remove('hidden');
 }
 
-// ═══════════════════════════════════════════
-// HEALTH BADGE
-// ═══════════════════════════════════════════
-function HealthBadge({score,size=34}){
-  const c=healthColor(score);
-  return(
-    <div style={{display:"flex",alignItems:"center",gap:8}}>
-      <div style={{width:size,height:size,borderRadius:"50%",border:`2px solid ${c}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:size>30?11:9,fontWeight:700,color:c,background:c+"15",flexShrink:0}}>{score}</div>
-      <span style={{fontSize:11,color:c,fontWeight:500}}>{healthLabel(score)}</span>
-    </div>
-  );
+function doLogin(){
+  const e=document.getElementById('login-email').value.trim();
+  const p=document.getElementById('login-pass').value;
+  if(!e||!p){alert('Preencha e-mail e senha');return}
+  const users=JSON.parse(LS('users')||'[]');
+  const u=users.find(x=>x.email===e&&x.pass===btoa(p));
+  if(!u){alert('Usuário ou senha incorretos');return}
+  LS('session',JSON.stringify(u));
+  enterPlatform(u);
 }
 
-// ═══════════════════════════════════════════
-// USER PROFILE (header)
-// ═══════════════════════════════════════════
-function UserProfile(){
-  const [open,setOpen]=useState(false);
-  const [name,setName]=useState(()=>LS.get("orion_name","Maxwell Machado"));
-  const [photo,setPhoto]=useState(()=>LS.get("orion_photo",""));
-  const [editName,setEditName]=useState(name);
-  const [editing,setEditing]=useState(false);
-  const ref=useRef();
+function doRegister(){
+  const name=document.getElementById('reg-name').value.trim();
+  const email=document.getElementById('reg-email').value.trim();
+  const phone=document.getElementById('reg-phone').value.trim();
+  const cpf=document.getElementById('reg-cpf').value.trim();
+  const pass=document.getElementById('reg-pass').value;
+  if(!name||!email||!pass){alert('Preencha nome, e-mail e senha');return}
+  const users=JSON.parse(LS('users')||'[]');
+  if(users.find(x=>x.email===email)){alert('E-mail já cadastrado');return}
+  const isFirst=users.length===0;
+  const u={name,email,phone,cpf,pass:btoa(pass),role:isFirst?'admin':'pending',avatar:'',id:Date.now()};
+  users.push(u);
+  LS('users',JSON.stringify(users));
+  LS('session',JSON.stringify(u));
+  enterPlatform(u);
+}
 
-  const savePhoto=e=>{
+function enterPlatform(u){
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('platform').classList.remove('hidden');
+  document.getElementById('user-name-display').textContent=u.name;
+  document.getElementById('user-avatar').innerHTML=u.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  initPlatform();
+}
+
+function autoLogin(){
+  // Maxwell pré-cadastrado
+  const users=JSON.parse(LS('users')||'[]');
+  if(users.length===0){
+    const mx={name:'Maxwell Machado',email:'maxwell@orion.app',phone:'(38) 99999-9999',cpf:'000.000.000-00',pass:btoa('orion2026'),role:'admin',id:1};
+    LS('users',JSON.stringify([mx]));
+  }
+  const sess=LS('session');
+  if(sess){
+    try{
+      const u=JSON.parse(sess);
+      enterPlatform(u);
+      return;
+    }catch(e){}
+  }
+}
+
+function openProfile(){
+  const u=JSON.parse(LS('session')||'{}');
+  const input=document.createElement('input');
+  input.type='file';input.accept='image/*';
+  input.onchange=e=>{
     const f=e.target.files[0];if(!f)return;
     const r=new FileReader();
-    r.onload=ev=>{setPhoto(ev.target.result);LS.set("orion_photo",ev.target.result);};
+    r.onload=ev=>{
+      const av=document.getElementById('user-avatar');
+      av.innerHTML=`<img src="${ev.target.result}"/>`;
+      u.avatar=ev.target.result;
+      const users=JSON.parse(LS('users')||'[]');
+      const idx=users.findIndex(x=>x.id===u.id);
+      if(idx>=0)users[idx]=u;
+      LS('users',JSON.stringify(users));
+      LS('session',JSON.stringify(u));
+    };
     r.readAsDataURL(f);
   };
-  const saveName=()=>{setName(editName);LS.set("orion_name",editName);setEditing(false);};
-
-  return(
-    <div style={{position:"relative"}}>
-      <button onClick={()=>setOpen(v=>!v)} style={{display:"flex",alignItems:"center",gap:10,background:"#1e293b",border:"1px solid #263347",borderRadius:10,padding:"6px 12px",cursor:"pointer",color:"#f1f5f9"}}>
-        <div style={{width:30,height:30,borderRadius:"50%",background:"linear-gradient(135deg,#1d4ed8,#3b82f6)",display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden",flexShrink:0}}>
-          {photo?<img src={photo} style={{width:"100%",height:"100%",objectFit:"cover"}} alt=""/>:<span style={{fontSize:11,fontWeight:700,color:"#fff"}}>{name.split(" ").map(w=>w[0]).join("").slice(0,2)}</span>}
-        </div>
-        <div style={{textAlign:"left"}}>
-          <div style={{fontSize:13,fontWeight:600,color:"#f1f5f9",lineHeight:1.2}}>{name}</div>
-          <div style={{fontSize:10,color:"#475569"}}>CEO · Admin</div>
-        </div>
-        <span style={{fontSize:10,color:"#475569",marginLeft:4}}>▾</span>
-      </button>
-
-      {open&&(
-        <div style={{position:"absolute",top:52,right:0,background:"#1e293b",border:"1px solid #263347",borderRadius:14,padding:"18px",width:260,zIndex:999,boxShadow:"0 20px 40px #00000066"}} onClick={e=>e.stopPropagation()}>
-          <div style={S.lbl}>Perfil</div>
-
-          {/* Foto */}
-          <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16}}>
-            <div style={{width:52,height:52,borderRadius:"50%",background:"linear-gradient(135deg,#1d4ed8,#3b82f6)",display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden",cursor:"pointer",flexShrink:0}} onClick={()=>ref.current.click()}>
-              {photo?<img src={photo} style={{width:"100%",height:"100%",objectFit:"cover"}} alt=""/>:<span style={{fontSize:16,fontWeight:700,color:"#fff"}}>{name.split(" ").map(w=>w[0]).join("").slice(0,2)}</span>}
-            </div>
-            <div>
-              <button onClick={()=>ref.current.click()} style={{...S.ghost,fontSize:11,padding:"5px 12px"}}>Alterar foto</button>
-              <input ref={ref} type="file" accept="image/*" style={{display:"none"}} onChange={savePhoto}/>
-            </div>
-          </div>
-
-          {/* Nome */}
-          {editing?(
-            <div style={{display:"flex",gap:6,marginBottom:8}}>
-              <input style={S.inp} value={editName} onChange={e=>setEditName(e.target.value)} onKeyDown={e=>e.key==="Enter"&&saveName()} autoFocus/>
-              <button style={S.btn} onClick={saveName}>✓</button>
-            </div>
-          ):(
-            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
-              <span style={{fontSize:14,fontWeight:600,color:"#f1f5f9"}}>{name}</span>
-              <button style={{...S.ghost,fontSize:11,padding:"4px 10px"}} onClick={()=>{setEditName(name);setEditing(true);}}>Editar</button>
-            </div>
-          )}
-          <div style={{fontSize:11,color:"#475569",marginBottom:16}}>CEO · Acesso Total</div>
-
-          <div style={{borderTop:"1px solid #263347",paddingTop:12}}>
-            <button style={{...S.ghost,width:"100%",fontSize:12,color:"#ef4444",borderColor:"#dc262633"}} onClick={()=>setOpen(false)}>Sair da sessão</button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
+  if(confirm('Alterar foto de perfil?'))input.click();
 }
 
-// ═══════════════════════════════════════════
-// ALERTS BELL
-// ═══════════════════════════════════════════
-function AlertsBell({companies}){
-  const [open,setOpen]=useState(false);
-  const alerts=useMemo(()=>{
-    const list=[];
-    const now=new Date();
-    companies.forEach(c=>{
-      const k=LS.get("orion_kpi_"+c,{fat:0,custo:0,meta:0,clientes:0,inadimplencia:0,caixa:0,pipeline:0});
-      const contracts=LS.get("orion_contracts_"+c,[]);
-      if(k.fat>0&&(k.inadimplencia||0)/k.fat>0.05)list.push({type:"danger",msg:`${c}: inadimplência acima de 5%`,icon:"⚠"});
-      if(k.meta>0&&k.fat/k.meta<0.8)list.push({type:"warn",msg:`${c}: meta abaixo de 80%`,icon:"⚡"});
-      if(k.caixa<0)list.push({type:"danger",msg:`${c}: caixa negativo`,icon:"⚠"});
-      contracts.forEach(ct=>{
-        if(!ct.vencimento||ct.status==="Encerrado")return;
-        const diff=Math.ceil((new Date(ct.vencimento)-now)/(864e5));
-        if(diff<=7&&diff>=0)list.push({type:"danger",msg:`Contrato "${ct.nome}" (${c}) vence em ${diff}d`,icon:"📋"});
-        else if(diff<=15)list.push({type:"warn",msg:`Contrato "${ct.nome}" (${c}) vence em ${diff}d`,icon:"📋"});
-      });
-    });
-    return list;
-  },[companies]);
+function toggleAlerts(){}
 
-  const col=alerts.length===0?"#22c55e":alerts.some(a=>a.type==="danger")?"#ef4444":"#f59e0b";
-
-  return(
-    <div style={{position:"relative"}}>
-      <button onClick={()=>setOpen(v=>!v)} style={{background:"#1e293b",border:`1px solid ${col}33`,borderRadius:9,padding:"8px 12px",cursor:"pointer",position:"relative",color:col,fontSize:16,display:"flex",alignItems:"center",transition:"all .15s"}}>
-        🔔
-        {alerts.length>0&&<div style={{position:"absolute",top:-4,right:-4,background:col,borderRadius:"50%",width:17,height:17,display:"flex",alignItems:"center",justifyContent:"center",fontSize:9,fontWeight:700,color:"#fff",border:"2px solid #0f172a"}}>{alerts.length}</div>}
-      </button>
-      {open&&(
-        <div style={{position:"absolute",top:48,right:0,background:"#1e293b",border:"1px solid #263347",borderRadius:14,padding:"16px",width:320,zIndex:999,boxShadow:"0 20px 40px #00000066"}}>
-          <div style={S.lbl}>Alertas Ativos</div>
-          {alerts.length===0&&<div style={{fontSize:13,color:"#22c55e"}}>✓ Nenhum alerta no momento</div>}
-          {alerts.map((a,i)=>(
-            <div key={i} style={{display:"flex",gap:10,marginBottom:8,background:a.type==="danger"?"#ef444411":"#f59e0b11",border:`1px solid ${a.type==="danger"?"#ef444433":"#f59e0b33"}`,borderRadius:9,padding:"9px 12px"}}>
-              <span style={{fontSize:13}}>{a.icon}</span>
-              <span style={{fontSize:12,color:"#e2e8f0",lineHeight:1.5}}>{a.msg}</span>
-            </div>
-          ))}
-          <button onClick={()=>setOpen(false)} style={{...S.ghost,width:"100%",marginTop:8,fontSize:12}}>Fechar</button>
-        </div>
-      )}
-    </div>
-  );
+// ── INIT ──────────────────────────────────────────────────────────────────
+function initPlatform(){
+  const d=new Date();
+  const opts={weekday:'long',day:'numeric',month:'long',year:'numeric'};
+  const ds=d.toLocaleDateString('pt-BR',opts);
+  const el=document.getElementById('home-date');
+  if(el)el.textContent=ds;
+  const cd=document.getElementById('checkin-date');
+  if(cd)cd.textContent=ds;
+  renderEmpGrid();
+  renderAgenda();
+  renderCEO();
+  loadCI();
 }
 
-// ═══════════════════════════════════════════
-// COMMAND BAR
-// ═══════════════════════════════════════════
-function CommandBar({companies,areas,onNavigate}){
-  const [open,setOpen]=useState(false);
-  const [q,setQ]=useState("");
-  const ref=useRef();
-
-  useEffect(()=>{
-    const h=e=>{
-      if((e.metaKey||e.ctrlKey)&&e.key==="k"){e.preventDefault();setOpen(v=>!v);}
-      if(e.key==="Escape")setOpen(false);
-    };
-    window.addEventListener("keydown",h);return()=>window.removeEventListener("keydown",h);
-  },[]);
-
-  useEffect(()=>{if(open)setTimeout(()=>ref.current?.focus(),50);},[open]);
-
-  const results=useMemo(()=>{
-    if(!q.trim())return[];
-    const r=[];
-    companies.forEach(c=>{
-      if(c.toLowerCase().includes(q.toLowerCase()))r.push({label:c,sub:"Empresa",icon:"🏢",action:()=>{onNavigate("workspace",c,null);setOpen(false);setQ("");}});
-    });
-    companies.forEach(c=>areas.forEach(a=>{
-      if(a.toLowerCase().includes(q.toLowerCase())||c.toLowerCase().includes(q.toLowerCase()))
-        r.push({label:`${c} → ${a}`,sub:"Workspace",icon:"◈",action:()=>{onNavigate("workspace",c,a);setOpen(false);setQ("");}});
-    }));
-    return r.slice(0,8);
-  },[q,companies,areas]);
-
-  return(
-    <>
-      <button onClick={()=>setOpen(true)} style={{background:"#1e293b",border:"1px solid #263347",borderRadius:9,padding:"8px 16px",color:"#475569",fontSize:13,cursor:"pointer",display:"flex",alignItems:"center",gap:8,transition:"all .15s"}}>
-        <span style={{fontSize:12}}>⌘</span> Busca rápida <span style={{fontSize:11,background:"#263347",padding:"2px 6px",borderRadius:4,color:"#334155"}}>Ctrl+K</span>
-      </button>
-      {open&&(
-        <div style={{position:"fixed",inset:0,background:"#000000aa",zIndex:500,display:"flex",alignItems:"flex-start",justifyContent:"center",paddingTop:80}} onClick={()=>{setOpen(false);setQ("");}}>
-          <div style={{background:"#1e293b",border:"1px solid #334155",borderRadius:16,width:"100%",maxWidth:560,overflow:"hidden",boxShadow:"0 25px 50px #00000088"}} onClick={e=>e.stopPropagation()}>
-            <div style={{display:"flex",alignItems:"center",gap:12,padding:"16px 20px",borderBottom:"1px solid #263347"}}>
-              <span style={{fontSize:16,color:"#475569"}}>🔍</span>
-              <input ref={ref} value={q} onChange={e=>setQ(e.target.value)} placeholder="Buscar empresa, área, módulo..." style={{...S.inp,border:"none",background:"transparent",fontSize:15,padding:0}}/>
-              <span style={{fontSize:11,color:"#334155",background:"#0f172a",padding:"3px 8px",borderRadius:5}}>ESC</span>
-            </div>
-            {results.length>0?(results.map((r,i)=>(
-              <div key={i} onClick={r.action} style={{padding:"12px 20px",cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"space-between",borderBottom:"1px solid #1a2540",transition:"background .1s"}} onMouseEnter={e=>e.currentTarget.style.background="#263347"} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                <div style={{display:"flex",alignItems:"center",gap:10}}>
-                  <span style={{fontSize:14}}>{r.icon}</span>
-                  <span style={{fontSize:13,color:"#e2e8f0"}}>{r.label}</span>
-                </div>
-                <span style={{fontSize:11,color:"#475569",background:"#0f172a",padding:"2px 8px",borderRadius:5}}>{r.sub}</span>
-              </div>
-            ))):(
-              <div style={{padding:"20px",textAlign:"center",color:"#334155",fontSize:13}}>{q?"Nenhum resultado encontrado":"Digite para buscar..."}</div>
-            )}
-          </div>
-        </div>
-      )}
-    </>
-  );
+// ── AGENDA ──────────────────────────────────────────────────────────────────
+function renderAgenda(){
+  const el=document.getElementById('agenda-list');
+  if(!el)return;
+  el.innerHTML=AGENDA.map(a=>`
+    <div class="ag-item" style="border-left-color:${a.cor}">
+      <div class="ag-date">
+        <div class="ag-day">${a.dia}</div>
+        <div class="ag-num">${a.num}</div>
+      </div>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:500;margin-bottom:2px">${a.titulo}</div>
+        <div style="font-size:12px;color:var(--tx3)">${a.hora}</div>
+      </div>
+      <button style="background:none;border:none;color:var(--tx3);cursor:pointer;font-size:16px">×</button>
+    </div>`).join('');
 }
 
-// ═══════════════════════════════════════════
-// KPI PANEL
-// ═══════════════════════════════════════════
-function KPIPanel({company}){
-  const key="orion_kpi_"+company;
-  const [kpis,setKpis]=useState(()=>LS.get(key,{fat:0,custo:0,meta:0,clientes:0,inadimplencia:0,caixa:0,pipeline:0}));
-  const save=(k,v)=>{const n={...kpis,[k]:parseFloat(v)||0};setKpis(n);LS.set(key,n);};
-  const score=calcHealth(kpis);
-  const margem=kpis.fat>0?((kpis.fat-kpis.custo)/kpis.fat*100).toFixed(1):0;
-  const pctMeta=kpis.meta>0?Math.min((kpis.fat/kpis.meta)*100,200).toFixed(1):0;
-  const inadPct=kpis.fat>0?((kpis.inadimplencia||0)/kpis.fat*100).toFixed(1):0;
-
-  const fields=[
-    {k:"fat",l:"Faturamento Mensal",c:"#f1f5f9",icon:"📈"},
-    {k:"custo",l:"Custo Total",c:"#ef4444",icon:"📉"},
-    {k:"meta",l:"Meta Mensal",c:"#22c55e",icon:"🎯"},
-    {k:"clientes",l:"Clientes Ativos",c:"#3b82f6",icon:"👥"},
-    {k:"inadimplencia",l:"Inadimplência (R$)",c:"#f59e0b",icon:"⚠"},
-    {k:"caixa",l:"Caixa Atual",c:"#a78bfa",icon:"🏦"},
-    {k:"pipeline",l:"Pipeline / Funil",c:"#06b6d4",icon:"🔄"},
-  ];
-
-  return(
-    <div className="fade-in">
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
-        <div>
-          <div style={S.lbl}>Indicadores</div>
-          <div style={{fontSize:18,fontWeight:700,color:"#f1f5f9"}}>{company}</div>
-        </div>
-        <HealthBadge score={score}/>
-      </div>
-
-      {/* KPI Grid */}
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(190px,1fr))",gap:12,marginBottom:20}}>
-        {fields.map(({k,l,c,icon})=>(
-          <div key={k} style={{...S.card,padding:"16px"}}>
-            <div style={{fontSize:11,color:"#64748b",marginBottom:6,display:"flex",alignItems:"center",gap:6}}><span>{icon}</span>{l}</div>
-            <input type="number" style={{...S.inp,fontSize:18,fontWeight:700,padding:"6px 10px",color:c,border:"none",background:"transparent"}} value={kpis[k]||""} onChange={e=>save(k,e.target.value)} placeholder="0"/>
-            {k==="fat"&&kpis.meta>0&&(
-              <div style={{marginTop:6}}>
-                <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
-                  <span style={{fontSize:10,color:"#475569"}}>Meta</span>
-                  <span style={{fontSize:10,color:parseFloat(pctMeta)>=100?"#22c55e":"#f59e0b",fontWeight:600}}>{pctMeta}%</span>
-                </div>
-                <div style={{height:4,background:"#0f172a",borderRadius:2}}>
-                  <div style={{height:"100%",width:`${Math.min(parseFloat(pctMeta),100)}%`,background:parseFloat(pctMeta)>=100?"#22c55e":"#3b82f6",borderRadius:2,transition:"width .5s"}}/>
-                </div>
-              </div>
-            )}
-            {k==="inadimplencia"&&kpis.fat>0&&(
-              <div style={{fontSize:10,color:parseFloat(inadPct)>5?"#ef4444":"#22c55e",marginTop:4,fontWeight:500}}>{inadPct}% do faturamento</div>
-            )}
-          </div>
-        ))}
-
-        {/* Métricas calculadas */}
-        <div style={{...S.card,padding:"16px",background:"#172554",borderColor:"#1d4ed833"}}>
-          <div style={{fontSize:11,color:"#64748b",marginBottom:6}}>📊 Margem Líquida</div>
-          <div style={{fontSize:22,fontWeight:700,color:parseFloat(margem)>0?"#22c55e":"#ef4444"}}>{margem}%</div>
-          <div style={{fontSize:11,color:"#475569",marginTop:4}}>Resultado: {fmt(kpis.fat-kpis.custo)}</div>
-        </div>
-      </div>
-
-      {/* Health score bar */}
-      <div style={S.card}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
-          <div style={S.lbl}>Health Score</div>
-          <HealthBadge score={score}/>
-        </div>
-        <div style={{height:8,background:"#0f172a",borderRadius:4}}>
-          <div style={{height:"100%",width:`${score}%`,background:healthColor(score),borderRadius:4,transition:"width .6s"}}/>
-        </div>
-        <div style={{display:"flex",justifyContent:"space-between",marginTop:8}}>
-          <span style={{fontSize:10,color:"#475569"}}>0 · Crítico</span>
-          <span style={{fontSize:10,color:"#475569"}}>100 · Saudável</span>
-        </div>
-      </div>
-
-      {/* Mini chart */}
-      {kpis.fat>0&&(
-        <div style={{...S.card,marginTop:12}}>
-          <div style={S.lbl}>Comparativo Visual</div>
-          <BarChart height={70} data={[
-            {l:"Fat.",v:kpis.fat,c:"#3b82f6"},
-            {l:"Custo",v:kpis.custo,c:"#ef4444"},
-            {l:"Meta",v:kpis.meta,c:"#22c55e"},
-            {l:"Caixa",v:Math.max(kpis.caixa,0),c:"#a78bfa"},
-            {l:"Pipe.",v:kpis.pipeline,c:"#06b6d4"},
-          ]}/>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ═══════════════════════════════════════════
-// OKR PANEL
-// ═══════════════════════════════════════════
-function OKRPanel({company}){
-  const key="orion_okr_"+company;
-  const [okrs,setOkrs]=useState(()=>LS.get(key,[]));
-  const [showForm,setShowForm]=useState(false);
-  const [form,setForm]=useState({objetivo:"",prazo:"",krs:[{desc:"",meta:100,atual:0}]});
-
-  const save=()=>{
-    if(!form.objetivo.trim())return;
-    const updated=[...okrs,{...form,id:Date.now()}];
-    setOkrs(updated);LS.set(key,updated);
-    setForm({objetivo:"",prazo:"",krs:[{desc:"",meta:100,atual:0}]});
-    setShowForm(false);
-  };
-  const del=id=>{const u=okrs.filter(o=>o.id!==id);setOkrs(u);LS.set(key,u);};
-  const updateKR=(i,f,v)=>setForm(prev=>({...prev,krs:prev.krs.map((k,idx)=>idx===i?{...k,[f]:v}:k)}));
-  const pct=okr=>{const t=okr.krs.reduce((s,k)=>s+(Math.min(k.atual,k.meta)/k.meta)*100,0);return Math.round(t/okr.krs.length);};
-  const updateActual=(okrId,krIdx,val)=>{
-    const u=okrs.map(o=>o.id===okrId?{...o,krs:o.krs.map((k,i)=>i===krIdx?{...k,atual:parseFloat(val)||0}:k)}:o);
-    setOkrs(u);LS.set(key,u);
-  };
-
-  return(
-    <div className="fade-in">
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
-        <div><div style={S.lbl}>Objetivos e Resultados</div><div style={{fontSize:18,fontWeight:700}}>OKRs — {company}</div></div>
-        <button style={S.btn} onClick={()=>setShowForm(v=>!v)}>+ Objetivo</button>
-      </div>
-
-      {showForm&&(
-        <div style={{...S.card,marginBottom:16}}>
-          <div style={S.lbl}>Novo Objetivo</div>
-          <input style={{...S.inp,marginBottom:10}} placeholder="Objetivo..." value={form.objetivo} onChange={e=>setForm(f=>({...f,objetivo:e.target.value}))}/>
-          <div style={{display:"flex",gap:8,marginBottom:12}}>
-            <input type="date" style={{...S.inp}} value={form.prazo} onChange={e=>setForm(f=>({...f,prazo:e.target.value}))}/>
-          </div>
-          <div style={S.lbl}>Key Results</div>
-          {form.krs.map((kr,i)=>(
-            <div key={i} style={{display:"flex",gap:8,marginBottom:8}}>
-              <input style={{...S.inp,flex:3}} placeholder={`Key Result ${i+1}`} value={kr.desc} onChange={e=>updateKR(i,"desc",e.target.value)}/>
-              <input type="number" style={{...S.inp,flex:1}} placeholder="Meta" value={kr.meta} onChange={e=>updateKR(i,"meta",+e.target.value)}/>
-              <input type="number" style={{...S.inp,flex:1}} placeholder="Atual" value={kr.atual} onChange={e=>updateKR(i,"atual",+e.target.value)}/>
-            </div>
-          ))}
-          <div style={{display:"flex",gap:8,marginTop:12}}>
-            <button style={{...S.ghost,fontSize:12}} onClick={()=>setForm(f=>({...f,krs:[...f.krs,{desc:"",meta:100,atual:0}]}))}>+ KR</button>
-            <div style={{flex:1}}/>
-            <button style={S.ghost} onClick={()=>setShowForm(false)}>Cancelar</button>
-            <button style={S.btn} onClick={save}>Salvar</button>
-          </div>
-        </div>
-      )}
-
-      {okrs.length===0&&!showForm&&<div style={{fontSize:13,color:"#334155",textAlign:"center",padding:"40px 0"}}>Nenhum OKR definido. Crie seu primeiro objetivo.</div>}
-      {okrs.map(okr=>{
-        const p=pct(okr);
-        const c=p>=80?"#22c55e":p>=50?"#3b82f6":"#f59e0b";
-        return(
-          <div key={okr.id} style={{...S.card,marginBottom:12}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
-              <div>
-                <div style={{fontSize:15,fontWeight:600,color:"#f1f5f9"}}>{okr.objetivo}</div>
-                {okr.prazo&&<div style={{fontSize:11,color:"#475569",marginTop:2}}>Prazo: {new Date(okr.prazo+"T12:00").toLocaleDateString("pt-BR")}</div>}
-              </div>
-              <div style={{display:"flex",alignItems:"center",gap:10}}>
-                <Badge label={`${p}%`} color={c}/>
-                <button style={S.del} onClick={()=>del(okr.id)}>✕</button>
-              </div>
-            </div>
-            <div style={{height:6,background:"#0f172a",borderRadius:3,marginBottom:12}}>
-              <div style={{height:"100%",width:`${p}%`,background:c,borderRadius:3,transition:"width .5s"}}/>
-            </div>
-            {okr.krs.map((kr,i)=>(
-              <div key={i} style={{display:"flex",alignItems:"center",gap:10,marginBottom:8,background:"#0f172a",borderRadius:8,padding:"8px 12px"}}>
-                <div style={{flex:1,fontSize:12,color:"#94a3b8"}}>{kr.desc||`Key Result ${i+1}`}</div>
-                <input type="number" style={{...S.inp,width:60,fontSize:12,padding:"4px 8px",textAlign:"right"}} value={kr.atual} onChange={e=>updateActual(okr.id,i,e.target.value)}/>
-                <span style={{fontSize:11,color:"#475569"}}>/ {kr.meta}</span>
-                <span style={{fontSize:11,color:Math.round(kr.atual/kr.meta*100)>=80?"#22c55e":"#f59e0b",fontWeight:600,minWidth:35}}>{Math.round(Math.min(kr.atual,kr.meta)/kr.meta*100)}%</span>
-              </div>
-            ))}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-// ═══════════════════════════════════════════
-// CONTRACTS PANEL
-// ═══════════════════════════════════════════
-function ContractsPanel({company}){
-  const key="orion_contracts_"+company;
-  const [contracts,setContracts]=useState(()=>LS.get(key,[]));
-  const [showForm,setShowForm]=useState(false);
-  const [form,setForm]=useState({nome:"",cliente:"",valor:0,inicio:"",vencimento:"",status:"Ativo",obs:""});
-  const now=new Date();
-
-  const save=list=>{setContracts(list);LS.set(key,list);};
-  const add=()=>{
-    if(!form.nome.trim())return;
-    save([...contracts,{...form,id:Date.now(),valor:parseFloat(form.valor)||0}]);
-    setForm({nome:"",cliente:"",valor:0,inicio:"",vencimento:"",status:"Ativo",obs:""});
-    setShowForm(false);
-  };
-
-  const alerts=contracts.filter(c=>{
-    if(!c.vencimento||c.status==="Encerrado")return false;
-    const diff=Math.ceil((new Date(c.vencimento)-now)/864e5);
-    return diff<=30;
-  }).map(c=>({...c,diff:Math.ceil((new Date(c.vencimento)-now)/864e5)}));
-
-  return(
-    <div className="fade-in">
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
-        <div><div style={S.lbl}>Contratos</div><div style={{fontSize:18,fontWeight:700}}>Gestão de Contratos</div></div>
-        <button style={S.btn} onClick={()=>setShowForm(v=>!v)}>+ Contrato</button>
-      </div>
-
-      {alerts.length>0&&(
-        <div style={{background:"#ef444411",border:"1px solid #ef444433",borderRadius:12,padding:"14px 16px",marginBottom:16}}>
-          <div style={{...S.lbl,color:"#ef4444",marginBottom:8}}>⚠ Alertas de Vencimento</div>
-          {alerts.map(a=>(
-            <div key={a.id} style={{display:"flex",justifyContent:"space-between",fontSize:13,color:"#e2e8f0",marginBottom:4}}>
-              <span>{a.nome}</span>
-              <Badge label={a.diff<=0?"Vencido":a.diff===1?"Amanhã":`${a.diff} dias`} color={a.diff<=0?"#ef4444":"#f59e0b"}/>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {showForm&&(
-        <div style={{...S.card,marginBottom:16}}>
-          <div style={S.lbl}>Novo Contrato</div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-            <div style={{gridColumn:"1/-1"}}><div style={{fontSize:11,color:"#64748b",marginBottom:4}}>Nome do Contrato</div><input style={S.inp} value={form.nome} onChange={e=>setForm(f=>({...f,nome:e.target.value}))}/></div>
-            <div><div style={{fontSize:11,color:"#64748b",marginBottom:4}}>Cliente/Fornecedor</div><input style={S.inp} value={form.cliente} onChange={e=>setForm(f=>({...f,cliente:e.target.value}))}/></div>
-            <div><div style={{fontSize:11,color:"#64748b",marginBottom:4}}>Valor (R$)</div><input type="number" style={S.inp} value={form.valor} onChange={e=>setForm(f=>({...f,valor:e.target.value}))}/></div>
-            <div><div style={{fontSize:11,color:"#64748b",marginBottom:4}}>Início</div><input type="date" style={S.inp} value={form.inicio} onChange={e=>setForm(f=>({...f,inicio:e.target.value}))}/></div>
-            <div><div style={{fontSize:11,color:"#64748b",marginBottom:4}}>Vencimento</div><input type="date" style={S.inp} value={form.vencimento} onChange={e=>setForm(f=>({...f,vencimento:e.target.value}))}/></div>
-            <div style={{gridColumn:"1/-1"}}><div style={{fontSize:11,color:"#64748b",marginBottom:4}}>Status</div><select style={S.sel} value={form.status} onChange={e=>setForm(f=>({...f,status:e.target.value}))}>{CONTRACT_STATUS.map(s=><option key={s}>{s}</option>)}</select></div>
-            <div style={{gridColumn:"1/-1"}}><div style={{fontSize:11,color:"#64748b",marginBottom:4}}>Observações</div><input style={S.inp} value={form.obs} onChange={e=>setForm(f=>({...f,obs:e.target.value}))}/></div>
-            <div style={{gridColumn:"1/-1",display:"flex",gap:8,justifyContent:"flex-end"}}><button style={S.ghost} onClick={()=>setShowForm(false)}>Cancelar</button><button style={S.btn} onClick={add}>Salvar</button></div>
-          </div>
-        </div>
-      )}
-
-      {contracts.length===0&&!showForm&&<div style={{fontSize:13,color:"#334155",textAlign:"center",padding:"40px 0"}}>Nenhum contrato cadastrado.</div>}
-      {contracts.map((c,i)=>(
-        <div key={c.id||i} style={{...S.card,marginBottom:10,display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
-          <div style={{flex:1}}>
-            <div style={{fontSize:15,fontWeight:600,color:"#f1f5f9",marginBottom:4}}>{c.nome}</div>
-            {c.cliente&&<div style={{fontSize:12,color:"#64748b",marginBottom:2}}>{c.cliente}</div>}
-            <div style={{fontSize:12,color:"#94a3b8"}}>{fmt(c.valor)}{c.vencimento&&` · Vence ${new Date(c.vencimento+"T12:00").toLocaleDateString("pt-BR")}`}</div>
-            {c.obs&&<div style={{fontSize:11,color:"#475569",marginTop:4}}>{c.obs}</div>}
-          </div>
-          <div style={{display:"flex",alignItems:"center",gap:10,flexShrink:0,marginLeft:12}}>
-            <Badge label={c.status} color={STATUS_COLORS[c.status]||"#3b82f6"}/>
-            <button style={S.del} onClick={()=>save(contracts.filter((_,j)=>j!==i))}>✕</button>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-// ═══════════════════════════════════════════
-// RISK MAP
-// ═══════════════════════════════════════════
-function RiskPanel({company}){
-  const key="orion_risks_"+company;
-  const [risks,setRisks]=useState(()=>LS.get(key,[]));
-  const [showForm,setShowForm]=useState(false);
-  const [form,setForm]=useState({desc:"",prob:1,impact:1,mitigacao:""});
-
-  const save=list=>{setRisks(list);LS.set(key,list);};
-  const add=()=>{
-    if(!form.desc.trim())return;
-    save([...risks,{...form,id:Date.now()}]);
-    setForm({desc:"",prob:1,impact:1,mitigacao:""});
-    setShowForm(false);
-  };
-  const score=r=>r.prob*r.impact;
-  const ci=r=>{const s=score(r);return s>=12?3:s>=6?2:s>=3?1:0;};
-
-  return(
-    <div className="fade-in">
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
-        <div><div style={S.lbl}>Gestão de Riscos</div><div style={{fontSize:18,fontWeight:700}}>Mapa de Riscos</div></div>
-        <button style={S.btn} onClick={()=>setShowForm(v=>!v)}>+ Risco</button>
-      </div>
-
-      {showForm&&(
-        <div style={{...S.card,marginBottom:16}}>
-          <input style={{...S.inp,marginBottom:10}} placeholder="Descreva o risco..." value={form.desc} onChange={e=>setForm(f=>({...f,desc:e.target.value}))}/>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10}}>
-            <div>
-              <div style={{fontSize:11,color:"#64748b",marginBottom:4}}>Probabilidade (1-4)</div>
-              <select style={S.sel} value={form.prob} onChange={e=>setForm(f=>({...f,prob:+e.target.value}))}>
-                {[1,2,3,4].map(v=><option key={v} value={v}>{v} — {RISK_LABELS[v-1]}</option>)}
-              </select>
-            </div>
-            <div>
-              <div style={{fontSize:11,color:"#64748b",marginBottom:4}}>Impacto (1-4)</div>
-              <select style={S.sel} value={form.impact} onChange={e=>setForm(f=>({...f,impact:+e.target.value}))}>
-                {[1,2,3,4].map(v=><option key={v} value={v}>{v} — {RISK_LABELS[v-1]}</option>)}
-              </select>
-            </div>
-          </div>
-          <input style={{...S.inp,marginBottom:10}} placeholder="Plano de mitigação..." value={form.mitigacao} onChange={e=>setForm(f=>({...f,mitigacao:e.target.value}))}/>
-          <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}><button style={S.ghost} onClick={()=>setShowForm(false)}>Cancelar</button><button style={S.btn} onClick={add}>Salvar</button></div>
-        </div>
-      )}
-
-      {[...risks].sort((a,b)=>score(b)-score(a)).map((r,i)=>{
-        const idx=ci(r);
-        return(
-          <div key={r.id||i} style={{...S.card,marginBottom:10,borderLeft:`3px solid ${RISK_COLORS[idx]}`}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
-              <div style={{flex:1}}>
-                <div style={{fontSize:14,fontWeight:600,color:"#f1f5f9",marginBottom:4}}>{r.desc}</div>
-                <div style={{fontSize:11,color:"#64748b",marginBottom:r.mitigacao?4:0}}>Prob: {r.prob} · Impacto: {r.impact} · Score: {score(r)}</div>
-                {r.mitigacao&&<div style={{fontSize:12,color:"#94a3b8"}}>→ {r.mitigacao}</div>}
-              </div>
-              <div style={{display:"flex",alignItems:"center",gap:10,marginLeft:12}}>
-                <Badge label={RISK_LABELS[idx]} color={RISK_COLORS[idx]}/>
-                <button style={S.del} onClick={()=>save(risks.filter(x=>x.id!==r.id))}>✕</button>
-              </div>
-            </div>
-          </div>
-        );
-      })}
-      {risks.length===0&&!showForm&&<div style={{fontSize:13,color:"#334155",textAlign:"center",padding:"40px 0"}}>Nenhum risco mapeado.</div>}
-    </div>
-  );
-}
-
-// ═══════════════════════════════════════════
-// DECISIONS LOG
-// ═══════════════════════════════════════════
-function DecisionsPanel({company}){
-  const key="orion_decisions_"+company;
-  const [decisions,setDecisions]=useState(()=>LS.get(key,[]));
-  const [showForm,setShowForm]=useState(false);
-  const [form,setForm]=useState({decisao:"",contexto:"",resultado:"",responsavel:"",prazo:""});
-
-  const save=list=>{setDecisions(list);LS.set(key,list);};
-  const add=()=>{
-    if(!form.decisao.trim())return;
-    save([{...form,id:Date.now(),data:new Date().toLocaleDateString("pt-BR")},...decisions]);
-    setForm({decisao:"",contexto:"",resultado:"",responsavel:"",prazo:""});
-    setShowForm(false);
-  };
-
-  return(
-    <div className="fade-in">
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
-        <div><div style={S.lbl}>Decisões</div><div style={{fontSize:18,fontWeight:700}}>Histórico de Decisões</div></div>
-        <button style={S.btn} onClick={()=>setShowForm(v=>!v)}>+ Decisão</button>
-      </div>
-
-      {showForm&&(
-        <div style={{...S.card,marginBottom:16}}>
-          <input style={{...S.inp,marginBottom:10}} placeholder="Decisão tomada..." value={form.decisao} onChange={e=>setForm(f=>({...f,decisao:e.target.value}))}/>
-          <input style={{...S.inp,marginBottom:10}} placeholder="Contexto / motivo..." value={form.contexto} onChange={e=>setForm(f=>({...f,contexto:e.target.value}))}/>
-          <input style={{...S.inp,marginBottom:10}} placeholder="Resultado esperado..." value={form.resultado} onChange={e=>setForm(f=>({...f,resultado:e.target.value}))}/>
-          <div style={{display:"flex",gap:10,marginBottom:10}}>
-            <input style={S.inp} placeholder="Responsável" value={form.responsavel} onChange={e=>setForm(f=>({...f,responsavel:e.target.value}))}/>
-            <input type="date" style={S.inp} value={form.prazo} onChange={e=>setForm(f=>({...f,prazo:e.target.value}))}/>
-          </div>
-          <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}><button style={S.ghost} onClick={()=>setShowForm(false)}>Cancelar</button><button style={S.btn} onClick={add}>Salvar</button></div>
-        </div>
-      )}
-
-      {decisions.length===0&&!showForm&&<div style={{fontSize:13,color:"#334155",textAlign:"center",padding:"40px 0"}}>Nenhuma decisão registrada.</div>}
-      {decisions.map((d,i)=>(
-        <div key={d.id||i} style={{...S.card,marginBottom:10}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
-            <div style={{flex:1}}>
-              <div style={{fontSize:15,fontWeight:600,color:"#f1f5f9",marginBottom:4}}>{d.decisao}</div>
-              {d.contexto&&<div style={{fontSize:12,color:"#64748b",marginBottom:2}}>Contexto: {d.contexto}</div>}
-              {d.resultado&&<div style={{fontSize:12,color:"#94a3b8",marginBottom:2}}>Esperado: {d.resultado}</div>}
-              <div style={{fontSize:11,color:"#475569",marginTop:4}}>{d.data}{d.responsavel&&` · ${d.responsavel}`}{d.prazo&&` · Prazo: ${new Date(d.prazo+"T12:00").toLocaleDateString("pt-BR")}`}</div>
-            </div>
-            <button style={S.del} onClick={()=>save(decisions.filter((_,j)=>j!==i))}>✕</button>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-// ═══════════════════════════════════════════
-// CRM PANEL
-// ═══════════════════════════════════════════
-function CRMPanel({company}){
-  const key="orion_crm_"+company;
-  const [leads,setLeads]=useState(()=>LS.get(key,[]));
-  const [showForm,setShowForm]=useState(false);
-  const [form,setForm]=useState({nome:"",contato:"",empresa:"",valor:0,etapa:"Lead",canal:"Indicação",obs:""});
-  const ETAPAS=["Lead","Contato","Proposta","Negociação","Fechado","Perdido"];
-  const CANAIS=["Indicação","Instagram","WhatsApp","Email","Site","Evento","Outro"];
-  const ETAPA_COLORS={"Lead":"#64748b","Contato":"#3b82f6","Proposta":"#a78bfa","Negociação":"#f59e0b","Fechado":"#22c55e","Perdido":"#ef4444"};
-
-  const save=list=>{setLeads(list);LS.set(key,list);};
-  const add=()=>{
-    if(!form.nome.trim())return;
-    save([...leads,{...form,id:Date.now(),data:new Date().toLocaleDateString("pt-BR"),valor:parseFloat(form.valor)||0}]);
-    setForm({nome:"",contato:"",empresa:"",valor:0,etapa:"Lead",canal:"Indicação",obs:""});
-    setShowForm(false);
-  };
-
-  const byEtapa=etapa=>leads.filter(l=>l.etapa===etapa);
-  const totalPipeline=leads.filter(l=>!["Fechado","Perdido"].includes(l.etapa)).reduce((s,l)=>s+l.valor,0);
-  const totalFechado=leads.filter(l=>l.etapa==="Fechado").reduce((s,l)=>s+l.valor,0);
-
-  return(
-    <div className="fade-in">
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
-        <div><div style={S.lbl}>CRM</div><div style={{fontSize:18,fontWeight:700}}>Pipeline Comercial</div></div>
-        <button style={S.btn} onClick={()=>setShowForm(v=>!v)}>+ Lead</button>
-      </div>
-
-      {/* Resumo */}
-      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12,marginBottom:20}}>
-        {[{l:"Pipeline Ativo",v:fmt(totalPipeline),c:"#3b82f6"},{l:"Receita Fechada",v:fmt(totalFechado),c:"#22c55e"},{l:"Total de Leads",v:leads.length,c:"#a78bfa"}].map((k,i)=>(
-          <div key={i} style={S.card}>
-            <div style={{fontSize:11,color:"#64748b",marginBottom:4}}>{k.l}</div>
-            <div style={{fontSize:20,fontWeight:700,color:k.c}}>{k.v}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* Funil visual */}
-      <div style={{display:"flex",gap:8,marginBottom:20,overflowX:"auto",paddingBottom:4}}>
-        {ETAPAS.map(etapa=>(
-          <div key={etapa} style={{flex:1,minWidth:140}}>
-            <div style={{fontSize:11,fontWeight:600,color:ETAPA_COLORS[etapa],marginBottom:8,textAlign:"center",letterSpacing:"1px"}}>{etapa.toUpperCase()} ({byEtapa(etapa).length})</div>
-            <div style={{minHeight:80,background:"#0f172a",borderRadius:10,padding:"8px",border:`1px solid ${ETAPA_COLORS[etapa]}33`}}>
-              {byEtapa(etapa).map((l,i)=>(
-                <div key={l.id||i} style={{background:"#1e293b",borderRadius:8,padding:"8px 10px",marginBottom:6,border:`1px solid #263347`,cursor:"pointer"}}>
-                  <div style={{fontSize:12,fontWeight:600,color:"#f1f5f9",marginBottom:2}}>{l.nome}</div>
-                  {l.empresa&&<div style={{fontSize:10,color:"#64748b",marginBottom:2}}>{l.empresa}</div>}
-                  {l.valor>0&&<div style={{fontSize:11,color:ETAPA_COLORS[etapa],fontWeight:600}}>{fmt(l.valor)}</div>}
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {showForm&&(
-        <div style={{...S.card,marginBottom:16}}>
-          <div style={S.lbl}>Novo Lead</div>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-            <div><div style={{fontSize:11,color:"#64748b",marginBottom:4}}>Nome</div><input style={S.inp} value={form.nome} onChange={e=>setForm(f=>({...f,nome:e.target.value}))}/></div>
-            <div><div style={{fontSize:11,color:"#64748b",marginBottom:4}}>Contato</div><input style={S.inp} value={form.contato} onChange={e=>setForm(f=>({...f,contato:e.target.value}))}/></div>
-            <div><div style={{fontSize:11,color:"#64748b",marginBottom:4}}>Empresa</div><input style={S.inp} value={form.empresa} onChange={e=>setForm(f=>({...f,empresa:e.target.value}))}/></div>
-            <div><div style={{fontSize:11,color:"#64748b",marginBottom:4}}>Valor (R$)</div><input type="number" style={S.inp} value={form.valor} onChange={e=>setForm(f=>({...f,valor:e.target.value}))}/></div>
-            <div><div style={{fontSize:11,color:"#64748b",marginBottom:4}}>Etapa</div><select style={S.sel} value={form.etapa} onChange={e=>setForm(f=>({...f,etapa:e.target.value}))}>{ETAPAS.map(s=><option key={s}>{s}</option>)}</select></div>
-            <div><div style={{fontSize:11,color:"#64748b",marginBottom:4}}>Canal</div><select style={S.sel} value={form.canal} onChange={e=>setForm(f=>({...f,canal:e.target.value}))}>{CANAIS.map(s=><option key={s}>{s}</option>)}</select></div>
-            <div style={{gridColumn:"1/-1"}}><div style={{fontSize:11,color:"#64748b",marginBottom:4}}>Observações</div><input style={S.inp} value={form.obs} onChange={e=>setForm(f=>({...f,obs:e.target.value}))}/></div>
-            <div style={{gridColumn:"1/-1",display:"flex",gap:8,justifyContent:"flex-end"}}><button style={S.ghost} onClick={()=>setShowForm(false)}>Cancelar</button><button style={S.btn} onClick={add}>Salvar</button></div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ═══════════════════════════════════════════
-// FILES PANEL
-// ═══════════════════════════════════════════
-function FilesPanel({company,area}){
-  const key=`orion_files_${company}_${area||"geral"}`;
-  const [files,setFiles]=useState(()=>LS.get(key,[]).filter(f=>f.name));
-  const [dragOver,setDragOver]=useState(false);
-  const ref=useRef();
-
-  const saveList=list=>{
-    const clean=list.map(f=>({id:f.id,name:f.name,size:f.size,date:f.date,type:f.type||"",url:f.url||""}));
-    setFiles(clean);LS.set(key,clean);
-  };
-
-  const addFiles=fileList=>{
-    const newFiles=Array.from(fileList).map(f=>{
-      let url="";
-      try{url=URL.createObjectURL(f);}catch{}
-      return{id:Date.now()+"_"+Math.random(),name:f.name,size:f.size,date:new Date().toLocaleDateString("pt-BR"),type:f.type||"",url};
-    });
-    saveList([...files,...newFiles]);
-  };
-
-  const getIcon=name=>{
-    const ext=name.split(".").pop().toLowerCase();
-    if(["pdf"].includes(ext))return{icon:"📄",c:"#ef4444"};
-    if(["doc","docx"].includes(ext))return{icon:"📝",c:"#3b82f6"};
-    if(["xls","xlsx","csv"].includes(ext))return{icon:"📊",c:"#22c55e"};
-    if(["jpg","jpeg","png","webp","heic"].includes(ext))return{icon:"🖼",c:"#a78bfa"};
-    if(["txt"].includes(ext))return{icon:"📃",c:"#94a3b8"};
-    return{icon:"📎",c:"#64748b"};
-  };
-
-  const formatSize=b=>b<1024?`${b}B`:b<1048576?`${(b/1024).toFixed(1)}KB`:`${(b/1048576).toFixed(1)}MB`;
-
-  return(
-    <div className="fade-in">
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
-        <div>
-          <div style={S.lbl}>Arquivo Digital</div>
-          <div style={{fontSize:18,fontWeight:700}}>{company} {area?`· ${area}`:""}</div>
-          <div style={{fontSize:12,color:"#475569",marginTop:2}}>Aceita PDF, Word, Excel, Imagem, CSV, TXT</div>
-        </div>
-        <button style={S.btn} onClick={()=>ref.current.click()}>+ Upload</button>
-      </div>
-
-      <input ref={ref} type="file" multiple accept={FILE_ACCEPT} style={{display:"none"}} onChange={e=>addFiles(e.target.files)}/>
-
-      {/* Drop zone */}
-      <div
-        onDragOver={e=>{e.preventDefault();setDragOver(true);}}
-        onDragLeave={()=>setDragOver(false)}
-        onDrop={e=>{e.preventDefault();setDragOver(false);addFiles(e.dataTransfer.files);}}
-        onClick={()=>ref.current.click()}
-        style={{border:`2px dashed ${dragOver?"#3b82f6":"#263347"}`,borderRadius:14,padding:"32px 20px",textAlign:"center",marginBottom:20,background:dragOver?"#3b82f611":"transparent",cursor:"pointer",transition:"all .2s"}}
-      >
-        <div style={{fontSize:32,marginBottom:8}}>📁</div>
-        <div style={{fontSize:14,color:dragOver?"#3b82f6":"#475569",fontWeight:500}}>Arraste arquivos aqui ou clique para selecionar</div>
-        <div style={{fontSize:11,color:"#334155",marginTop:4}}>PDF · Word · Excel · Imagens · CSV · TXT</div>
-      </div>
-
-      {/* Aviso de sessão */}
-      <div style={{background:"#f59e0b11",border:"1px solid #f59e0b33",borderRadius:9,padding:"10px 14px",marginBottom:16,fontSize:12,color:"#f59e0b"}}>
-        ⚠ Os arquivos ficam disponíveis nesta sessão. Para armazenamento permanente, use o MAXXXI Drive integrado.
-      </div>
-
-      {files.length===0&&<div style={{fontSize:13,color:"#334155",textAlign:"center",padding:"20px 0"}}>Nenhum arquivo nesta área.</div>}
-      {files.map((f,i)=>{
-        const {icon,c}=getIcon(f.name);
-        return(
-          <div key={f.id||i} style={{...S.card,display:"flex",alignItems:"center",gap:12,marginBottom:8,padding:"12px 16px"}}>
-            <span style={{fontSize:22,flexShrink:0}}>{icon}</span>
-            <div style={{flex:1,minWidth:0}}>
-              <div style={{fontSize:14,fontWeight:600,color:"#f1f5f9",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{f.name}</div>
-              <div style={{fontSize:11,color:"#64748b"}}>{formatSize(f.size)} · {f.date}</div>
-            </div>
-            {f.url&&<a href={f.url} download={f.name} style={{fontSize:11,color:"#3b82f6",textDecoration:"none",padding:"5px 12px",border:"1px solid #3b82f633",borderRadius:7,flexShrink:0}}>↓ Baixar</a>}
-            <button style={{...S.del,flexShrink:0}} onClick={()=>saveList(files.filter((_,j)=>j!==i))}>✕</button>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-// ═══════════════════════════════════════════
-// MAXXXI AGENT
-// ═══════════════════════════════════════════
-function MaxxxiAgent({company,area,companies}){
-  const stKey="orion_chat_"+(company||"global")+"_"+(area||"geral");
-  const [msgs,setMsgs]=useState(()=>LS.get(stKey,[{role:"ai",text:`Olá! Sou o MAXXXI, motor de inteligência da plataforma ORION.\n\nEstou conectado a todas as informações de ${company||"todas as empresas"} e posso:\n\n• Analisar KPIs e gerar insights\n• Registrar decisões, contratos e riscos\n• Ler e interpretar documentos das pastas\n• Classificar despesas e receitas\n• Gerar relatórios e projeções\n\nComo posso ajudar agora?`}]));
-  const [input,setInput]=useState("");
-  const [loading,setLoading]=useState(false);
-  const [action,setAction]=useState("");
-  const endRef=useRef();
-
-  useEffect(()=>{endRef.current?.scrollIntoView({behavior:"smooth"});},[msgs,loading]);
-
-  const getContext=()=>{
-    const ctx={empresa:company,area,empresas:companies};
-    if(company){
-      ctx.kpis=LS.get("orion_kpi_"+company,{});
-      ctx.contratos=LS.get("orion_contracts_"+company,[]).length;
-      ctx.riscos=LS.get("orion_risks_"+company,[]).length;
-      ctx.decisoes=LS.get("orion_decisions_"+company,[]).length;
-      ctx.leads=LS.get("orion_crm_"+company,[]).length;
-      const score=calcHealth(ctx.kpis);
-      ctx.healthScore=score;
-      ctx.healthStatus=healthLabel(score);
-    }
-    return JSON.stringify(ctx,null,2);
-  };
-
-  const send=async()=>{
-    const q=input.trim();if(!q||loading)return;
-    setInput("");
-    const newMsgs=[...msgs,{role:"user",text:q}];
-    setMsgs(newMsgs);setLoading(true);setAction("Analisando contexto...");
-
-    const systemPrompt=`Você é o MAXXXI — Motor de Inteligência Executiva da plataforma ORION.
-
-CONTEXTO ATUAL DA PLATAFORMA:
-${getContext()}
-
-SUAS CAPACIDADES:
-- Analisar dados financeiros e operacionais das empresas
-- Interpretar KPIs e gerar diagnósticos executivos
-- Classificar despesas e receitas por natureza, banco, projeto
-- Identificar riscos e oportunidades
-- Gerar relatórios e projeções
-- Registrar decisões, contratos e alertas
-- Analisar documentos das pastas (extratos, faturas, contratos)
-- Provisionar parcelamentos e contas recorrentes
-- Calcular margens por projeto e rateio de despesas fixas
-- Comparar performance entre empresas e períodos
-
-REGRAS:
-- Responda em português, de forma executiva e direta
-- Use dados reais do contexto quando disponíveis
-- Seja analítico, preciso e orientado a decisão
-- Quando identificar problemas, proponha soluções
-- Use formatação clara com seções quando a resposta for longa`;
-
-    setTimeout(()=>setAction("Processando dados..."),800);
-    setTimeout(()=>setAction("Gerando análise executiva..."),1600);
-
-    try{
-      const res=await fetch("https://api.anthropic.com/v1/messages",{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({
-          model:"claude-sonnet-4-20250514",
-          max_tokens:2000,
-          system:systemPrompt,
-          messages:newMsgs.slice(-12).map(m=>({role:m.role==="ai"?"assistant":"user",content:m.text}))
-        })
-      });
-      const data=await res.json();
-      const text=data.content?.[0]?.text||"Erro ao processar.";
-      const updated=[...newMsgs,{role:"ai",text}];
-      setMsgs(updated);LS.set(stKey,updated.slice(-20));
-    }catch{
-      setMsgs(p=>[...p,{role:"ai",text:"Erro de conexão. Verifique sua internet e tente novamente."}]);
-    }
-    setLoading(false);setAction("");
-  };
-
-  const QUICK_CMDS=[
-    "Analise os KPIs desta empresa",
-    "Qual é o health score e por quê?",
-    "Identifique os principais riscos",
-    "Gere um diagnóstico executivo",
-    "Compare com o mês anterior",
-  ];
-
-  return(
-    <div style={{display:"flex",flexDirection:"column",height:"100%"}}>
-      {/* Header do agente */}
-      <div style={{background:"#172554",borderRadius:"12px 12px 0 0",padding:"14px 18px",borderBottom:"1px solid #1e3a7a",display:"flex",alignItems:"center",gap:12,flexShrink:0}}>
-        <div style={{width:38,height:38,borderRadius:10,background:"#1d4ed8",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-          <MaxxxiBot size={22} active={true}/>
-        </div>
-        <div style={{flex:1}}>
-          <div style={{fontSize:14,fontWeight:700,color:"#f1f5f9",letterSpacing:"0.5px"}}>MAXXXI</div>
-          <div style={{fontSize:10,color:"#60a5fa"}}>Motor de Inteligência Executiva · {company||"Ecossistema"}</div>
-        </div>
-        <div style={{display:"flex",alignItems:"center",gap:6}}>
-          <div style={{width:8,height:8,borderRadius:"50%",background:"#22c55e",boxShadow:"0 0 8px #22c55e"}}/>
-          <span style={{fontSize:10,color:"#22c55e"}}>Online</span>
-        </div>
-      </div>
-
-      {/* Comandos rápidos */}
-      <div style={{padding:"10px 14px",background:"#0f172a",borderBottom:"1px solid #1e293b",display:"flex",gap:6,overflowX:"auto",flexShrink:0}}>
-        {QUICK_CMDS.map((cmd,i)=>(
-          <button key={i} onClick={()=>{setInput(cmd);}} style={{...S.ghost,fontSize:11,padding:"4px 10px",whiteSpace:"nowrap",flexShrink:0,color:"#60a5fa",borderColor:"#1e3a7a"}}>
-            {cmd}
-          </button>
-        ))}
-      </div>
-
-      {/* Mensagens */}
-      <div className="scroll-y" style={{flex:1,padding:"16px",display:"flex",flexDirection:"column",gap:10,background:"#0f172a"}}>
-        {msgs.map((m,i)=>(
-          <div key={i} style={{display:"flex",justifyContent:m.role==="user"?"flex-end":"flex-start"}}>
-            {m.role==="ai"&&(
-              <div style={{width:28,height:28,borderRadius:8,background:"#172554",display:"flex",alignItems:"center",justifyContent:"center",marginRight:8,flexShrink:0,alignSelf:"flex-end"}}>
-                <MaxxxiBot size={16} active={true}/>
-              </div>
-            )}
-            <div style={{maxWidth:"82%",background:m.role==="user"?"linear-gradient(135deg,#1d4ed8,#2563eb)":"#1e293b",borderRadius:m.role==="user"?"14px 14px 4px 14px":"14px 14px 14px 4px",padding:"10px 14px",fontSize:13,color:"#f1f5f9",lineHeight:1.6,whiteSpace:"pre-wrap",border:m.role==="ai"?"1px solid #263347":"none"}}>
-              {m.role==="ai"&&<div style={{fontSize:9,color:"#3b82f6",letterSpacing:"2px",marginBottom:5,fontWeight:600}}>MAXXXI · ORION</div>}
-              {m.text}
-            </div>
-          </div>
-        ))}
-        {loading&&(
-          <div style={{display:"flex",alignItems:"center",gap:10}}>
-            <div style={{width:28,height:28,borderRadius:8,background:"#172554",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-              <MaxxxiBot size={16} active={true}/>
-            </div>
-            <div style={{background:"#1e293b",borderRadius:"14px 14px 14px 4px",padding:"10px 14px",border:"1px solid #263347"}}>
-              <div style={{fontSize:11,color:"#3b82f6",marginBottom:4,letterSpacing:"1px"}}>{action}</div>
-              <div style={{display:"flex",gap:4}}>
-                {[0,1,2].map(i=><div key={i} style={{width:6,height:6,borderRadius:"50%",background:"#3b82f6",animation:`pulse 1.2s ease-in-out ${i*0.2}s infinite`}}/>)}
-              </div>
-            </div>
-          </div>
-        )}
-        <div ref={endRef}/>
-      </div>
-
-      {/* Input */}
-      <div style={{padding:"12px 14px",borderTop:"1px solid #1e293b",display:"flex",gap:8,background:"#0f172a",flexShrink:0}}>
-        <input
-          style={{...S.inp,flex:1,fontSize:13,padding:"10px 14px"}}
-          placeholder="Comando para o MAXXXI..."
-          value={input}
-          onChange={e=>setInput(e.target.value)}
-          onKeyDown={e=>e.key==="Enter"&&!e.shiftKey&&send()}
-        />
-        <button style={{...S.btn,padding:"10px 16px",minWidth:46,fontSize:16}} onClick={send} disabled={loading}>↑</button>
-      </div>
-    </div>
-  );
-}
-
-// ═══════════════════════════════════════════
-// BRIEFING MODAL
-// ═══════════════════════════════════════════
-function BriefingModal({company,onClose}){
-  const kpis=LS.get("orion_kpi_"+company,{fat:0,custo:0,meta:0,clientes:0,inadimplencia:0,caixa:0,pipeline:0});
-  const contracts=LS.get("orion_contracts_"+company,[]);
-  const risks=LS.get("orion_risks_"+company,[]);
-  const decisions=LS.get("orion_decisions_"+company,[]);
-  const leads=LS.get("orion_crm_"+company,[]);
-  const score=calcHealth(kpis);
-  const pct=kpis.meta>0?((kpis.fat/kpis.meta)*100).toFixed(1):0;
-  const margem=kpis.fat>0?((kpis.fat-kpis.custo)/kpis.fat*100).toFixed(1):0;
-
-  return(
-    <div style={{position:"fixed",inset:0,background:"#000000cc",zIndex:800,display:"flex",alignItems:"center",justifyContent:"center",padding:20}} onClick={onClose}>
-      <div style={{background:"#1e293b",border:"1px solid #334155",borderRadius:18,width:"100%",maxWidth:620,maxHeight:"90vh",overflow:"auto",padding:"28px 32px",boxShadow:"0 25px 60px #00000099"}} onClick={e=>e.stopPropagation()}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:24}}>
+// ── EMP GRID ──────────────────────────────────────────────────────────────
+function renderEmpGrid(){
+  const g=document.getElementById('emp-grid');
+  if(!g)return;
+  g.innerHTML=Object.values(EMPS).map(e=>{
+    const pct=e.meta>0?Math.min(e.fat/e.meta*100,100).toFixed(0):0;
+    const crescC=e.cresc>=0?'var(--green)':'var(--red)';
+    const crescS=e.cresc>=0?'▲':'▼';
+    return `
+    <div class="emp-card" id="card-${e.id}" onclick="openEmp('${e.id}')"
+      style="--emp-c:${e.cor};--emp-rgb:${e.rgb};"
+      onmouseenter="this.style.borderColor='${e.cor}55'"
+      onmouseleave="this.style.borderColor=curEmp==='${e.id}'?'${e.cor}':'rgba(255,255,255,0.07)'">
+      <div class="emp-top"></div>
+      <div class="emp-header">
+        <div class="flex aic gap12">
+          <div class="emp-sig">${e.sigla}</div>
           <div>
-            <div style={{...S.lbl,marginBottom:6}}>Briefing Executivo</div>
-            <div style={{fontSize:24,fontWeight:800,color:"#f1f5f9"}}>{company}</div>
-            <div style={{fontSize:12,color:"#475569",marginTop:2}}>{new Date().toLocaleDateString("pt-BR",{weekday:"long",day:"numeric",month:"long"})}</div>
-          </div>
-          <div style={{display:"flex",alignItems:"center",gap:14}}>
-            <HealthBadge score={score} size={40}/>
-            <button onClick={onClose} style={{...S.ghost,fontSize:16,padding:"8px 12px"}}>✕</button>
+            <div class="emp-name">${e.nome}</div>
+            <div class="emp-desc">${e.desc}</div>
           </div>
         </div>
-
-        {/* KPIs grid */}
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:20}}>
-          {[
-            {l:"Faturamento",v:fmt(kpis.fat),c:"#f1f5f9"},
-            {l:"Resultado",v:fmt(kpis.fat-kpis.custo),c:kpis.fat-kpis.custo>=0?"#22c55e":"#ef4444"},
-            {l:"Meta",v:`${pct}%`,c:parseFloat(pct)>=100?"#22c55e":parseFloat(pct)>=80?"#f59e0b":"#ef4444"},
-            {l:"Margem Líquida",v:`${margem}%`,c:parseFloat(margem)>20?"#22c55e":parseFloat(margem)>10?"#f59e0b":"#ef4444"},
-            {l:"Clientes",v:kpis.clientes||"—",c:"#f1f5f9"},
-            {l:"Caixa",v:fmt(kpis.caixa),c:kpis.caixa>=0?"#22c55e":"#ef4444"},
-          ].map((k,i)=>(
-            <div key={i} style={{background:"#0f172a",borderRadius:10,padding:"12px 16px"}}>
-              <div style={{fontSize:10,color:"#64748b",marginBottom:4,letterSpacing:"1px"}}>{k.l.toUpperCase()}</div>
-              <div style={{fontSize:18,fontWeight:700,color:k.c}}>{k.v}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* Contratos ativos */}
-        {contracts.filter(c=>c.status==="Ativo"||c.status==="A vencer").length>0&&(
-          <div style={{marginBottom:16}}>
-            <div style={S.lbl}>Contratos Ativos ({contracts.filter(c=>c.status==="Ativo"||c.status==="A vencer").length})</div>
-            {contracts.filter(c=>c.status==="Ativo"||c.status==="A vencer").slice(0,3).map((c,i)=>(
-              <div key={i} style={{display:"flex",justifyContent:"space-between",fontSize:13,color:"#94a3b8",marginBottom:4,background:"#0f172a",borderRadius:8,padding:"8px 12px"}}>
-                <span>{c.nome}</span>
-                <Badge label={c.status} color={STATUS_COLORS[c.status]}/>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Riscos altos */}
-        {risks.filter(r=>r.prob*r.impact>=6).length>0&&(
-          <div style={{marginBottom:16}}>
-            <div style={S.lbl}>Riscos Elevados</div>
-            {risks.filter(r=>r.prob*r.impact>=6).slice(0,3).map((r,i)=>(
-              <div key={i} style={{background:"#ef444411",border:"1px solid #ef444433",borderRadius:8,padding:"8px 12px",marginBottom:6,fontSize:13,color:"#fca5a5"}}>{r.desc}</div>
-            ))}
-          </div>
-        )}
-
-        {/* Pipeline CRM */}
-        {leads.length>0&&(
-          <div style={{marginBottom:16}}>
-            <div style={S.lbl}>Pipeline CRM ({leads.filter(l=>!["Fechado","Perdido"].includes(l.etapa)).length} ativos)</div>
-            <div style={{fontSize:13,color:"#94a3b8"}}>Total em negociação: {fmt(leads.filter(l=>!["Fechado","Perdido"].includes(l.etapa)).reduce((s,l)=>s+l.valor,0))}</div>
-          </div>
-        )}
-
-        {/* Última decisão */}
-        {decisions.length>0&&(
-          <div style={{marginBottom:20}}>
-            <div style={S.lbl}>Última Decisão</div>
-            <div style={{background:"#0f172a",borderRadius:8,padding:"10px 14px",fontSize:13,color:"#94a3b8"}}>
-              <div style={{fontWeight:600,color:"#f1f5f9",marginBottom:2}}>{decisions[0].decisao}</div>
-              <div style={{fontSize:11,color:"#475569"}}>{decisions[0].data}</div>
-            </div>
-          </div>
-        )}
-
-        <button style={{...S.btn,width:"100%"}} onClick={onClose}>Fechar Briefing</button>
+        <span class="stag" style="color:${e.statusCor};background:${e.statusCor}18">${e.status}</span>
       </div>
-    </div>
-  );
+      ${e.id!=='gp'?`
+      <div class="emp-nums">
+        <div><div class="emp-nlbl">Faturamento</div><div class="emp-nval" style="color:${e.cor}">${fmt(e.fat)}</div></div>
+        <div><div class="emp-nlbl">Margem</div><div class="emp-nval">${e.fat>0?((e.result/e.fat)*100).toFixed(0)+'%':'—'}</div></div>
+        <div><div class="emp-nlbl">vs Meta</div><div class="emp-nval" style="color:${crescC}">${crescS} ${Math.abs(e.cresc)}%</div></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--tx3);margin-bottom:4px"><span>${fmt(e.fat)}</span><span>Meta ${fmt(e.meta)}</span></div>
+      <div class="pbar"><div class="pfill" style="width:${pct}%;background:${e.cor}"></div></div>`:`
+      <div class="emp-nums">
+        <div><div class="emp-nlbl">Patrimônio</div><div class="emp-nval" style="color:${e.cor}">R$ 1,2M</div></div>
+        <div><div class="emp-nlbl">Renda</div><div class="emp-nval">R$ 52k/mês</div></div>
+        <div><div class="emp-nlbl">Poupança</div><div class="emp-nval txt-green">42%</div></div>
+      </div>`}
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px">
+        <div class="flex aic gap8">
+          <div class="hring">${e.score}</div>
+          <span style="font-size:11px;color:var(--tx3)">Health Score</span>
+        </div>
+        <span style="font-size:12px;color:var(--tx3)">Clique para abrir →</span>
+      </div>
+    </div>`;
+  }).join('');
 }
 
-// ═══════════════════════════════════════════
-// CONSOLIDATED CEO VIEW
-// ═══════════════════════════════════════════
-function ConsolidatedView({companies,onSelectCompany}){
-  const allData=companies.map(c=>{
-    const k=LS.get("orion_kpi_"+c,{fat:0,custo:0,meta:0,clientes:0,inadimplencia:0,caixa:0,pipeline:0});
-    return{company:c,kpis:k,score:calcHealth(k)};
-  });
-  const totalFat=allData.reduce((s,d)=>s+d.kpis.fat,0);
-  const totalRes=allData.reduce((s,d)=>s+(d.kpis.fat-d.kpis.custo),0);
-  const totalCli=allData.reduce((s,d)=>s+d.kpis.clientes,0);
-  const avgScore=Math.round(allData.reduce((s,d)=>s+d.score,0)/allData.length);
-
-  return(
-    <div className="fade-in">
-      <div style={S.lbl}>Visão CEO · Ecossistema Consolidado</div>
-      <div style={{fontSize:18,fontWeight:700,marginBottom:20}}>Performance do Ecossistema</div>
-
-      {/* Totais */}
-      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:24}}>
-        {[
-          {l:"Faturamento Total",v:fmt(totalFat),c:"#3b82f6",icon:"📈"},
-          {l:"Resultado Consolidado",v:fmt(totalRes),c:totalRes>=0?"#22c55e":"#ef4444",icon:"💰"},
-          {l:"Clientes Totais",v:totalCli,c:"#a78bfa",icon:"👥"},
-          {l:"Score Médio",v:avgScore,c:healthColor(avgScore),icon:"❤"},
-        ].map((k,i)=>(
-          <div key={i} style={{...S.card,background:"#172554",borderColor:"#1e3a7a"}}>
-            <div style={{fontSize:20,marginBottom:6}}>{k.icon}</div>
-            <div style={{fontSize:11,color:"#64748b",marginBottom:4}}>{k.l}</div>
-            <div style={{fontSize:22,fontWeight:700,color:k.c}}>{k.v}</div>
-          </div>
-        ))}
+// ── CEO ──────────────────────────────────────────────────────────────────
+function renderCEO(){
+  const emps=Object.values(EMPS).filter(e=>e.id!=='gp').sort((a,b)=>b.fat-a.fat);
+  const total=emps.reduce((s,e)=>s+e.fat,0);
+  const rank=document.getElementById('ceo-rank');
+  if(rank)rank.innerHTML=emps.map((e,i)=>`
+    <div class="ceo-row">
+      <div class="ceo-pos">${i+1}</div>
+      <div style="width:10px;height:10px;border-radius:50%;background:${e.cor};flex-shrink:0"></div>
+      <div class="ceo-n">${e.nome}</div>
+      <div class="ceo-v" style="color:${e.cor}">${fmt(e.fat)}</div>
+      <div class="ceo-mg">${e.fat>0?((e.result/e.fat)*100).toFixed(0)+'%':'—'} mg</div>
+    </div>`).join('');
+  const dist=document.getElementById('ceo-dist');
+  if(dist)dist.innerHTML=emps.map(e=>{
+    const pct=total>0?(e.fat/total*100).toFixed(0):0;
+    return `<div style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:10px;height:10px;border-radius:3px;background:${e.cor}"></div>
+          <span style="font-size:13px">${e.nome}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:${e.cor}">${fmt(e.fat)}</span>
+          <span style="font-size:11px;color:var(--tx3)">${pct}%</span>
+        </div>
       </div>
-
-      {/* Por empresa */}
-      <div style={S.lbl}>Performance por Empresa</div>
-      {allData.sort((a,b)=>b.score-a.score).map(({company,kpis,score})=>{
-        const color=healthColor(score);
-        const pct=kpis.meta>0?Math.min((kpis.fat/kpis.meta)*100,100):0;
-        return(
-          <div key={company} style={{...S.card,marginBottom:10,cursor:"pointer"}} onClick={()=>onSelectCompany(company)}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
-              <div>
-                <div style={{fontSize:15,fontWeight:700,color:"#f1f5f9"}}>{company}</div>
-                <div style={{fontSize:12,color:"#64748b"}}>Fat: {fmt(kpis.fat)} · Resultado: {fmt(kpis.fat-kpis.custo)}</div>
-              </div>
-              <HealthBadge score={score}/>
-            </div>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:10}}>
-              {[
-                {l:"Caixa",v:fmt(kpis.caixa),c:kpis.caixa>=0?"#22c55e":"#ef4444"},
-                {l:"Pipeline",v:fmt(kpis.pipeline),c:"#a78bfa"},
-                {l:"Clientes",v:kpis.clientes||0,c:"#f1f5f9"},
-                {l:"Inadimp.",v:kpis.fat>0?fmtPct((kpis.inadimplencia||0)/kpis.fat*100):"—",c:(kpis.inadimplencia||0)/Math.max(kpis.fat,1)>0.05?"#ef4444":"#22c55e"},
-              ].map((m,i)=>(
-                <div key={i} style={{background:"#0f172a",borderRadius:8,padding:"8px 10px"}}>
-                  <div style={{fontSize:9,color:"#475569",marginBottom:2}}>{m.l}</div>
-                  <div style={{fontSize:13,fontWeight:600,color:m.c}}>{m.v}</div>
-                </div>
-              ))}
-            </div>
-            <div style={{height:4,background:"#0f172a",borderRadius:2}}>
-              <div style={{height:"100%",width:`${pct}%`,background:color,borderRadius:2,transition:"width .5s"}}/>
-            </div>
-            <div style={{fontSize:10,color:"#475569",marginTop:4,textAlign:"right"}}>{pct.toFixed(0)}% da meta</div>
-          </div>
-        );
-      })}
-    </div>
-  );
+      <div class="pbar" style="height:6px"><div class="pfill" style="width:${pct}%;background:${e.cor}"></div></div>
+    </div>`;
+  }).join('');
 }
 
-// ═══════════════════════════════════════════
-// WORKSPACE
-// ═══════════════════════════════════════════
-function Workspace({company,area,companies}){
-  const [tab,setTab]=useState("kpi");
-  const TABS=[
-    {id:"kpi",label:"KPIs"},
-    {id:"okr",label:"OKRs"},
-    {id:"contratos",label:"Contratos"},
-    {id:"riscos",label:"Riscos"},
-    {id:"decisoes",label:"Decisões"},
-    {id:"crm",label:"CRM"},
-    {id:"arquivos",label:"Arquivos"},
-    {id:"maxxxi",label:"MAXXXI IA"},
-  ];
+// ── NAVEGAÇÃO ──────────────────────────────────────────────────────────────
+function showPage(pg){
+  ['home','ceo','ws'].forEach(p=>document.getElementById('page-'+p).classList.toggle('hidden',p!==pg));
+}
+function clearSb(){document.querySelectorAll('.sb-item').forEach(el=>el.classList.remove('active'))}
 
-  return(
-    <div style={{display:"flex",flexDirection:"column",height:"100%"}}>
-      {/* Tabs */}
-      <div style={{display:"flex",gap:2,borderBottom:"1px solid #1e293b",paddingBottom:0,marginBottom:20,overflowX:"auto",flexShrink:0}}>
-        {TABS.map(t=>(
-          <button key={t.id} onClick={()=>setTab(t.id)} style={{background:"none",border:"none",borderBottom:`2px solid ${tab===t.id?"#3b82f6":"transparent"}`,padding:"10px 16px",color:tab===t.id?"#60a5fa":"#475569",fontSize:13,fontWeight:tab===t.id?600:400,cursor:"pointer",whiteSpace:"nowrap",marginBottom:-1,transition:"all .15s"}}>
-            {t.label}
-          </button>
-        ))}
-      </div>
-
-      <div style={{flex:1,overflow:"auto"}}>
-        {tab==="kpi"&&<KPIPanel company={company}/>}
-        {tab==="okr"&&<OKRPanel company={company}/>}
-        {tab==="contratos"&&<ContractsPanel company={company}/>}
-        {tab==="riscos"&&<RiskPanel company={company}/>}
-        {tab==="decisoes"&&<DecisionsPanel company={company}/>}
-        {tab==="crm"&&<CRMPanel company={company}/>}
-        {tab==="arquivos"&&<FilesPanel company={company} area={area}/>}
-        {tab==="maxxxi"&&(
-          <div style={{height:"calc(100vh - 220px)",display:"flex",flexDirection:"column",background:"#0f172a",borderRadius:12,border:"1px solid #1e293b",overflow:"hidden"}}>
-            <MaxxxiAgent company={company} area={area} companies={companies}/>
-          </div>
-        )}
-      </div>
-    </div>
-  );
+function goHome(){
+  clearSb();
+  document.getElementById('nav-home').classList.add('active');
+  document.getElementById('drive-lbl').textContent='ORION Drive';
+  curEmp=null;
+  showPage('home');
+}
+function goCEO(){
+  clearSb();
+  document.getElementById('nav-ceo').classList.add('active');
+  showPage('ceo');
 }
 
-// ═══════════════════════════════════════════
-// PERSONAL FINANCE
-// ═══════════════════════════════════════════
-function PersonalFinance(){
-  const now=new Date();
-  const [mes,setMes]=useState(now.getMonth());
-  const [ano,setAno]=useState(now.getFullYear());
-  const [entries,setEntries]=useState(()=>LS.get("orion_personal_entries",[]));
-  const [form,setForm]=useState({tipo:"despesa",desc:"",valor:"",cat:CATS[0]});
-  const [showForm,setShowForm]=useState(false);
+function openEmp(id){
+  curEmp=id;
+  const e=EMPS[id];
+  clearSb();
+  const sbEl=document.getElementById('sb-'+id)||document.getElementById('sb-gp');
+  if(sbEl)sbEl.classList.add('active');
+  document.getElementById('drive-lbl').textContent=e.nome+' Drive';
+  curTab='KPIs';
+  showPage('ws');
+  renderWS();
+}
+function addEmpresa(){alert('Funcionalidade em desenvolvimento')}
+function openDrive(){window.open(curEmp?EMPS[curEmp]?.drive:'https://drive.google.com','_blank')}
 
-  const save=list=>{setEntries(list);LS.set("orion_personal_entries",list);};
-  const key=`${ano}-${mes}`;
-  const filtered=entries.filter(e=>e.key===key);
-  const totalR=filtered.filter(e=>e.tipo==="receita").reduce((s,e)=>s+e.valor,0);
-  const totalD=filtered.filter(e=>e.tipo==="despesa").reduce((s,e)=>s+e.valor,0);
-  const catTotals={};CATS.forEach(c=>{catTotals[c]=filtered.filter(e=>e.tipo==="despesa"&&e.cat===c).reduce((s,e)=>s+e.valor,0);});
-  const catMax=Math.max(...Object.values(catTotals),1);
+// ── WORKSPACE ──────────────────────────────────────────────────────────────
+const WS_TABS=['KPIs','OKRs','Tarefas','Contratos','Riscos','Decisões','CRM','Arquivos'];
 
-  const add=()=>{
-    const v=parseFloat((form.valor||"").toString().replace(",","."));
-    if(!form.desc.trim()||isNaN(v)||v<=0)return;
-    save([...entries,{id:Date.now(),key,tipo:form.tipo,desc:form.desc.trim(),valor:v,cat:form.cat,date:new Date().toLocaleDateString("pt-BR")}]);
-    setForm(f=>({...f,desc:"",valor:""}));setShowForm(false);
-  };
-
-  return(
-    <div className="fade-in">
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
-        <div><div style={S.lbl}>Gestão Pessoal</div><div style={{fontSize:18,fontWeight:700}}>Finanças Pessoais</div></div>
-        <div style={{display:"flex",gap:8}}>
-          <select value={mes} onChange={e=>setMes(+e.target.value)} style={{...S.sel,width:"auto"}}>{MESES_FULL.map((m,i)=><option key={i} value={i}>{m}</option>)}</select>
-          <select value={ano} onChange={e=>setAno(+e.target.value)} style={{...S.sel,width:"auto"}}>{[2023,2024,2025,2026,2027].map(y=><option key={y}>{y}</option>)}</select>
-          <button style={S.btn} onClick={()=>setShowForm(v=>!v)}>+ Lançamento</button>
-        </div>
+function renderWS(){
+  const e=EMPS[curEmp];
+  // emp tabs
+  const et=document.getElementById('ws-emp-tabs');
+  et.innerHTML=Object.values(EMPS).map(x=>`
+    <button onclick="openEmp('${x.id}')"
+      style="padding:8px 16px;border-radius:10px;border:1px solid ${curEmp===x.id?x.cor:'rgba(255,255,255,0.07)'};
+      background:${curEmp===x.id?x.cor+'18':'transparent'};color:${curEmp===x.id?x.cor:'var(--tx3)'};
+      cursor:pointer;font-size:12px;font-weight:700;white-space:nowrap;transition:all .15s;
+      font-family:'Syne',sans-serif">
+      ${x.sigla} — ${x.nome}
+    </button>`).join('');
+  // header
+  const wh=document.getElementById('ws-header');
+  const cresc=e.cresc;
+  wh.innerHTML=`
+    <div style="display:flex;align-items:center;gap:14px">
+      <div class="ws-sig" style="background:rgba(var(--emp-rgb),.12);color:${e.cor}" style="--emp-rgb:${e.rgb}">${e.sigla}</div>
+      <div>
+        <div class="ws-n">${e.nome}</div>
+        <div class="ws-d">${e.desc}</div>
       </div>
-
-      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12,marginBottom:20}}>
-        {[{l:"Receitas",v:totalR,c:"#22c55e"},{l:"Despesas",v:totalD,c:"#ef4444"},{l:"Saldo",v:totalR-totalD,c:totalR-totalD>=0?"#22c55e":"#ef4444"}].map((k,i)=>(
-          <div key={i} style={S.card}>
-            <div style={{fontSize:11,color:"#64748b",marginBottom:4}}>{k.l} — {MESES_FULL[mes]}</div>
-            <div style={{fontSize:22,fontWeight:700,color:k.c}}>{fmt(k.v)}</div>
-          </div>
-        ))}
-      </div>
-
-      {CATS.filter(c=>catTotals[c]>0).length>0&&(
-        <div style={{...S.card,marginBottom:20}}>
-          <div style={S.lbl}>Despesas por Categoria</div>
-          {CATS.filter(c=>catTotals[c]>0).map((c,i)=>(
-            <div key={c} style={{marginBottom:8}}>
-              <div style={{display:"flex",justifyContent:"space-between",marginBottom:3}}>
-                <span style={{fontSize:12,color:"#94a3b8"}}>{c}</span>
-                <span style={{fontSize:12,color:"#f59e0b",fontWeight:600}}>{fmt(catTotals[c])}</span>
-              </div>
-              <div style={{height:4,background:"#0f172a",borderRadius:2}}>
-                <div style={{height:"100%",width:`${(catTotals[c]/catMax)*100}%`,background:"#f59e0b",borderRadius:2,transition:"width .4s"}}/>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {showForm&&(
-        <div style={{...S.card,marginBottom:16}}>
-          <div style={{display:"flex",gap:8,marginBottom:10}}>
-            {["receita","despesa"].map(t=>(
-              <button key={t} onClick={()=>setForm(f=>({...f,tipo:t}))} style={{flex:1,background:form.tipo===t?"linear-gradient(135deg,#1d4ed8,#3b82f6)":"#0f172a",border:`1px solid ${form.tipo===t?"#3b82f6":"#1e293b"}`,borderRadius:8,padding:"8px",color:form.tipo===t?"#fff":"#475569",fontSize:13,fontWeight:600,cursor:"pointer",textTransform:"capitalize"}}>{t}</button>
-            ))}
-          </div>
-          <input style={{...S.inp,marginBottom:10}} placeholder="Descrição..." value={form.desc} onChange={e=>setForm(f=>({...f,desc:e.target.value}))}/>
-          <div style={{display:"flex",gap:8,marginBottom:10}}>
-            <input style={S.inp} placeholder="Valor R$..." value={form.valor} onChange={e=>setForm(f=>({...f,valor:e.target.value}))} onKeyDown={e=>e.key==="Enter"&&add()}/>
-            {form.tipo==="despesa"&&<select value={form.cat} onChange={e=>setForm(f=>({...f,cat:e.target.value}))} style={{...S.sel,flex:1}}>{CATS.map(c=><option key={c}>{c}</option>)}</select>}
-          </div>
-          <div style={{display:"flex",gap:8,justifyContent:"flex-end"}}><button style={S.ghost} onClick={()=>setShowForm(false)}>Cancelar</button><button style={S.btn} onClick={add}>Salvar</button></div>
-        </div>
-      )}
-
-      {filtered.length===0&&!showForm&&<div style={{fontSize:13,color:"#334155",textAlign:"center",padding:"30px 0"}}>Nenhum lançamento em {MESES_FULL[mes]} {ano}</div>}
-      {filtered.map((e,i)=>(
-        <div key={e.id||i} style={{...S.card,display:"flex",alignItems:"center",gap:10,marginBottom:8,padding:"10px 14px"}}>
-          <div style={{width:7,height:7,borderRadius:"50%",background:e.tipo==="receita"?"#22c55e":"#ef4444",flexShrink:0}}/>
-          <div style={{flex:1}}>
-            <div style={{fontSize:13,color:"#f1f5f9"}}>{e.desc}</div>
-            {e.tipo==="despesa"&&<span style={{fontSize:10,color:"#64748b",background:"#0f172a",padding:"1px 6px",borderRadius:4}}>{e.cat}</span>}
-          </div>
-          <span style={{fontSize:13,fontWeight:700,color:e.tipo==="receita"?"#22c55e":"#ef4444"}}>{e.tipo==="receita"?"+":"-"}{fmt(e.valor)}</span>
-          <button style={S.del} onClick={()=>save(entries.filter((_,j)=>j!==i))}>✕</button>
-        </div>
-      ))}
     </div>
-  );
+    <div style="display:flex;gap:28px">
+      ${e.id!=='gp'?`
+      <div class="ws-kn"><div class="nl">Faturamento</div><div class="nv" style="color:${e.cor}">${fmt(e.fat)}</div></div>
+      <div class="ws-kn"><div class="nl">Resultado</div><div class="nv txt-green">${fmt(e.result)}</div></div>
+      <div class="ws-kn"><div class="nl">Crescimento</div><div class="nv" style="color:${cresc>=0?'var(--green)':'var(--red)'}">${cresc>=0?'+':''}${cresc}%</div></div>
+      <div class="ws-kn"><div class="nl">Health Score</div><div class="nv" style="color:${e.cor}">${e.score}</div></div>
+      `:`
+      <div class="ws-kn"><div class="nl">Patrimônio</div><div class="nv" style="color:${e.cor}">R$ 1,2M</div></div>
+      <div class="ws-kn"><div class="nl">Renda</div><div class="nv txt-green">R$ 52k/mês</div></div>
+      <div class="ws-kn"><div class="nl">Poupança</div><div class="nv txt-green">42%</div></div>
+      `}
+    </div>`;
+  // tabs
+  const wt=document.getElementById('ws-tabs');
+  wt.innerHTML=WS_TABS.map(t=>`<button class="tab ${curTab===t?'active':''}" onclick="switchTab('${t}')">${t}</button>`).join('');
+  renderTab();
 }
 
-// ═══════════════════════════════════════════
-// COMPANY CARD
-// ═══════════════════════════════════════════
-function CompanyCard({name,hov,logoUrl,onSelect,onDelete,onLogoUpload,onBriefing,isActive}){
-  const ref=useRef();
-  const kpis=LS.get("orion_kpi_"+name,{fat:0,custo:0,meta:0,clientes:0,inadimplencia:0,caixa:0,pipeline:0});
-  const score=calcHealth(kpis);
-  const color=healthColor(score);
-  const pct=kpis.meta>0?Math.min((kpis.fat/kpis.meta)*100,100):0;
-
-  return(
-    <div onClick={onSelect} style={{background:isActive?"#172554":hov?"#1e293b":"#131f35",border:`1px solid ${isActive?"#3b82f6":hov?"#334155":"#1e293b"}`,borderRadius:12,padding:"14px 16px",cursor:"pointer",transition:"all .15s",position:"relative",borderLeft:isActive?"3px solid #3b82f6":hov?"3px solid #334155":"3px solid transparent"}}>
-      <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
-        <div onClick={e=>{e.stopPropagation();ref.current.click();}} style={{width:36,height:36,borderRadius:10,background:"#0f172a",border:"1px solid #1e293b",display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden",cursor:"pointer",flexShrink:0}}>
-          {logoUrl?<img src={logoUrl} style={{width:"100%",height:"100%",objectFit:"contain"}} alt=""/>:<span style={{fontSize:9,color:"#334155"}}>LOGO</span>}
-        </div>
-        <div style={{flex:1,minWidth:0}}>
-          <div style={{fontSize:13,fontWeight:700,color:isActive?"#93c5fd":"#f1f5f9",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{name}</div>
-          <div style={{fontSize:10,color,marginTop:1}}>{healthLabel(score)} · {score}</div>
-        </div>
-      </div>
-      <div style={{height:3,background:"#0f172a",borderRadius:2,marginBottom:8}}>
-        <div style={{height:"100%",width:`${pct}%`,background:color,borderRadius:2,transition:"width .5s"}}/>
-      </div>
-      {kpis.fat>0&&<div style={{fontSize:11,fontWeight:600,color:isActive?"#60a5fa":"#64748b"}}>{fmt(kpis.fat)}</div>}
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:6}}>
-        <button style={{background:isActive?"#1d4ed822":"#0f172a",border:`1px solid ${isActive?"#3b82f633":"#1e293b"}`,borderRadius:6,padding:"3px 8px",color:isActive?"#60a5fa":"#475569",fontSize:10,cursor:"pointer"}} onClick={e=>{e.stopPropagation();onBriefing();}}>BRIEF</button>
-        <button style={{...S.del,fontSize:12}} onClick={e=>{e.stopPropagation();onDelete();}}>✕</button>
-      </div>
-      <input ref={ref} type="file" accept="image/*" style={{display:"none"}} onClick={e=>e.stopPropagation()} onChange={e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>onLogoUpload(ev.target.result);r.readAsDataURL(f);e.target.value="";}}/>
-    </div>
-  );
+function switchTab(t){
+  curTab=t;
+  document.querySelectorAll('.tab').forEach(el=>{el.classList.toggle('active',el.textContent===t)});
+  renderTab();
 }
 
-// ═══════════════════════════════════════════
-// MAIN APP
-// ═══════════════════════════════════════════
-function App(){
-  const [companies,setCompanies]=useState(()=>LS.get("orion_companies",INIT_COMPANIES));
-  const [logoMap,setLogoMap]=useState(()=>LS.get("orion_logos",{}));
-  const [areas,setAreas]=useState(()=>LS.get("orion_areas",INIT_AREAS));
-  const [selCompany,setSelCompany]=useState(null);
-  const [selArea,setSelArea]=useState(null);
-  const [screen,setScreen]=useState("home");
-  const [briefingCompany,setBriefingCompany]=useState(null);
-  const [showAddC,setShowAddC]=useState(false);
-  const [newC,setNewC]=useState("");
-  const [hovC,setHovC]=useState(null);
-  const [showConsolidated,setShowConsolidated]=useState(false);
-  const [sidebarTab,setSidebarTab]=useState("empresas");
+function renderTab(){
+  const e=EMPS[curEmp];
+  const c=document.getElementById('ws-content');
+  const co=e.cor;
 
-  useEffect(()=>{LS.set("orion_companies",companies);},[companies]);
-  useEffect(()=>{LS.set("orion_logos",logoMap);},[logoMap]);
-  useEffect(()=>{LS.set("orion_areas",areas);},[areas]);
-
-  const navigate=(sc,company,area)=>{
-    setScreen(sc);
-    if(company!==undefined)setSelCompany(company);
-    if(area!==undefined)setSelArea(area);
-  };
-
-  const selectCompany=c=>{setSelCompany(c);setScreen("workspace");};
-
-  const addCompany=()=>{
-    const n=newC.trim();
-    if(n&&!companies.includes(n)){setCompanies([...companies,n]);}
-    setNewC("");setShowAddC(false);
-  };
-
-  const driveUrl=selCompany?DRIVE_LINKS[selCompany]||"https://drive.google.com":"https://drive.google.com";
-
-  return(
-    <div style={{display:"flex",height:"100vh",background:"var(--bg-base)",overflow:"hidden"}}>
-
-      {/* ══════════════════════ SIDEBAR ══════════════════════ */}
-      <div style={{width:220,background:"var(--bg-sidebar)",borderRight:"1px solid var(--border)",display:"flex",flexDirection:"column",flexShrink:0,overflow:"hidden"}}>
-
-        {/* Logo ORION */}
-        <div style={{padding:"16px 14px 12px",borderBottom:"1px solid #1e293b"}}>
-          <div style={{display:"flex",alignItems:"center",gap:10,cursor:"pointer"}} onClick={()=>{setSelCompany(null);setScreen("home");}}>
-            <OrionLogo size={38}/>
-            <div>
-              <div style={{fontSize:18,fontWeight:800,color:"#f1f5f9",letterSpacing:"-0.5px",lineHeight:1}}>ORION</div>
-              <div style={{fontSize:8,color:"#334155",letterSpacing:"2px",marginTop:2}}>GESTÃO EXECUTIVA</div>
-            </div>
-          </div>
+  if(curTab==='KPIs'){
+    c.innerHTML=`<div class="kpi-grid">${e.kpis.map(k=>`
+      <div class="kpi-card">
+        <div class="kpi-icon">${k.i}</div>
+        <div class="lbl">${k.l}</div>
+        <div class="val-sm" style="color:${co}">${k.v}</div>
+      </div>`).join('')}</div>`;
+  }
+  else if(curTab==='OKRs'){
+    c.innerHTML=e.okrs.map(o=>`
+      <div class="okr-item">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span style="font-size:14px;font-weight:500">${o.o}</span>
+          <span style="font-family:'Syne',sans-serif;font-size:17px;font-weight:900;color:${co}">${o.p}%</span>
         </div>
-
-        {/* Search */}
-        <div style={{padding:"10px 12px",borderBottom:"1px solid #1e293b"}}>
-          <div style={{background:"#0f172a",border:"1px solid #1e293b",borderRadius:8,padding:"7px 12px",fontSize:12,color:"#334155",cursor:"pointer",display:"flex",alignItems:"center",gap:8}} onClick={()=>{}}>
-            <span>🔍</span> Filtrar empresas...
-          </div>
+        <div class="pbar"><div class="pfill" style="width:${o.p}%;background:${co}"></div></div>
+      </div>`).join('');
+  }
+  else if(curTab==='Tarefas'){
+    c.innerHTML=e.tarefas.map(t=>`
+      <div class="task-item ${t.k?'done':t.p}">
+        <span style="font-size:15px">${t.k?'✅':t.p==='alta'?'🔴':'🟡'}</span>
+        <span style="flex:1;font-size:14px;font-weight:500;${t.k?'text-decoration:line-through;color:var(--tx3)':''}">${t.t}</span>
+        ${!t.k?`<span class="ptag" style="color:${t.p==='alta'?'var(--red)':'var(--amber)'};background:${t.p==='alta'?'rgba(239,68,68,.15)':'rgba(245,158,11,.15)'}">${t.p}</span>`:''}
+      </div>`).join('');
+  }
+  else if(curTab==='Contratos'){
+    c.innerHTML=e.contratos.map(ct=>{
+      const sc=ct.s==='ativo'?'var(--green)':ct.s==='inadim'?'var(--red)':'var(--amber)';
+      const sl=ct.s==='ativo'?'Ativo':ct.s==='inadim'?'Inadimplente':'Negociação';
+      return `<div class="contract-item">
+        <div>
+          <div style="font-size:14px;font-weight:600;margin-bottom:3px">${ct.n}</div>
+          <div style="font-size:12px;color:var(--tx3)">Vence: ${ct.d}</div>
         </div>
-
-        {/* Label */}
-        <div style={{padding:"12px 14px 6px"}}>
-          <div style={{fontSize:9,letterSpacing:"2px",color:"#334155",fontWeight:600}}>PORTFÓLIO</div>
+        <div style="text-align:right;display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+          <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:${co}">${ct.v}</div>
+          <span class="stag" style="color:${sc};background:${sc}18">${sl}</span>
         </div>
-
-        {/* Companies list */}
-        <div className="scroll-y" style={{flex:1,padding:"0 10px"}}>
-          {companies.map(c=>(
-            <div key={c} onMouseEnter={()=>setHovC(c)} onMouseLeave={()=>setHovC(null)}>
-              <CompanyCard
-                name={c}
-                hov={hovC===c}
-                isActive={selCompany===c&&screen==="workspace"}
-                logoUrl={logoMap[c]}
-                onSelect={()=>selectCompany(c)}
-                onDelete={()=>{setCompanies(companies.filter(x=>x!==c));if(selCompany===c){setSelCompany(null);setScreen("home");}}}
-                onLogoUpload={url=>setLogoMap(p=>({...p,[c]:url}))}
-                onBriefing={()=>setBriefingCompany(c)}
-              />
-              <div style={{height:4}}/>
-            </div>
-          ))}
-
-          {/* Add company */}
-          {showAddC?(
-            <div style={{marginBottom:8}}>
-              <input autoFocus style={{...S.inp,marginBottom:6,fontSize:13}} placeholder="Nome da empresa..." value={newC} onChange={e=>setNewC(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addCompany()}/>
-              <div style={{display:"flex",gap:6}}>
-                <button style={{...S.btn,flex:1,fontSize:12,padding:"7px"}} onClick={addCompany}>Adicionar</button>
-                <button style={{...S.ghost,fontSize:12,padding:"7px 12px"}} onClick={()=>{setShowAddC(false);setNewC("");}}>✕</button>
-              </div>
-            </div>
-          ):(
-            <div onClick={()=>setShowAddC(true)} style={{border:"1px dashed #1e293b",borderRadius:10,padding:"10px 12px",cursor:"pointer",display:"flex",alignItems:"center",gap:8,color:"#334155",fontSize:12,marginBottom:8,transition:"all .15s"}} onMouseEnter={e=>{e.currentTarget.style.borderColor="#334155";e.currentTarget.style.color="#475569";}} onMouseLeave={e=>{e.currentTarget.style.borderColor="#1e293b";e.currentTarget.style.color="#334155";}}>
-              <span style={{fontSize:16}}>+</span> Nova empresa
-            </div>
-          )}
-
-          {/* Separator */}
-          <div style={{height:1,background:"#1e293b",margin:"8px 0"}}/>
-
-          {/* Gestão Pessoal */}
-          <div onClick={()=>{setSelCompany(null);setScreen("personal");}} style={{background:screen==="personal"?"#172554":"transparent",border:`1px solid ${screen==="personal"?"#1e3a7a":"transparent"}`,borderRadius:10,padding:"10px 12px",cursor:"pointer",display:"flex",alignItems:"center",gap:8,color:screen==="personal"?"#60a5fa":"#475569",fontSize:12,marginBottom:4,transition:"all .15s"}}>
-            <span>👤</span> Gestão Pessoal
-          </div>
-
-          {/* Visão CEO */}
-          <div onClick={()=>{setSelCompany(null);setScreen("ceo");}} style={{background:screen==="ceo"?"#172554":"transparent",border:`1px solid ${screen==="ceo"?"#1e3a7a":"transparent"}`,borderRadius:10,padding:"10px 12px",cursor:"pointer",display:"flex",alignItems:"center",gap:8,color:screen==="ceo"?"#60a5fa":"#475569",fontSize:12,marginBottom:4,transition:"all .15s"}}>
-            <span>📊</span> Visão CEO
-          </div>
-
-          <div style={{height:8}}/>
+      </div>`;
+    }).join('');
+  }
+  else if(curTab==='Riscos'){
+    c.innerHTML=e.riscos.map(r=>{
+      const nc=r.n==='alto'?'var(--red)':r.n==='medio'?'var(--amber)':'var(--green)';
+      return `<div class="risk-item">
+        <div style="display:flex;align-items:center;gap:10px;flex:1">
+          <span>${r.n==='alto'?'🔴':r.n==='medio'?'🟡':'🟢'}</span>
+          <span style="font-size:14px;font-weight:500">${r.r}</span>
         </div>
-
-        {/* MAXXXI na sidebar */}
-        <div style={{padding:"10px 12px",borderTop:"1px solid #1e293b"}}>
-          <div onClick={()=>{if(selCompany)navigate("workspace",selCompany,"maxxxi");else navigate("maxxxi_global",null,null);}} style={{background:"#172554",border:"1px solid #1e3a7a",borderRadius:10,padding:"10px 12px",cursor:"pointer",display:"flex",alignItems:"center",gap:10,transition:"all .15s"}}>
-            <div style={{width:28,height:28,borderRadius:8,background:"#1d4ed8",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-              <MaxxxiBot size={16} active={true}/>
-            </div>
-            <div>
-              <div style={{fontSize:12,fontWeight:700,color:"#93c5fd"}}>MAXXXI</div>
-              <div style={{fontSize:9,color:"#3b82f6"}}>Agente IA · Online</div>
-            </div>
-            <div style={{marginLeft:"auto",width:7,height:7,borderRadius:"50%",background:"#22c55e",boxShadow:"0 0 6px #22c55e"}}/>
-          </div>
+        <span class="stag" style="color:${nc};background:${nc}18">${r.n}</span>
+      </div>`;
+    }).join('');
+  }
+  else if(curTab==='Decisões'){
+    c.innerHTML=e.decisoes.map(d=>`
+      <div class="dec-item">
+        <div style="display:flex;align-items:center;gap:10px;flex:1">
+          <span>⚡</span>
+          <span style="font-size:14px;font-weight:500">${d.d}</span>
         </div>
+        <span style="font-size:12px;color:var(--tx3);flex-shrink:0">${d.dt}</span>
+      </div>`).join('');
+  }
+  else if(curTab==='CRM'){
+    if(!e.crm||e.crm.length===0){c.innerHTML='<div style="color:var(--tx3);font-size:14px;padding:20px">Nenhum dado de CRM cadastrado.</div>';return}
+    c.innerHTML=`<div class="crm-wrap">${e.crm.map(col=>`
+      <div class="crm-col">
+        <div class="crm-hdr" style="background:${col.cor}18;color:${col.cor}">
+          ${col.fase} <span style="background:rgba(255,255,255,.1);padding:1px 7px;border-radius:99px;font-size:10px">${col.itens.length}</span>
+        </div>
+        ${col.itens.map(it=>`
+          <div class="crm-card">
+            <div class="crm-cname">${it.n}</div>
+            <div class="crm-cv">${it.v}</div>
+          </div>`).join('')}
+        <div style="padding:8px;border:1px dashed var(--br);border-radius:var(--r2);text-align:center;font-size:12px;color:var(--tx3);cursor:pointer">+ Adicionar</div>
+      </div>`).join('')}</div>`;
+  }
+  else if(curTab==='Arquivos'){
+    const key='files_'+curEmp;
+    const files=JSON.parse(localStorage.getItem('orion_'+key)||'[]');
+    c.innerHTML=`
+      <div class="file-zone" onclick="document.getElementById('file-inp').click()">
+        <div style="font-size:32px;margin-bottom:10px">📁</div>
+        <div style="font-size:15px;font-weight:600;margin-bottom:6px">Arquivo Digital — ${e.nome}</div>
+        <div style="font-size:13px;color:var(--tx3);margin-bottom:14px">Arraste ou clique para fazer upload</div>
+        <div style="font-size:12px;color:var(--tx3)">PDF · Word · Excel · Imagem · CSV · TXT</div>
+        <input type="file" id="file-inp" multiple style="display:none" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.csv,.txt" onchange="handleFiles(event)">
       </div>
-
-      {/* ══════════════════════ MAIN AREA ══════════════════════ */}
-      <div style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden"}}>
-
-        {/* HEADER */}
-        <div style={{background:"#0a1021",borderBottom:"1px solid #1e293b",padding:"12px 28px",display:"flex",alignItems:"center",gap:12,flexShrink:0}}>
-
-          {/* Breadcrumb */}
-          <div style={{flex:1,display:"flex",alignItems:"center",gap:6,fontSize:13}}>
-            <span style={{cursor:"pointer",color:"#475569",fontWeight:500}} onClick={()=>{setSelCompany(null);setScreen("home");}}>ORION</span>
-            {selCompany&&<><span style={{color:"#1e293b"}}>›</span><span style={{cursor:screen==="workspace"?"pointer":"default",color:screen==="workspace"?"#60a5fa":"#94a3b8",fontWeight:600}}>{selCompany}</span></>}
-            {screen==="personal"&&<><span style={{color:"#1e293b"}}>›</span><span style={{color:"#94a3b8",fontWeight:600}}>Gestão Pessoal</span></>}
-            {screen==="ceo"&&<><span style={{color:"#1e293b"}}>›</span><span style={{color:"#94a3b8",fontWeight:600}}>Visão CEO</span></>}
-            {screen==="maxxxi_global"&&<><span style={{color:"#1e293b"}}>›</span><span style={{color:"#60a5fa",fontWeight:600}}>MAXXXI IA</span></>}
-          </div>
-
-          {/* Faixa KPIs rápidos da empresa ativa */}
-          {selCompany&&screen==="workspace"&&(()=>{
-            const k=LS.get("orion_kpi_"+selCompany,{fat:0,custo:0,meta:0,clientes:0,inadimplencia:0,caixa:0,pipeline:0});
-            const score=calcHealth(k);
-            return(
-              <div style={{display:"flex",alignItems:"center",gap:1,background:"#0f172a",borderRadius:10,border:"1px solid #1e293b",padding:"6px 16px",gap:16}}>
-                {[
-                  {l:"Fat",v:fmt(k.fat),c:"#f1f5f9"},
-                  {l:"Result",v:fmt(k.fat-k.custo),c:k.fat-k.custo>=0?"#22c55e":"#ef4444"},
-                  {l:"Score",v:score,c:healthColor(score)},
-                  {l:"Meta",v:k.meta>0?`${((k.fat/k.meta)*100).toFixed(0)}%`:"—",c:k.meta>0&&k.fat/k.meta>=0.8?"#22c55e":"#f59e0b"},
-                ].map((m,i)=>(
-                  <div key={i} style={{textAlign:"center"}}>
-                    <div style={{fontSize:14,fontWeight:700,color:m.c,lineHeight:1}}>{m.v}</div>
-                    <div style={{fontSize:9,color:"#334155",marginTop:2}}>{m.l}</div>
-                  </div>
-                ))}
-              </div>
-            );
-          })()}
-
-          {/* Drive dinâmico */}
-          <a href={driveUrl} target="_blank" rel="noopener noreferrer" style={{display:"flex",alignItems:"center",gap:8,background:"#1e293b",border:"1px solid #263347",borderRadius:9,padding:"8px 14px",color:"#94a3b8",fontSize:12,textDecoration:"none",letterSpacing:"0.5px",transition:"all .15s"}}>
-            <svg width="14" height="14" viewBox="0 0 87.3 78" xmlns="http://www.w3.org/2000/svg">
-              <path d="m6.6 66.85 3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3l13.75-23.8h-27.5c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/>
-              <path d="m43.65 25-13.75-23.8c-1.35.8-2.5 1.9-3.3 3.3l-25.4 44a9.06 9.06 0 0 0 -1.2 4.5h27.5z" fill="#00ac47"/>
-              <path d="m73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25c.8-1.4 1.2-2.95 1.2-4.5h-27.502l5.852 11.5z" fill="#ea4335"/>
-              <path d="m43.65 25 13.75-23.8c-1.35-.8-2.9-1.2-4.5-1.2h-18.5c-1.6 0-3.15.45-4.5 1.2z" fill="#00832d"/>
-              <path d="m59.8 53h-32.3l-13.75 23.8c1.35.8 2.9 1.2 4.5 1.2h50.8c1.6 0 3.15-.45 4.5-1.2z" fill="#2684fc"/>
-              <path d="m73.4 26.5-12.7-22c-.8-1.4-1.95-2.5-3.3-3.3l-13.75 23.8 16.15 27h27.45c0-1.55-.4-3.1-1.2-4.5z" fill="#ffba00"/>
-            </svg>
-            {selCompany?"Drive · "+selCompany:"ORION Drive"}
-          </a>
-
-          <CommandBar companies={companies} areas={areas} onNavigate={navigate}/>
-          <AlertsBell companies={companies}/>
-          <UserProfile/>
-        </div>
-
-        {/* CONTENT AREA */}
-        <div className="scroll-y" style={{flex:1,padding:"24px 28px"}}>
-
-          {/* HOME */}
-          {screen==="home"&&(
-            <div className="fade-in">
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end",marginBottom:24}}>
-                <div>
-                  <div style={{fontSize:11,letterSpacing:"3px",color:"#334155",marginBottom:6}}>BOM DIA, MAXWELL</div>
-                  <div style={{fontSize:26,fontWeight:800,color:"#f1f5f9",letterSpacing:"-0.5px"}}>Qual empresa vamos trabalhar agora?</div>
-                  <div style={{fontSize:13,color:"#475569",marginTop:4}}>{todayFmt}</div>
-                </div>
-                <button onClick={()=>setScreen("ceo")} style={{...S.ghost,fontSize:12,display:"flex",alignItems:"center",gap:8}}>
-                  <span>📊</span> Visão CEO Consolidada
-                </button>
-              </div>
-
-              {/* Resumo rápido do ecossistema */}
-              {(()=>{
-                const allData=companies.map(c=>({c,k:LS.get("orion_kpi_"+c,{fat:0,custo:0,meta:0,clientes:0,inadimplencia:0,caixa:0,pipeline:0})}));
-                const totalFat=allData.reduce((s,d)=>s+d.k.fat,0);
-                const totalRes=allData.reduce((s,d)=>s+(d.k.fat-d.k.custo),0);
-                const avgScore=Math.round(allData.reduce((s,d)=>s+calcHealth(d.k),0)/allData.length);
-                return(
-                  <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12,marginBottom:28}}>
-                    {[
-                      {l:"Faturamento do Ecossistema",v:fmt(totalFat),c:"#3b82f6",sub:"Total consolidado"},
-                      {l:"Resultado Líquido",v:fmt(totalRes),c:totalRes>=0?"#22c55e":"#ef4444",sub:"Receita − Custo"},
-                      {l:"Health Score Médio",v:avgScore,c:healthColor(avgScore),sub:healthLabel(avgScore)+" · Ecossistema"},
-                    ].map((k,i)=>(
-                      <div key={i} style={{...S.card,background:"#131f35",borderColor:"#1e3a5f"}}>
-                        <div style={{fontSize:11,color:"#475569",marginBottom:4}}>{k.l}</div>
-                        <div style={{fontSize:24,fontWeight:800,color:k.c}}>{k.v}</div>
-                        <div style={{fontSize:11,color:"#334155",marginTop:4}}>{k.sub}</div>
-                      </div>
-                    ))}
-                  </div>
-                );
-              })()}
-
-              {/* Grid empresas */}
-              <div style={{fontSize:10,letterSpacing:"2px",color:"#334155",marginBottom:12}}>SELECIONE UMA EMPRESA</div>
-              <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:12}}>
-                {companies.map(c=>(
-                  <div key={c} style={{...S.card,cursor:"pointer",transition:"all .15s",background:hovC===c?"#1e293b":"#131f35",borderColor:hovC===c?"#334155":"#1a2540"}} onClick={()=>selectCompany(c)} onMouseEnter={()=>setHovC(c)} onMouseLeave={()=>setHovC(null)}>
-                    {(()=>{
-                      const k=LS.get("orion_kpi_"+c,{fat:0,custo:0,meta:0,clientes:0,inadimplencia:0,caixa:0,pipeline:0});
-                      const score=calcHealth(k);
-                      const color=healthColor(score);
-                      const pct=k.meta>0?Math.min((k.fat/k.meta)*100,100):0;
-                      const margem=k.fat>0?((k.fat-k.custo)/k.fat*100).toFixed(1):null;
-                      const metaStatus=k.meta>0&&k.fat/k.meta>=1?"#22c55e":k.meta>0&&k.fat/k.meta>=0.8?"#f59e0b":"#ef4444";
-                      return(
-                        <>
-                          <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:14}}>
-                            <div style={{width:44,height:44,borderRadius:12,background:"#0f172a",border:"1px solid #1e293b",display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden",flexShrink:0}}>
-                              {logoMap[c]?<img src={logoMap[c]} style={{width:"100%",height:"100%",objectFit:"contain"}} alt=""/>:<span style={{fontSize:10,color:"#334155"}}>LOGO</span>}
-                            </div>
-                            <div style={{flex:1}}>
-                              <div style={{fontSize:16,fontWeight:700,color:"#f1f5f9"}}>{c}</div>
-                              <div style={{fontSize:11,color,marginTop:2}}>{healthLabel(score)}</div>
-                            </div>
-                            <HealthBadge score={score} size={32}/>
-                          </div>
-                          <div style={{height:4,background:"#0f172a",borderRadius:2,marginBottom:12}}>
-                            <div style={{height:"100%",width:`${pct}%`,background:color,borderRadius:2,transition:"width .5s"}}/>
-                          </div>
-                          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8}}>
-                            <div style={{background:"#0f172a",borderRadius:8,padding:"8px 10px"}}>
-                              <div style={{fontSize:9,color:"#334155",marginBottom:2}}>Faturamento</div>
-                              <div style={{fontSize:13,fontWeight:700,color:"#f1f5f9"}}>{fmt(k.fat)}</div>
-                            </div>
-                            <div style={{background:"#0f172a",borderRadius:8,padding:"8px 10px"}}>
-                              <div style={{fontSize:9,color:"#334155",marginBottom:2}}>Margem</div>
-                              <div style={{fontSize:13,fontWeight:700,color:margem&&parseFloat(margem)>0?"#22c55e":"#ef4444"}}>{margem?`${margem}%`:"—"}</div>
-                            </div>
-                            <div style={{background:"#0f172a",borderRadius:8,padding:"8px 10px"}}>
-                              <div style={{fontSize:9,color:"#334155",marginBottom:2}}>% Meta</div>
-                              <div style={{fontSize:13,fontWeight:700,color:k.meta>0?metaStatus:"#475569"}}>{k.meta>0?`${((k.fat/k.meta)*100).toFixed(0)}%`:"—"}</div>
-                            </div>
-                          </div>
-                          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:12}}>
-                            <button style={{background:"#172554",border:"1px solid #1e3a7a",borderRadius:7,padding:"4px 12px",color:"#60a5fa",fontSize:11,cursor:"pointer"}} onClick={e=>{e.stopPropagation();setBriefingCompany(c);}}>BRIEF</button>
-                            <span style={{fontSize:11,color:"#334155"}}>Clique para abrir →</span>
-                          </div>
-                        </>
-                      );
-                    })()}
-                  </div>
-                ))}
-
-                {/* Gestão Pessoal */}
-                <div style={{...S.card,cursor:"pointer",background:hovC==="personal"?"#1e293b":"#131f35",borderColor:hovC==="personal"?"#334155":"#1a2540",borderStyle:"dashed"}} onClick={()=>setScreen("personal")} onMouseEnter={()=>setHovC("personal")} onMouseLeave={()=>setHovC(null)}>
-                  <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:8}}>
-                    <div style={{width:44,height:44,borderRadius:12,background:"#172554",border:"1px solid #1e3a7a",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20}}>👤</div>
-                    <div>
-                      <div style={{fontSize:16,fontWeight:700,color:"#f1f5f9"}}>Gestão Pessoal</div>
-                      <div style={{fontSize:11,color:"#475569"}}>Finanças · Receitas · Despesas</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* WORKSPACE */}
-          {screen==="workspace"&&selCompany&&(
-            <Workspace company={selCompany} area={selArea} companies={companies}/>
-          )}
-
-          {/* CEO VIEW */}
-          {screen==="ceo"&&(
-            <ConsolidatedView companies={companies} onSelectCompany={selectCompany}/>
-          )}
-
-          {/* PERSONAL */}
-          {screen==="personal"&&<PersonalFinance/>}
-
-          {/* MAXXXI GLOBAL */}
-          {screen==="maxxxi_global"&&(
-            <div style={{height:"calc(100vh - 120px)",display:"flex",flexDirection:"column",background:"#0f172a",borderRadius:12,border:"1px solid #1e293b",overflow:"hidden"}}>
-              <MaxxxiAgent company={null} area={null} companies={companies}/>
-            </div>
-          )}
-        </div>
-
-        {/* FOOTER */}
-        <div style={{padding:"8px 28px",borderTop:"1px solid #0a1021",display:"flex",justifyContent:"space-between",alignItems:"center",flexShrink:0,background:"#0a1021"}}>
-          <div style={{fontSize:9,color:"#1e293b",letterSpacing:"3px"}}>ORION ◆ PLATAFORMA DE GESTÃO EXECUTIVA</div>
-          <div style={{display:"flex",alignItems:"center",gap:12}}>
-            <div style={{fontSize:9,color:"#1e293b"}}>MAXXXI ENGINE v1.0</div>
-            <div style={{display:"flex",alignItems:"center",gap:5}}>
-              <div style={{width:6,height:6,borderRadius:"50%",background:"#22c55e"}}/>
-              <span style={{fontSize:9,color:"#22c55e"}}>Sistema Operacional</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* BRIEFING MODAL */}
-      {briefingCompany&&<BriefingModal company={briefingCompany} onClose={()=>setBriefingCompany(null)}/>}
-    </div>
-  );
+      <div id="file-list" style="margin-top:14px">
+        ${files.map(f=>`<div class="file-item"><span>📄</span><span style="flex:1;font-size:13px">${f.name}</span><span style="font-size:12px;color:var(--tx3)">${f.size}</span></div>`).join('')}
+      </div>`;
+  }
 }
 
-ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+function handleFiles(ev){
+  const key='files_'+curEmp;
+  const existing=JSON.parse(localStorage.getItem('orion_'+key)||'[]');
+  for(const f of ev.target.files){
+    existing.push({name:f.name,size:(f.size/1024).toFixed(0)+' KB',date:new Date().toLocaleDateString('pt-BR')});
+  }
+  localStorage.setItem('orion_'+key,JSON.stringify(existing));
+  renderTab();
+}
+
+// ── CHECKIN ──────────────────────────────────────────────────────────────
+function saveCI(){
+  const ci=[document.getElementById('ci1').value,document.getElementById('ci2').value,document.getElementById('ci3').value];
+  localStorage.setItem('orion_ci_'+new Date().toDateString(),JSON.stringify(ci));
+}
+function loadCI(){
+  const raw=localStorage.getItem('orion_ci_'+new Date().toDateString());
+  if(!raw)return;
+  try{
+    const ci=JSON.parse(raw);
+    document.getElementById('ci1').value=ci[0]||'';
+    document.getElementById('ci2').value=ci[1]||'';
+    document.getElementById('ci3').value=ci[2]||'';
+  }catch(e){}
+}
+
+// ── LIVE FEED ──────────────────────────────────────────────────────────────
+function startLive(){
+  const feed=document.getElementById('live-feed');
+  feed.innerHTML='';
+  liveIdx=0;
+  if(liveInterval)clearInterval(liveInterval);
+  liveInterval=setInterval(()=>{
+    if(liveIdx>=NEWS.length){clearInterval(liveInterval);return}
+    const d=document.createElement('div');
+    d.className='feed-line';
+    const now=new Date();
+    d.innerHTML=`<span class="feed-time">${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}</span>${NEWS[liveIdx]}`;
+    feed.prepend(d);
+    liveIdx++;
+  },1200);
+}
+
+// ── MAXXXI ──────────────────────────────────────────────────────────────
+function toggleMX(){
+  mxOpen=!mxOpen;
+  document.getElementById('mx-chat').classList.toggle('hidden',!mxOpen);
+}
+function qSend(txt){document.getElementById('mx-in').value=txt;sendMX()}
+
+async function sendMX(){
+  const inp=document.getElementById('mx-in');
+  const txt=inp.value.trim();
+  if(!txt)return;
+  inp.value='';
+  addMXMsg('user',txt);
+  mxHistory.push({role:'user',content:txt});
+  const typing=addMXMsg('ai','<em style="color:var(--blue3)">MAXXXI está analisando...</em>');
+  const ctx=`Você é MAXXXI — Agente Executivo da plataforma ORION de Maxwell Oliveira Machado.
+Maxwell é CEO, Contador, Presidente da CDL de Divinópolis, MG.
+Empresas: Doctor Wealth (contabilidade médica, 47 clientes, R$ 48,5k/mês, meta R$ 60k), Original Fotografia (estúdio, turnaround, inadimplência 8,7%), Forme Seguro (fundos de formatura universitária premium, 3 fundos, R$ 420k gerenciados), CDL Divinópolis (1.100 associados), Gestão Pessoal (patrimônio R$ 1,2M).
+Empresa ativa agora: ${curEmp?EMPS[curEmp]?.nome:'Visão Geral do Ecossistema'}.
+Plataforma ORION: sidebar com empresas, workspace com abas KPIs/OKRs/Tarefas/Contratos/Riscos/Decisões/CRM/Arquivos, Home com agenda e check-in, MAXXXI Live com radar de mercado.
+Responda de forma direta, executiva, em português. Máximo 3 parágrafos curtos.`;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:800,
+        system:ctx,
+        messages:mxHistory.slice(-10)
+      })
+    });
+    const d=await res.json();
+    const reply=d.content?.[0]?.text||'Erro na resposta.';
+    typing.querySelector('.msg-bubble-ai').innerHTML=reply.replace(/\n/g,'<br>');
+    mxHistory.push({role:'assistant',content:reply});
+  }catch(e){
+    typing.querySelector('.msg-bubble-ai').textContent='Sem conexão com a API. Publique no Vercel para ativar o MAXXXI.';
+  }
+  document.getElementById('mx-msgs').scrollTop=document.getElementById('mx-msgs').scrollHeight;
+}
+
+function addMXMsg(role,html){
+  const wrap=document.getElementById('mx-msgs');
+  const d=document.createElement('div');
+  d.className=role==='ai'?'msg-ai':'msg-u';
+  d.innerHTML=(role==='ai'?'<div class="msg-from">MAXXXI</div>':'')+`<div class="${role==='ai'?'msg-bubble-ai':'msg-bubble-u'}">${html}</div>`;
+  wrap.appendChild(d);
+  wrap.scrollTop=wrap.scrollHeight;
+  return d;
+}
+
+// ── START ──────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded',()=>{
+  autoLogin();
+});
 </script>
 </body>
 </html>

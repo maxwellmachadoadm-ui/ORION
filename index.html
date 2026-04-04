@@ -334,6 +334,112 @@ a{color:inherit;text-decoration:none}
 .fw7{font-weight:700}
 .syne{font-family:'Syne',sans-serif}
 .txt-green{color:var(--green)}.txt-red{color:var(--red)}.txt-amber{color:var(--amber)}.txt-blue{color:var(--blue3)}.txt-muted{color:var(--tx3)}
+
+/* OVERLAY / MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);z-index:900;display:flex;align-items:center;justify-content:center;animation:fadeIn .15s}
+.modal{background:var(--s1);border:1px solid var(--br);border-radius:16px;padding:28px;width:480px;max-width:92vw;max-height:85vh;overflow-y:auto;animation:slideUp .2s}
+.modal h2{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;margin-bottom:16px;color:#fff}
+.modal-close{position:absolute;top:16px;right:16px;background:none;border:none;color:var(--tx3);font-size:22px;cursor:pointer}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+.btn-sm{padding:8px 18px;border-radius:var(--r2);font-size:13px;font-weight:600;cursor:pointer;transition:.15s}
+.btn-blue{background:var(--blue2);border:none;color:#fff}.btn-blue:hover{background:var(--blue)}
+.btn-ghost{background:transparent;border:1px solid var(--br);color:var(--tx2)}.btn-ghost:hover{border-color:var(--br2);color:var(--tx)}
+.btn-red{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:var(--red)}.btn-red:hover{background:rgba(239,68,68,.25)}
+
+/* COMMAND PALETTE */
+.cmd-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);z-index:1000;display:flex;align-items:flex-start;justify-content:center;padding-top:18vh;animation:fadeIn .1s}
+.cmd-box{width:520px;max-width:92vw;background:var(--s1);border:1px solid var(--br2);border-radius:14px;overflow:hidden;box-shadow:0 24px 48px rgba(0,0,0,.6)}
+.cmd-input{width:100%;padding:16px 18px;background:transparent;border:none;border-bottom:1px solid var(--br);color:var(--tx);font-size:16px;outline:none}
+.cmd-input::placeholder{color:var(--tx3)}
+.cmd-results{max-height:320px;overflow-y:auto;padding:8px}
+.cmd-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:var(--r2);cursor:pointer;font-size:14px;color:var(--tx2);transition:.1s}
+.cmd-item:hover,.cmd-item.active{background:rgba(59,130,246,.12);color:var(--tx)}
+.cmd-item .cmd-icon{font-size:16px;width:24px;text-align:center;flex-shrink:0}
+.cmd-item .cmd-lbl{flex:1}
+.cmd-item .cmd-hint{font-size:11px;color:var(--tx3)}
+
+/* DROPDOWNS */
+.dropdown{position:absolute;top:calc(100% + 6px);right:0;background:var(--s1);border:1px solid var(--br);border-radius:var(--r);min-width:240px;box-shadow:0 16px 40px rgba(0,0,0,.5);z-index:400;animation:slideUp .15s;overflow:hidden}
+.dd-item{display:flex;align-items:center;gap:10px;padding:10px 14px;font-size:13px;color:var(--tx2);cursor:pointer;transition:.1s;border-bottom:1px solid var(--br)}
+.dd-item:last-child{border-bottom:none}
+.dd-item:hover{background:rgba(255,255,255,.04);color:var(--tx)}
+.dd-header{padding:12px 14px;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--tx3);border-bottom:1px solid var(--br)}
+.dd-divider{height:1px;background:var(--br)}
+
+/* ALERTS DROPDOWN */
+.alerts-dd{width:340px;max-height:400px;overflow-y:auto}
+.alert-dd-item{padding:12px 14px;border-bottom:1px solid var(--br);cursor:pointer;transition:.1s}
+.alert-dd-item:hover{background:rgba(255,255,255,.03)}
+.alert-dd-item.unread{border-left:3px solid var(--blue)}
+.alert-dd-item .alert-dd-text{font-size:13px;line-height:1.4;margin-bottom:4px}
+.alert-dd-item .alert-dd-time{font-size:11px;color:var(--tx3)}
+
+/* USER DROPDOWN */
+.user-dd{width:220px}
+.user-dd-profile{padding:14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--br)}
+.user-dd-name{font-size:14px;font-weight:600}
+.user-dd-email{font-size:11px;color:var(--tx3)}
+
+/* ANIMATIONS */
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeInPage{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.page-enter{animation:fadeInPage .25s ease-out}
+
+/* SPARKLINE */
+.spark{display:inline-flex;align-items:flex-end;gap:2px;height:32px}
+.spark-bar{width:6px;border-radius:2px;background:var(--blue);opacity:.6;transition:height .3s}
+.spark-bar:last-child{opacity:1}
+
+/* PROGRESS RING */
+.prog-ring{position:relative;display:inline-flex;align-items:center;justify-content:center}
+.prog-ring svg{transform:rotate(-90deg)}
+.prog-ring .prog-val{position:absolute;font-family:'Syne',sans-serif;font-size:13px;font-weight:900}
+
+/* FLUXO DE CAIXA */
+.fc-table{width:100%;border-collapse:collapse;font-size:13px}
+.fc-table th{text-align:left;padding:8px 12px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--tx3);border-bottom:1px solid var(--br)}
+.fc-table td{padding:8px 12px;border-bottom:1px solid var(--br)}
+.fc-bar{display:flex;align-items:flex-end;gap:3px;height:60px;margin-top:10px}
+.fc-b{flex:1;border-radius:3px 3px 0 0;transition:height .3s}
+
+/* NOTAS */
+.notas-area{width:100%;min-height:200px;background:var(--s2);border:1px solid var(--br);border-radius:var(--r2);padding:14px;color:var(--tx);font-size:14px;line-height:1.6;resize:vertical;outline:none;transition:border-color .2s}
+.notas-area:focus{border-color:var(--br2)}
+.notas-saved{font-size:11px;color:var(--green);margin-top:6px;opacity:0;transition:opacity .3s}
+.notas-saved.show{opacity:1}
+
+/* ADD TASK INLINE */
+.add-inline{display:flex;gap:8px;margin-top:12px}
+.add-inline input{flex:1;background:var(--s2);border:1px solid var(--br);border-radius:var(--r2);padding:9px 12px;color:var(--tx);outline:none;font-size:13px}
+.add-inline input:focus{border-color:var(--br2)}
+.add-inline select{background:var(--s2);border:1px solid var(--br);border-radius:var(--r2);padding:9px 10px;color:var(--tx);outline:none;font-size:12px}
+
+/* TASK ACTIONS */
+.task-item{position:relative}
+.task-del{opacity:0;transition:opacity .15s;background:none;border:none;color:var(--red);cursor:pointer;font-size:14px;padding:4px 8px}
+.task-item:hover .task-del{opacity:1}
+.task-check{background:none;border:none;cursor:pointer;font-size:15px;padding:0}
+
+/* RESPONSIVE */
+.hamburger{display:none;background:none;border:none;color:var(--tx);font-size:22px;cursor:pointer;padding:4px}
+@media(max-width:768px){
+  .hamburger{display:block}
+  .sidebar{position:fixed;left:-260px;top:58px;bottom:0;z-index:300;transition:left .25s;width:240px;box-shadow:8px 0 24px rgba(0,0,0,.4)}
+  .sidebar.open{left:0}
+  .sidebar-backdrop{position:fixed;inset:0;top:58px;background:rgba(0,0,0,.4);z-index:250;display:none}
+  .sidebar-backdrop.show{display:block}
+  .content{padding:16px 14px}
+  .g4{grid-template-columns:1fr 1fr}
+  .g3{grid-template-columns:1fr}
+  .g2,.g21{grid-template-columns:1fr}
+  .emp-grid{grid-template-columns:1fr}
+  .kpi-grid{grid-template-columns:1fr 1fr}
+  .ws-header{flex-direction:column;gap:14px;align-items:flex-start}
+  .mx-chat{width:calc(100vw - 32px);right:-12px}
+  .topbar{padding:0 12px}
+  .cmd-box{width:calc(100vw - 24px)}
+}
 </style>
 </head>
 <body>
@@ -388,6 +494,7 @@ a{color:inherit;text-decoration:none}
 <!-- TOPBAR -->
 <header class="topbar">
   <div class="flex aic gap12">
+    <button class="hamburger" onclick="toggleSidebar()">&#9776;</button>
     <div class="logo">
       <div class="logo-mark">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
@@ -408,20 +515,42 @@ a{color:inherit;text-decoration:none}
       </div>
     </div>
     <button class="tb-btn" id="drive-btn" onclick="openDrive()">📁 <span id="drive-lbl">ORION Drive</span></button>
-    <button class="tb-btn">⌘ Busca rápida</button>
+    <button class="tb-btn" onclick="openCmdPalette()">⌘ Busca rápida</button>
   </div>
   <div class="flex aic gap8">
-    <button class="notif" onclick="toggleAlerts()">🔔<span class="notif-dot"></span></button>
-    <button class="user-btn" onclick="openProfile()">
-      <div class="avatar" id="user-avatar">MM</div>
-      <span id="user-name-display">Maxwell Machado</span>
-    </button>
+    <div style="position:relative">
+      <button class="notif" onclick="toggleAlertsDd()">🔔<span class="notif-dot" id="notif-dot"></span></button>
+      <div class="dropdown alerts-dd hidden" id="alerts-dd">
+        <div class="dd-header">Alertas <span id="alerts-count" style="float:right;color:var(--red)"></span></div>
+        <div id="alerts-dd-list"></div>
+      </div>
+    </div>
+    <div style="position:relative">
+      <button class="user-btn" onclick="toggleUserDd()">
+        <div class="avatar" id="user-avatar">MM</div>
+        <span id="user-name-display">Maxwell Machado</span>
+      </button>
+      <div class="dropdown user-dd hidden" id="user-dd">
+        <div class="user-dd-profile">
+          <div class="avatar" id="user-avatar2" style="width:36px;height:36px;font-size:12px">MM</div>
+          <div>
+            <div class="user-dd-name" id="user-dd-name">Maxwell Machado</div>
+            <div class="user-dd-email" id="user-dd-email">maxwell@orion.app</div>
+          </div>
+        </div>
+        <div class="dd-item" onclick="openProfileModal()">👤 Meu Perfil</div>
+        <div class="dd-item" onclick="uploadAvatar()">📷 Alterar Foto</div>
+        <div class="dd-divider"></div>
+        <div class="dd-item" onclick="doLogout()" style="color:var(--red)">🚪 Sair</div>
+      </div>
+    </div>
   </div>
 </header>
 
 <div class="main">
+<div class="sidebar-backdrop" id="sb-backdrop" onclick="toggleSidebar()"></div>
 <!-- SIDEBAR -->
-<nav class="sidebar">
+<nav class="sidebar" id="main-sidebar">
   <div class="sb-section">
     <div class="sb-lbl">Navegação</div>
     <div class="sb-item active" id="nav-home" onclick="goHome()">🏠 Home</div>
@@ -473,17 +602,17 @@ a{color:inherit;text-decoration:none}
 <!-- HOME -->
 <div id="page-home">
   <div style="margin-bottom:20px">
-    <div style="font-size:12px;color:var(--blue3);font-weight:600;letter-spacing:4px;text-transform:uppercase;margin-bottom:4px">BOM DIA, MAXWELL</div>
+    <div style="font-size:12px;color:var(--blue3);font-weight:600;letter-spacing:4px;text-transform:uppercase;margin-bottom:4px" id="home-greeting">BOM DIA, MAXWELL</div>
     <h1 style="font-family:'Syne',sans-serif;font-size:26px;font-weight:900;color:#fff;line-height:1.1">Qual empresa vamos trabalhar agora?</h1>
     <div style="font-size:13px;color:var(--tx3);margin-top:4px" id="home-date"></div>
   </div>
 
   <!-- KPIs -->
   <div class="g4 mb">
-    <div class="card"><div class="lbl">Faturamento do Ecossistema</div><div class="val txt-blue">R$ 126,5k</div><div class="delta-up">▲ +8,2% vs mês anterior</div></div>
-    <div class="card"><div class="lbl">Resultado Líquido</div><div class="val txt-green">R$ 46,7k</div><div class="delta-up">▲ +12,1% vs mês anterior</div></div>
-    <div class="card"><div class="lbl">Health Score Médio</div><div class="val" style="color:#a78bfa">71</div><div class="delta-neu">4 empresas ativas</div></div>
-    <div class="card"><div class="lbl">Alertas Ativos</div><div class="val txt-red">4</div><div class="delta-neu">2 críticos · 2 atenção</div></div>
+    <div class="card"><div style="display:flex;justify-content:space-between;align-items:flex-start"><div><div class="lbl">Faturamento do Ecossistema</div><div class="val txt-blue" id="kpi-fat">R$ 126,5k</div><div class="delta-up">▲ +8,2% vs mês anterior</div></div><div class="spark" id="spark-fat"></div></div></div>
+    <div class="card"><div style="display:flex;justify-content:space-between;align-items:flex-start"><div><div class="lbl">Resultado Líquido</div><div class="val txt-green">R$ 46,7k</div><div class="delta-up">▲ +12,1% vs mês anterior</div></div><div class="spark" id="spark-res"></div></div></div>
+    <div class="card"><div style="display:flex;justify-content:space-between;align-items:flex-start"><div><div class="lbl">Health Score Médio</div><div class="val" style="color:#a78bfa">71</div><div class="delta-neu" id="kpi-emp-count">4 empresas ativas</div></div><div class="prog-ring" id="health-ring"></div></div></div>
+    <div class="card"><div style="display:flex;justify-content:space-between;align-items:flex-start"><div><div class="lbl">Alertas Ativos</div><div class="val txt-red" id="kpi-alerts">4</div><div class="delta-neu">2 críticos · 2 atenção</div></div><div class="spark" id="spark-alerts"></div></div></div>
   </div>
 
   <!-- EMPRESAS -->
@@ -503,7 +632,7 @@ a{color:inherit;text-decoration:none}
         </div>
         <div class="flex gap8">
           <button class="tb-btn" style="font-size:11px;padding:5px 10px">🔗 Link</button>
-          <button class="tb-btn" style="font-size:11px;padding:5px 10px;color:var(--blue3);border-color:var(--br2)">+ Evento</button>
+          <button class="tb-btn" style="font-size:11px;padding:5px 10px;color:var(--blue3);border-color:var(--br2)" onclick="openModal('modal-evento')">+ Evento</button>
         </div>
       </div>
       <div id="agenda-list"></div>
@@ -537,10 +666,7 @@ a{color:inherit;text-decoration:none}
   <!-- ALERTAS -->
   <div>
     <div class="slbl">Central de Alertas</div>
-    <div class="alert-r">🔴 Original Fotografia — Inadimplência em 8,7% (limite: 5%)</div>
-    <div class="alert-r">🔴 Original Fotografia — Contrato cliente XYZ inadimplente há 60 dias</div>
-    <div class="alert-a">🟡 Forme Seguro — Meta mensal: apenas 30% atingida (R$ 15k / R$ 50k)</div>
-    <div class="alert-a">🟡 Doctor Wealth — 3 tarefas de alta prioridade pendentes</div>
+    <div id="home-alerts"></div>
   </div>
 </div>
 
@@ -609,6 +735,76 @@ a{color:inherit;text-decoration:none}
   <div class="mx-fab" onclick="toggleMX()">
     <div class="fi">🤖</div>
     <div class="fl">MAXXXI</div>
+  </div>
+</div>
+
+<!-- COMMAND PALETTE -->
+<div class="cmd-overlay hidden" id="cmd-overlay" onclick="if(event.target===this)closeCmdPalette()">
+  <div class="cmd-box">
+    <input class="cmd-input" id="cmd-input" placeholder="Buscar empresas, páginas, ações..." oninput="filterCmd()" autofocus/>
+    <div class="cmd-results" id="cmd-results"></div>
+  </div>
+</div>
+
+<!-- MODAL NOVA EMPRESA -->
+<div class="overlay hidden" id="modal-emp" onclick="if(event.target===this)closeModal('modal-emp')">
+  <div class="modal" style="position:relative">
+    <button class="modal-close" onclick="closeModal('modal-emp')">&times;</button>
+    <h2>Nova Empresa</h2>
+    <input class="inp" id="emp-nome" placeholder="Nome da empresa"/>
+    <input class="inp" id="emp-sigla" placeholder="Sigla (ex: DW)" maxlength="4"/>
+    <input class="inp" id="emp-desc" placeholder="Descrição"/>
+    <div style="margin-bottom:12px">
+      <div class="lbl">Cor da empresa</div>
+      <div style="display:flex;gap:8px;margin-top:6px" id="color-picks">
+        <div onclick="pickColor('#3b82f6')" style="width:28px;height:28px;border-radius:8px;background:#3b82f6;cursor:pointer;border:2px solid transparent" data-c="#3b82f6"></div>
+        <div onclick="pickColor('#10b981')" style="width:28px;height:28px;border-radius:8px;background:#10b981;cursor:pointer;border:2px solid transparent" data-c="#10b981"></div>
+        <div onclick="pickColor('#f59e0b')" style="width:28px;height:28px;border-radius:8px;background:#f59e0b;cursor:pointer;border:2px solid transparent" data-c="#f59e0b"></div>
+        <div onclick="pickColor('#8b5cf6')" style="width:28px;height:28px;border-radius:8px;background:#8b5cf6;cursor:pointer;border:2px solid transparent" data-c="#8b5cf6"></div>
+        <div onclick="pickColor('#ec4899')" style="width:28px;height:28px;border-radius:8px;background:#ec4899;cursor:pointer;border:2px solid transparent" data-c="#ec4899"></div>
+        <div onclick="pickColor('#06b6d4')" style="width:28px;height:28px;border-radius:8px;background:#06b6d4;cursor:pointer;border:2px solid transparent" data-c="#06b6d4"></div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-sm btn-ghost" onclick="closeModal('modal-emp')">Cancelar</button>
+      <button class="btn-sm btn-blue" onclick="saveNewEmpresa()">Criar Empresa</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ADD TAREFA -->
+<div class="overlay hidden" id="modal-task" onclick="if(event.target===this)closeModal('modal-task')">
+  <div class="modal" style="position:relative">
+    <button class="modal-close" onclick="closeModal('modal-task')">&times;</button>
+    <h2>Nova Tarefa</h2>
+    <input class="inp" id="task-text" placeholder="Descrição da tarefa"/>
+    <select class="inp" id="task-prio">
+      <option value="alta">Alta prioridade</option>
+      <option value="media">Média prioridade</option>
+      <option value="baixa">Baixa prioridade</option>
+    </select>
+    <div class="modal-actions">
+      <button class="btn-sm btn-ghost" onclick="closeModal('modal-task')">Cancelar</button>
+      <button class="btn-sm btn-blue" onclick="saveNewTask()">Adicionar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ADD EVENTO AGENDA -->
+<div class="overlay hidden" id="modal-evento" onclick="if(event.target===this)closeModal('modal-evento')">
+  <div class="modal" style="position:relative">
+    <button class="modal-close" onclick="closeModal('modal-evento')">&times;</button>
+    <h2>Novo Evento</h2>
+    <input class="inp" id="evt-titulo" placeholder="Título do evento"/>
+    <div style="display:flex;gap:8px">
+      <input class="inp" id="evt-dia" placeholder="Dia (ex: SEG)" style="width:80px"/>
+      <input class="inp" id="evt-num" placeholder="Nº (ex: 07)" style="width:80px"/>
+      <input class="inp" id="evt-hora" placeholder="Horário (ex: 09:00 — 10:00)" style="flex:1"/>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-sm btn-ghost" onclick="closeModal('modal-evento')">Cancelar</button>
+      <button class="btn-sm btn-blue" onclick="saveNewEvento()">Adicionar</button>
+    </div>
   </div>
 </div>
 
@@ -754,7 +950,10 @@ function enterPlatform(u){
   document.getElementById('login-screen').classList.add('hidden');
   document.getElementById('platform').classList.remove('hidden');
   document.getElementById('user-name-display').textContent=u.name;
-  document.getElementById('user-avatar').innerHTML=u.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  const initials=u.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  const avatarHTML=u.avatar?'<img src="'+u.avatar+'"/>':initials;
+  document.getElementById('user-avatar').innerHTML=avatarHTML;
+  document.getElementById('user-avatar2').innerHTML=avatarHTML;
   initPlatform();
 }
 
@@ -775,29 +974,9 @@ function autoLogin(){
   }
 }
 
-function openProfile(){
-  const u=JSON.parse(LS('session')||'{}');
-  const input=document.createElement('input');
-  input.type='file';input.accept='image/*';
-  input.onchange=e=>{
-    const f=e.target.files[0];if(!f)return;
-    const r=new FileReader();
-    r.onload=ev=>{
-      const av=document.getElementById('user-avatar');
-      av.innerHTML=`<img src="${ev.target.result}"/>`;
-      u.avatar=ev.target.result;
-      const users=JSON.parse(LS('users')||'[]');
-      const idx=users.findIndex(x=>x.id===u.id);
-      if(idx>=0)users[idx]=u;
-      LS('users',JSON.stringify(users));
-      LS('session',JSON.stringify(u));
-    };
-    r.readAsDataURL(f);
-  };
-  if(confirm('Alterar foto de perfil?'))input.click();
-}
+function openProfile(){toggleUserDd()}
 
-function toggleAlerts(){}
+function toggleAlerts(){}// replaced by toggleAlertsDd
 
 // ── INIT ──────────────────────────────────────────────────────────────────
 function initPlatform(){
@@ -808,9 +987,27 @@ function initPlatform(){
   if(el)el.textContent=ds;
   const cd=document.getElementById('checkin-date');
   if(cd)cd.textContent=ds;
+  // greeting
+  const u=JSON.parse(LS('session')||'{}');
+  const gr=document.getElementById('home-greeting');
+  if(gr&&u.name)gr.textContent=getGreeting(u.name);
+  // user dropdown info
+  const ddn=document.getElementById('user-dd-name');
+  const dde=document.getElementById('user-dd-email');
+  if(ddn&&u.name)ddn.textContent=u.name;
+  if(dde&&u.email)dde.textContent=u.email;
+  // load persisted data
+  loadCustomEmps();
+  loadStoredTasks();
+  loadStoredAgenda();
+  loadStoredCRM();
+  // render
   renderEmpGrid();
   renderAgenda();
   renderCEO();
+  renderSparklines();
+  renderAlertsDd();
+  renderHomeAlerts();
   loadCI();
 }
 
@@ -818,7 +1015,7 @@ function initPlatform(){
 function renderAgenda(){
   const el=document.getElementById('agenda-list');
   if(!el)return;
-  el.innerHTML=AGENDA.map(a=>`
+  el.innerHTML=AGENDA.map((a,i)=>`
     <div class="ag-item" style="border-left-color:${a.cor}">
       <div class="ag-date">
         <div class="ag-day">${a.dia}</div>
@@ -828,7 +1025,7 @@ function renderAgenda(){
         <div style="font-size:14px;font-weight:500;margin-bottom:2px">${a.titulo}</div>
         <div style="font-size:12px;color:var(--tx3)">${a.hora}</div>
       </div>
-      <button style="background:none;border:none;color:var(--tx3);cursor:pointer;font-size:16px">×</button>
+      <button style="background:none;border:none;color:var(--tx3);cursor:pointer;font-size:16px" onclick="deleteEvento(${i})">×</button>
     </div>`).join('');
 }
 
@@ -914,7 +1111,11 @@ function renderCEO(){
 
 // ── NAVEGAÇÃO ──────────────────────────────────────────────────────────────
 function showPage(pg){
-  ['home','ceo','ws'].forEach(p=>document.getElementById('page-'+p).classList.toggle('hidden',p!==pg));
+  ['home','ceo','ws'].forEach(p=>{
+    const el=document.getElementById('page-'+p);
+    el.classList.toggle('hidden',p!==pg);
+    if(p===pg){el.classList.remove('page-enter');void el.offsetWidth;el.classList.add('page-enter')}
+  });
 }
 function clearSb(){document.querySelectorAll('.sb-item').forEach(el=>el.classList.remove('active'))}
 
@@ -942,11 +1143,11 @@ function openEmp(id){
   showPage('ws');
   renderWS();
 }
-function addEmpresa(){alert('Funcionalidade em desenvolvimento')}
+function addEmpresa(){openModal('modal-emp')}
 function openDrive(){window.open(curEmp?EMPS[curEmp]?.drive:'https://drive.google.com','_blank')}
 
 // ── WORKSPACE ──────────────────────────────────────────────────────────────
-const WS_TABS=['KPIs','OKRs','Tarefas','Contratos','Riscos','Decisões','CRM','Arquivos'];
+const WS_TABS=['KPIs','OKRs','Tarefas','Contratos','Riscos','Decisões','CRM','Fluxo','Notas','Arquivos'];
 
 function renderWS(){
   const e=EMPS[curEmp];
@@ -1019,11 +1220,15 @@ function renderTab(){
       </div>`).join('');
   }
   else if(curTab==='Tarefas'){
-    c.innerHTML=e.tarefas.map(t=>`
+    c.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div style="font-size:13px;color:var(--tx3)">${e.tarefas.filter(t=>t.k).length}/${e.tarefas.length} concluídas</div>
+      <button class="btn-sm btn-blue" onclick="openModal('modal-task')">+ Nova Tarefa</button>
+    </div>`+e.tarefas.map((t,i)=>`
       <div class="task-item ${t.k?'done':t.p}">
-        <span style="font-size:15px">${t.k?'✅':t.p==='alta'?'🔴':'🟡'}</span>
+        <button class="task-check" onclick="toggleTask(${i})">${t.k?'✅':'⬜'}</button>
         <span style="flex:1;font-size:14px;font-weight:500;${t.k?'text-decoration:line-through;color:var(--tx3)':''}">${t.t}</span>
-        ${!t.k?`<span class="ptag" style="color:${t.p==='alta'?'var(--red)':'var(--amber)'};background:${t.p==='alta'?'rgba(239,68,68,.15)':'rgba(245,158,11,.15)'}">${t.p}</span>`:''}
+        ${!t.k?`<span class="ptag" style="color:${t.p==='alta'?'var(--red)':t.p==='media'?'var(--amber)':'var(--tx3)'};background:${t.p==='alta'?'rgba(239,68,68,.15)':t.p==='media'?'rgba(245,158,11,.15)':'rgba(100,116,139,.15)'}">${t.p}</span>`:''}
+        <button class="task-del" onclick="deleteTask(${i})">🗑</button>
       </div>`).join('');
   }
   else if(curTab==='Contratos'){
@@ -1066,18 +1271,60 @@ function renderTab(){
   }
   else if(curTab==='CRM'){
     if(!e.crm||e.crm.length===0){c.innerHTML='<div style="color:var(--tx3);font-size:14px;padding:20px">Nenhum dado de CRM cadastrado.</div>';return}
-    c.innerHTML=`<div class="crm-wrap">${e.crm.map(col=>`
-      <div class="crm-col">
+    c.innerHTML=`<div class="crm-wrap">${e.crm.map((col,ci)=>`
+      <div class="crm-col" data-col="${ci}" ondragover="event.preventDefault();this.style.background='rgba(59,130,246,.06)'" ondragleave="this.style.background=''" ondrop="dropCRM(event,${ci});this.style.background=''">
         <div class="crm-hdr" style="background:${col.cor}18;color:${col.cor}">
           ${col.fase} <span style="background:rgba(255,255,255,.1);padding:1px 7px;border-radius:99px;font-size:10px">${col.itens.length}</span>
         </div>
-        ${col.itens.map(it=>`
-          <div class="crm-card">
+        ${col.itens.map((it,ii)=>`
+          <div class="crm-card" draggable="true" ondragstart="dragCRM(event,${ci},${ii})" style="cursor:grab">
             <div class="crm-cname">${it.n}</div>
             <div class="crm-cv">${it.v}</div>
           </div>`).join('')}
-        <div style="padding:8px;border:1px dashed var(--br);border-radius:var(--r2);text-align:center;font-size:12px;color:var(--tx3);cursor:pointer">+ Adicionar</div>
+        <div style="padding:8px;border:1px dashed var(--br);border-radius:var(--r2);text-align:center;font-size:12px;color:var(--tx3);cursor:pointer" onclick="addCRMCard(${ci})">+ Adicionar</div>
       </div>`).join('')}</div>`;
+  }
+  else if(curTab==='Fluxo'){
+    const months=['Jan','Fev','Mar','Abr','Mai','Jun'];
+    const entradas=[38,42,45,48,44,e.fat/1000];
+    const saidas=[22,25,28,26,30,(e.fat-e.result)/1000];
+    const maxV=Math.max(...entradas,...saidas);
+    c.innerHTML=`
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div class="slbl" style="margin:0">Fluxo de Caixa — ${e.nome}</div>
+      </div>
+      <div class="fc-bar" style="margin-bottom:20px">${months.map((m,i)=>`
+        <div style="flex:1;text-align:center">
+          <div style="display:flex;gap:2px;height:60px;align-items:flex-end;justify-content:center">
+            <div class="fc-b" style="width:12px;height:${(entradas[i]/maxV*100).toFixed(0)}%;background:var(--green);opacity:.7"></div>
+            <div class="fc-b" style="width:12px;height:${(saidas[i]/maxV*100).toFixed(0)}%;background:var(--red);opacity:.7"></div>
+          </div>
+          <div style="font-size:10px;color:var(--tx3);margin-top:4px">${m}</div>
+        </div>`).join('')}</div>
+      <div style="display:flex;gap:12px;margin-bottom:16px">
+        <span style="font-size:11px;color:var(--tx3)"><span style="display:inline-block;width:10px;height:10px;background:var(--green);border-radius:2px;margin-right:4px"></span>Entradas</span>
+        <span style="font-size:11px;color:var(--tx3)"><span style="display:inline-block;width:10px;height:10px;background:var(--red);border-radius:2px;margin-right:4px"></span>Saídas</span>
+      </div>
+      <table class="fc-table">
+        <thead><tr><th>Mês</th><th>Entradas</th><th>Saídas</th><th>Saldo</th></tr></thead>
+        <tbody>${months.map((m,i)=>`<tr>
+          <td>${m}</td>
+          <td style="color:var(--green)">R$ ${entradas[i].toFixed(0)}k</td>
+          <td style="color:var(--red)">R$ ${saidas[i].toFixed(0)}k</td>
+          <td style="color:${(entradas[i]-saidas[i])>=0?'var(--green)':'var(--red)'}">R$ ${(entradas[i]-saidas[i]).toFixed(0)}k</td>
+        </tr>`).join('')}</tbody>
+      </table>`;
+  }
+  else if(curTab==='Notas'){
+    const notasKey='orion_notas_'+curEmp;
+    const saved=localStorage.getItem(notasKey)||'';
+    c.innerHTML=`
+      <div style="margin-bottom:12px;display:flex;justify-content:space-between;align-items:center">
+        <div class="slbl" style="margin:0">Anotações — ${e.nome}</div>
+        <span class="notas-saved" id="notas-saved">Salvo automaticamente</span>
+      </div>
+      <textarea class="notas-area" id="notas-text" placeholder="Escreva suas anotações sobre ${e.nome} aqui..."
+        oninput="autoSaveNotas()">${saved}</textarea>`;
   }
   else if(curTab==='Arquivos'){
     const key='files_'+curEmp;
@@ -1161,9 +1408,11 @@ Empresa ativa agora: ${curEmp?EMPS[curEmp]?.nome:'Visão Geral do Ecossistema'}.
 Plataforma ORION: sidebar com empresas, workspace com abas KPIs/OKRs/Tarefas/Contratos/Riscos/Decisões/CRM/Arquivos, Home com agenda e check-in, MAXXXI Live com radar de mercado.
 Responda de forma direta, executiva, em português. Máximo 3 parágrafos curtos.`;
   try{
+    const apiKey=localStorage.getItem('orion_api_key')||'';
+    if(!apiKey){throw new Error('no_key')}
     const res=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
       body:JSON.stringify({
         model:'claude-sonnet-4-20250514',
         max_tokens:800,
@@ -1176,7 +1425,10 @@ Responda de forma direta, executiva, em português. Máximo 3 parágrafos curtos
     typing.querySelector('.msg-bubble-ai').innerHTML=reply.replace(/\n/g,'<br>');
     mxHistory.push({role:'assistant',content:reply});
   }catch(e){
-    typing.querySelector('.msg-bubble-ai').textContent='Sem conexão com a API. Publique no Vercel para ativar o MAXXXI.';
+    // Fallback local responses
+    const reply=localMXResponse(txt,curEmp);
+    typing.querySelector('.msg-bubble-ai').innerHTML=reply;
+    mxHistory.push({role:'assistant',content:reply});
   }
   document.getElementById('mx-msgs').scrollTop=document.getElementById('mx-msgs').scrollHeight;
 }
@@ -1189,6 +1441,391 @@ function addMXMsg(role,html){
   wrap.appendChild(d);
   wrap.scrollTop=wrap.scrollHeight;
   return d;
+}
+
+// ── HOME ALERTS RENDER ──────────────────────────────────────────────────────
+function renderHomeAlerts(){
+  const alerts=getAlerts();
+  const el=document.getElementById('home-alerts');
+  if(!el)return;
+  el.innerHTML=alerts.map(a=>`
+    <div class="${a.level==='red'?'alert-r':'alert-a'}">${a.level==='red'?'🔴':'🟡'} ${a.text}</div>
+  `).join('');
+}
+
+// ── MAXXXI LOCAL FALLBACK ──────────────────────────────────────────────────
+function localMXResponse(msg,empId){
+  const m=msg.toLowerCase();
+  const e=empId?EMPS[empId]:null;
+  if(m.includes('como')&&(m.includes('uso')||m.includes('usar')||m.includes('plataforma')||m.includes('funciona'))){
+    return 'A plataforma ORION possui:<br>• <b>Home</b> — visão geral com KPIs, agenda e check-in<br>• <b>Visão CEO</b> — ranking e distribuição consolidada<br>• <b>Workspace</b> — clique em qualquer empresa para ver KPIs, OKRs, Tarefas, CRM, Fluxo de Caixa e mais<br>• <b>Ctrl+K</b> — busca rápida para navegar<br>• Arraste cards no CRM entre colunas. Tarefas podem ser criadas, concluídas e deletadas.';
+  }
+  if(m.includes('prioridade')||m.includes('atenção')){
+    return '⚠️ <b>Original Fotografia</b> precisa de atenção imediata:<br>• Inadimplência em 8,7% (acima do limite)<br>• Contrato XYZ inadimplente há 60 dias<br>• Crescimento negativo de -4,2%<br><br>Recomendo: reunião de reestruturação de preços e cobrança ativa.';
+  }
+  if(m.includes('briefing')||m.includes('ceo')||m.includes('ecossistema')){
+    return '📊 <b>Briefing Executivo — Ecossistema ORION</b><br><br>• Faturamento total: R$ 126,5k (+8,2%)<br>• Resultado líquido: R$ 46,7k (+12,1%)<br>• Health Score médio: 71/100<br>• 4 alertas ativos (2 críticos)<br><br>Destaques: CDL é a mais estável (88 score), Forme Seguro tem maior potencial de crescimento (+50%).';
+  }
+  if(m.includes('crm')){
+    return '📋 O módulo CRM mostra o funil de vendas por empresa:<br>• <b>Lead</b> → <b>Proposta</b> → <b>Negociação</b> → <b>Fechado</b><br>• Arraste cards entre colunas para atualizar o status<br>• Clique em "+ Adicionar" para novos contatos<br>• Tudo salva automaticamente no navegador.';
+  }
+  if(e){
+    return `📈 <b>${e.nome}</b> — Resumo Rápido:<br>• Faturamento: R$ ${(e.fat/1000).toFixed(0)}k | Meta: R$ ${(e.meta/1000).toFixed(0)}k<br>• Health Score: ${e.score}/100<br>• Status: ${e.status}<br>• ${e.tarefas.filter(t=>!t.k).length} tarefas pendentes<br><br>Posso ajudar com algo específico sobre ${e.nome}?`;
+  }
+  return 'Entendi sua pergunta. Para respostas mais completas com IA, configure sua API Key em: localStorage.setItem("orion_api_key", "sk-ant-..."). Enquanto isso, posso ajudar com briefings, prioridades e informações da plataforma. Pergunte sobre qualquer empresa!';
+}
+
+// ── CRM DRAG & DROP ──────────────────────────────────────────────────────────
+let dragData=null;
+function dragCRM(ev,colIdx,itemIdx){
+  dragData={col:colIdx,item:itemIdx};
+  ev.dataTransfer.effectAllowed='move';
+}
+function dropCRM(ev,targetCol){
+  ev.preventDefault();
+  if(!dragData||dragData.col===targetCol)return;
+  const e=EMPS[curEmp];
+  const item=e.crm[dragData.col].itens.splice(dragData.item,1)[0];
+  e.crm[targetCol].itens.push(item);
+  saveCRM();
+  renderTab();
+  dragData=null;
+}
+function addCRMCard(colIdx){
+  const nome=prompt('Nome do contato/empresa:');
+  if(!nome)return;
+  const valor=prompt('Valor/descrição:')||'—';
+  EMPS[curEmp].crm[colIdx].itens.push({n:nome,v:valor});
+  saveCRM();
+  renderTab();
+}
+function saveCRM(){
+  localStorage.setItem('orion_crm_'+curEmp,JSON.stringify(EMPS[curEmp].crm));
+}
+function loadStoredCRM(){
+  Object.keys(EMPS).forEach(id=>{
+    const stored=localStorage.getItem('orion_crm_'+id);
+    if(stored)EMPS[id].crm=JSON.parse(stored);
+  });
+}
+
+// ── NOTAS AUTO-SAVE ──────────────────────────────────────────────────────────
+let notasTimer=null;
+function autoSaveNotas(){
+  clearTimeout(notasTimer);
+  notasTimer=setTimeout(()=>{
+    const txt=document.getElementById('notas-text');
+    if(!txt)return;
+    localStorage.setItem('orion_notas_'+curEmp,txt.value);
+    const badge=document.getElementById('notas-saved');
+    if(badge){badge.classList.add('show');setTimeout(()=>badge.classList.remove('show'),2000)}
+  },500);
+}
+
+// ── MODALS ──────────────────────────────────────────────────────────────────
+function openModal(id){document.getElementById(id).classList.remove('hidden')}
+function closeModal(id){document.getElementById(id).classList.add('hidden')}
+
+// ── SIDEBAR MOBILE ──────────────────────────────────────────────────────────
+function toggleSidebar(){
+  const sb=document.getElementById('main-sidebar');
+  const bd=document.getElementById('sb-backdrop');
+  sb.classList.toggle('open');
+  bd.classList.toggle('show');
+}
+
+// ── DROPDOWNS ──────────────────────────────────────────────────────────────
+function closeAllDd(){
+  document.querySelectorAll('.dropdown').forEach(d=>d.classList.add('hidden'));
+}
+function toggleAlertsDd(){
+  const dd=document.getElementById('alerts-dd');
+  const wasHidden=dd.classList.contains('hidden');
+  closeAllDd();
+  if(wasHidden){dd.classList.remove('hidden');renderAlertsDd()}
+}
+function toggleUserDd(){
+  const dd=document.getElementById('user-dd');
+  const wasHidden=dd.classList.contains('hidden');
+  closeAllDd();
+  if(wasHidden)dd.classList.remove('hidden');
+}
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.notif')&&!e.target.closest('.alerts-dd')&&
+     !e.target.closest('.user-btn')&&!e.target.closest('.user-dd')){
+    closeAllDd();
+  }
+});
+
+// ── ALERTS ──────────────────────────────────────────────────────────────────
+const ALERTS_DATA=[
+  {id:1,text:'Original Fotografia — Inadimplência em 8,7% (limite: 5%)',level:'red',read:false,time:'Hoje 09:15'},
+  {id:2,text:'Original Fotografia — Contrato cliente XYZ inadimplente há 60 dias',level:'red',read:false,time:'Hoje 08:30'},
+  {id:3,text:'Forme Seguro — Meta mensal: apenas 30% atingida (R$ 15k / R$ 50k)',level:'amber',read:false,time:'Ontem 17:00'},
+  {id:4,text:'Doctor Wealth — 3 tarefas de alta prioridade pendentes',level:'amber',read:false,time:'Ontem 14:22'},
+];
+function getAlerts(){return JSON.parse(localStorage.getItem('orion_alerts')||'null')||ALERTS_DATA}
+function saveAlerts(a){localStorage.setItem('orion_alerts',JSON.stringify(a))}
+function renderAlertsDd(){
+  const alerts=getAlerts();
+  const list=document.getElementById('alerts-dd-list');
+  const unread=alerts.filter(a=>!a.read).length;
+  document.getElementById('alerts-count').textContent=unread>0?unread+' novos':'';
+  document.getElementById('notif-dot').style.display=unread>0?'block':'none';
+  list.innerHTML=alerts.map(a=>`
+    <div class="alert-dd-item ${a.read?'':'unread'}" onclick="markAlertRead(${a.id})">
+      <div class="alert-dd-text">${a.level==='red'?'🔴':'🟡'} ${a.text}</div>
+      <div class="alert-dd-time">${a.time}</div>
+    </div>`).join('')||'<div style="padding:20px;text-align:center;color:var(--tx3);font-size:13px">Nenhum alerta</div>';
+}
+function markAlertRead(id){
+  const alerts=getAlerts();
+  const a=alerts.find(x=>x.id===id);
+  if(a)a.read=true;
+  saveAlerts(alerts);
+  renderAlertsDd();
+}
+
+// ── LOGOUT ──────────────────────────────────────────────────────────────────
+function doLogout(){
+  localStorage.removeItem('orion_session');
+  location.reload();
+}
+function uploadAvatar(){
+  closeAllDd();
+  const input=document.createElement('input');
+  input.type='file';input.accept='image/*';
+  input.onchange=e=>{
+    const f=e.target.files[0];if(!f)return;
+    const r=new FileReader();
+    r.onload=ev=>{
+      const u=JSON.parse(LS('session')||'{}');
+      ['user-avatar','user-avatar2'].forEach(id=>{
+        const el=document.getElementById(id);
+        if(el)el.innerHTML='<img src="'+ev.target.result+'"/>';
+      });
+      u.avatar=ev.target.result;
+      const users=JSON.parse(LS('users')||'[]');
+      const idx=users.findIndex(x=>x.id===u.id);
+      if(idx>=0)users[idx]=u;
+      LS('users',JSON.stringify(users));
+      LS('session',JSON.stringify(u));
+    };
+    r.readAsDataURL(f);
+  };
+  input.click();
+}
+function openProfileModal(){closeAllDd();alert('Perfil — Em breve!')}
+
+// ── COMMAND PALETTE ──────────────────────────────────────────────────────────
+const CMD_ITEMS=[
+  {icon:'🏠',label:'Home',hint:'Voltar ao início',action:()=>{goHome();closeCmdPalette()}},
+  {icon:'📊',label:'Visão CEO',hint:'Dashboard consolidado',action:()=>{goCEO();closeCmdPalette()}},
+  {icon:'💼',label:'Doctor Wealth',hint:'Empresa',action:()=>{openEmp('dw');closeCmdPalette()}},
+  {icon:'📸',label:'Original Fotografia',hint:'Empresa',action:()=>{openEmp('of');closeCmdPalette()}},
+  {icon:'🎓',label:'Forme Seguro',hint:'Empresa',action:()=>{openEmp('fs');closeCmdPalette()}},
+  {icon:'🏪',label:'CDL Divinópolis',hint:'Empresa',action:()=>{openEmp('cdl');closeCmdPalette()}},
+  {icon:'💰',label:'Gestão Pessoal',hint:'Finanças pessoais',action:()=>{openEmp('gp');closeCmdPalette()}},
+  {icon:'➕',label:'Nova Empresa',hint:'Criar empresa',action:()=>{closeCmdPalette();addEmpresa()}},
+  {icon:'✅',label:'Nova Tarefa',hint:'Adicionar tarefa',action:()=>{closeCmdPalette();openModal('modal-task')}},
+  {icon:'📅',label:'Novo Evento',hint:'Adicionar à agenda',action:()=>{closeCmdPalette();openModal('modal-evento')}},
+  {icon:'🚪',label:'Sair',hint:'Logout',action:()=>{doLogout()}},
+];
+function openCmdPalette(){
+  // also add custom empresas
+  const customEmps=JSON.parse(localStorage.getItem('orion_custom_emps')||'[]');
+  document.getElementById('cmd-overlay').classList.remove('hidden');
+  document.getElementById('cmd-input').value='';
+  document.getElementById('cmd-input').focus();
+  filterCmd();
+}
+function closeCmdPalette(){document.getElementById('cmd-overlay').classList.add('hidden')}
+function filterCmd(){
+  const q=document.getElementById('cmd-input').value.toLowerCase();
+  const customEmps=JSON.parse(localStorage.getItem('orion_custom_emps')||'[]');
+  const dynItems=customEmps.map(e=>({icon:'🏢',label:e.nome,hint:'Empresa',action:()=>{openEmp(e.id);closeCmdPalette()}}));
+  const all=[...CMD_ITEMS,...dynItems];
+  const filtered=q?all.filter(i=>i.label.toLowerCase().includes(q)||i.hint.toLowerCase().includes(q)):all;
+  const el=document.getElementById('cmd-results');
+  el.innerHTML=filtered.map((it,i)=>`
+    <div class="cmd-item ${i===0?'active':''}" onclick="CMD_FILTERED[${i}].action()">
+      <span class="cmd-icon">${it.icon}</span>
+      <span class="cmd-lbl">${it.label}</span>
+      <span class="cmd-hint">${it.hint}</span>
+    </div>`).join('')||'<div style="padding:16px;text-align:center;color:var(--tx3);font-size:13px">Nenhum resultado</div>';
+  window.CMD_FILTERED=filtered;
+}
+document.addEventListener('keydown',e=>{
+  if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();openCmdPalette()}
+  if(e.key==='Escape'){
+    closeCmdPalette();
+    closeAllDd();
+    document.querySelectorAll('.overlay').forEach(o=>o.classList.add('hidden'));
+  }
+});
+
+// ── NOVA EMPRESA ──────────────────────────────────────────────────────────
+let newEmpColor='#3b82f6';
+function pickColor(c){
+  newEmpColor=c;
+  document.querySelectorAll('#color-picks>div').forEach(el=>{
+    el.style.borderColor=el.dataset.c===c?'#fff':'transparent';
+  });
+}
+function hexToRgb(hex){
+  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+  return r+','+g+','+b;
+}
+function saveNewEmpresa(){
+  const nome=document.getElementById('emp-nome').value.trim();
+  const sigla=document.getElementById('emp-sigla').value.trim().toUpperCase();
+  const desc=document.getElementById('emp-desc').value.trim();
+  if(!nome||!sigla){alert('Preencha nome e sigla');return}
+  const id='custom_'+Date.now();
+  const emp={id,nome,sigla,desc:desc||'Nova empresa',
+    cor:newEmpColor,rgb:hexToRgb(newEmpColor),score:50,status:'Novo',statusCor:newEmpColor,
+    fat:0,meta:0,result:0,cresc:0,drive:'https://drive.google.com',
+    kpis:[{i:'📊',l:'Definir KPI 1',v:'—'},{i:'📈',l:'Definir KPI 2',v:'—'},{i:'💰',l:'Definir KPI 3',v:'—'},{i:'🎯',l:'Definir KPI 4',v:'—'}],
+    okrs:[{o:'Definir primeiro objetivo',p:0}],
+    tarefas:[{t:'Configurar empresa na plataforma',p:'alta',k:false}],
+    contratos:[],riscos:[],decisoes:[],crm:[]
+  };
+  EMPS[id]=emp;
+  // save custom emps list
+  const custom=JSON.parse(localStorage.getItem('orion_custom_emps')||'[]');
+  custom.push(emp);
+  localStorage.setItem('orion_custom_emps',JSON.stringify(custom));
+  // add sidebar item
+  addSidebarItem(emp);
+  renderEmpGrid();
+  closeModal('modal-emp');
+  document.getElementById('emp-nome').value='';
+  document.getElementById('emp-sigla').value='';
+  document.getElementById('emp-desc').value='';
+  openEmp(id);
+}
+function addSidebarItem(e){
+  const section=document.querySelector('.sb-section:nth-child(1)');
+  const addBtn=document.querySelector('.sb-add');
+  if(!addBtn)return;
+  const div=document.createElement('div');
+  div.className='sb-item';
+  div.id='sb-'+e.id;
+  div.onclick=()=>openEmp(e.id);
+  div.innerHTML=`<div class="sb-dot" style="background:${e.cor}"></div><span style="flex:1;font-size:13px">${e.nome}</span><span class="sb-score" style="color:${e.cor}">${e.score}</span>`;
+  addBtn.parentNode.insertBefore(div,addBtn);
+}
+
+// ── CRUD TAREFAS ──────────────────────────────────────────────────────────
+function getTasksKey(){return 'orion_tasks_'+curEmp}
+function getStoredTasks(){
+  const stored=localStorage.getItem(getTasksKey());
+  if(stored)return JSON.parse(stored);
+  return null;// use defaults
+}
+function saveTasks(tasks){
+  localStorage.setItem(getTasksKey(),JSON.stringify(tasks));
+  EMPS[curEmp].tarefas=tasks;
+}
+function toggleTask(idx){
+  const tasks=EMPS[curEmp].tarefas;
+  tasks[idx].k=!tasks[idx].k;
+  saveTasks(tasks);
+  renderTab();
+}
+function deleteTask(idx){
+  const tasks=EMPS[curEmp].tarefas;
+  tasks.splice(idx,1);
+  saveTasks(tasks);
+  renderTab();
+}
+function saveNewTask(){
+  const text=document.getElementById('task-text').value.trim();
+  const prio=document.getElementById('task-prio').value;
+  if(!text){alert('Preencha a descrição');return}
+  EMPS[curEmp].tarefas.push({t:text,p:prio,k:false});
+  saveTasks(EMPS[curEmp].tarefas);
+  closeModal('modal-task');
+  document.getElementById('task-text').value='';
+  renderTab();
+}
+
+// ── AGENDA CRUD ──────────────────────────────────────────────────────────
+function getStoredAgenda(){
+  const stored=localStorage.getItem('orion_agenda');
+  if(stored)return JSON.parse(stored);
+  return null;
+}
+function saveAgenda(a){localStorage.setItem('orion_agenda',JSON.stringify(a))}
+function saveNewEvento(){
+  const titulo=document.getElementById('evt-titulo').value.trim();
+  const dia=document.getElementById('evt-dia').value.trim().toUpperCase();
+  const num=document.getElementById('evt-num').value.trim();
+  const hora=document.getElementById('evt-hora').value.trim();
+  if(!titulo||!dia||!num){alert('Preencha título, dia e número');return}
+  const cores=['#3b82f6','#10b981','#f59e0b','#8b5cf6','#ec4899'];
+  AGENDA.push({titulo,dia,num,hora:hora||'Dia inteiro',cor:cores[Math.floor(Math.random()*cores.length)]});
+  saveAgenda(AGENDA);
+  closeModal('modal-evento');
+  document.getElementById('evt-titulo').value='';
+  document.getElementById('evt-dia').value='';
+  document.getElementById('evt-num').value='';
+  document.getElementById('evt-hora').value='';
+  renderAgenda();
+}
+function deleteEvento(idx){
+  AGENDA.splice(idx,1);
+  saveAgenda(AGENDA);
+  renderAgenda();
+}
+
+// ── SPARKLINES & CHARTS ──────────────────────────────────────────────────
+function renderSparklines(){
+  const sparkData={
+    'spark-fat':[85,92,98,105,117,126],
+    'spark-res':[32,35,38,41,44,47],
+    'spark-alerts':[6,5,7,3,5,4],
+  };
+  Object.entries(sparkData).forEach(([id,data])=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    const max=Math.max(...data);
+    const color=id==='spark-alerts'?'var(--red)':id==='spark-res'?'var(--green)':'var(--blue)';
+    el.innerHTML=data.map((v,i)=>`<div class="spark-bar" style="height:${(v/max*100).toFixed(0)}%;background:${color};opacity:${i===data.length-1?1:0.4+i*0.1}"></div>`).join('');
+  });
+  // health ring
+  const ring=document.getElementById('health-ring');
+  if(ring){
+    const score=71;
+    const r=22,circ=2*Math.PI*r,offset=circ-(score/100)*circ;
+    ring.innerHTML=`<svg width="54" height="54"><circle cx="27" cy="27" r="${r}" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="4"/><circle cx="27" cy="27" r="${r}" fill="none" stroke="#a78bfa" stroke-width="4" stroke-dasharray="${circ}" stroke-dashoffset="${offset}" stroke-linecap="round"/></svg><span class="prog-val" style="color:#a78bfa">${score}</span>`;
+  }
+}
+
+// ── GREETING ──────────────────────────────────────────────────────────────
+function getGreeting(name){
+  const h=new Date().getHours();
+  const g=h<12?'BOM DIA':h<18?'BOA TARDE':'BOA NOITE';
+  return g+', '+name.split(' ')[0].toUpperCase();
+}
+
+// ── INIT UPGRADE ──────────────────────────────────────────────────────────
+function loadCustomEmps(){
+  const custom=JSON.parse(localStorage.getItem('orion_custom_emps')||'[]');
+  custom.forEach(e=>{
+    EMPS[e.id]=e;
+    addSidebarItem(e);
+  });
+}
+function loadStoredTasks(){
+  Object.keys(EMPS).forEach(id=>{
+    const stored=localStorage.getItem('orion_tasks_'+id);
+    if(stored)EMPS[id].tarefas=JSON.parse(stored);
+  });
+}
+function loadStoredAgenda(){
+  const stored=getStoredAgenda();
+  if(stored){AGENDA.length=0;stored.forEach(a=>AGENDA.push(a))}
 }
 
 // ── START ──────────────────────────────────────────────────────────────────

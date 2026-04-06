@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useData } from '../contexts/DataContext'
 
-const TABS = ['KPIs', 'OKRs', 'Tarefas', 'Contratos', 'Riscos', 'Decisoes', 'CRM', 'Arquivos']
+const BASE_TABS = ['KPIs', 'OKRs', 'Tarefas', 'Contratos', 'Riscos', 'Decisoes', 'CRM', 'Arquivos']
 
 const PRIORITY_COLORS = { alta: '#ef4444', media: '#f59e0b', baixa: '#3b82f6' }
 const STATUS_LABELS = { todo: 'A Fazer', doing: 'Em Andamento', done: 'Concluida' }
@@ -260,6 +260,23 @@ export default function Workspace() {
           </div>
         )
 
+      case 'Gestao de Fundos':
+        return (
+          <div style={{ margin: '-24px -28px', height: 'calc(100vh - 240px)' }}>
+            <iframe
+              src="/forme-seguro-v2.html"
+              title="Forme Seguro — Gestao de Fundos"
+              style={{
+                width: '100%',
+                height: '100%',
+                border: 'none',
+                borderRadius: '0 0 var(--r) var(--r)',
+                background: '#f5f4f0',
+              }}
+            />
+          </div>
+        )
+
       default:
         return null
     }
@@ -325,7 +342,7 @@ export default function Workspace() {
 
       {/* Tab Navigation */}
       <div className="tab-nav">
-        {TABS.map(t => (
+        {[...BASE_TABS, ...(id === 'fs' ? ['Gestao de Fundos'] : [])].map(t => (
           <button
             key={t}
             className={`tab-btn ${tab === t ? 'active' : ''}`}

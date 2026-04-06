@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Forme Seguro — Gestão de Rentabilidade</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{
+  --bg:#f5f4f0;--surface:#fff;--surface2:#f9f8f5;--border:#e8e6e0;--border2:#d4d0c8;
+  --navy:#0d1f3c;--navy2:#1a3460;--gold:#b8972a;--gold2:#d4ae45;
+  --green:#1a6b3c;--green2:#2d9558;--red:#c0392b;--blue:#1a5276;
+  --text:#1a1a1a;--text2:#4a4a4a;--text3:#7a7a7a;
+  --font-h:'Syne',sans-serif;--font-b:'Crimson Pro',serif;--font-m:'DM Mono',monospace;
+  --r:10px;--shadow:0 2px 12px rgba(13,31,60,0.08);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:var(--font-b);font-size:15px;line-height:1.6;min-height:100vh;}
+
+/* HEADER */
+.header{background:var(--navy);position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(0,0,0,0.2);}
+.header-inner{display:flex;align-items:center;justify-content:space-between;padding:12px 28px;}
+.logos{display:flex;align-items:center;gap:16px;}
+.logo-forme{font-family:var(--font-h);font-size:17px;font-weight:800;color:#fff;letter-spacing:-.02em;}
+.logo-forme span{color:var(--gold2);}
+.logo-sep{width:1px;height:28px;background:rgba(255,255,255,0.2);}
+.logo-xp{font-family:var(--font-m);font-size:10px;color:rgba(255,255,255,0.5);letter-spacing:.08em;text-transform:uppercase;line-height:1.3;}
+.logo-xp strong{display:block;font-size:14px;color:var(--gold2);font-weight:500;}
+.header-right{font-family:var(--font-m);font-size:10px;color:rgba(255,255,255,0.35);letter-spacing:.1em;text-transform:uppercase;}
+.tabs{background:var(--navy2);display:flex;border-bottom:1px solid rgba(255,255,255,0.08);}
+.tab{padding:11px 24px;font-family:var(--font-m);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,0.4);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap;}
+.tab.active{color:#fff;border-bottom-color:var(--gold2);}
+.tab:hover:not(.active){color:rgba(255,255,255,0.7);}
+
+/* LAYOUT */
+.main{max-width:1400px;margin:0 auto;padding:28px 20px;}
+.panel{display:none;}.panel.active{display:block;}
+
+/* CARDS TOTAIS */
+.totais-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:24px;}
+.total-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow);}
+.total-label{font-family:var(--font-m);font-size:9px;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px;}
+.total-value{font-family:var(--font-h);font-size:19px;font-weight:700;color:var(--navy);line-height:1;}
+.total-value.green{color:var(--green);}.total-value.gold{color:var(--gold);}.total-value.red{color:var(--red);}
+.total-sub{font-family:var(--font-m);font-size:9px;color:var(--text3);margin-top:3px;}
+
+/* BOTÕES */
+.btn{padding:7px 16px;border-radius:6px;font-family:var(--font-m);font-size:10px;letter-spacing:.08em;cursor:pointer;border:none;transition:all .18s;text-transform:uppercase;}
+.btn-primary{background:var(--navy);color:#fff;}.btn-primary:hover{background:var(--navy2);}
+.btn-gold{background:var(--gold);color:#fff;}.btn-gold:hover{background:var(--gold2);}
+.btn-green{background:var(--green);color:#fff;}.btn-green:hover{background:var(--green2);}
+.btn-outline{background:transparent;border:1px solid var(--border2);color:var(--text2);}
+.btn-outline:hover{border-color:var(--navy);color:var(--navy);}
+.btn-red{background:var(--red);color:#fff;}.btn-red:hover{opacity:.85;}
+.btn-sm{padding:4px 10px;font-size:9px;}
+.btns-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.section-title{font-family:var(--font-h);font-size:12px;font-weight:700;color:var(--navy);letter-spacing:.06em;text-transform:uppercase;}
+
+/* TURMAS */
+.turma-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);margin-bottom:14px;box-shadow:var(--shadow);overflow:hidden;}
+.turma-head{display:flex;align-items:center;gap:10px;padding:13px 18px;background:var(--surface2);border-bottom:1px solid var(--border);cursor:pointer;user-select:none;}
+.turma-nome{font-family:var(--font-h);font-size:14px;font-weight:700;color:var(--navy);flex:1;}
+.turma-saldo{font-family:var(--font-m);font-size:12px;font-weight:500;}
+.turma-body{padding:18px;display:none;}.turma-body.open{display:block;}
+
+/* TABELA MESES */
+.mes-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:6px;}
+.mes-table th{font-family:var(--font-m);font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);padding:7px 8px;text-align:right;border-bottom:2px solid var(--border);background:var(--surface2);white-space:nowrap;}
+.mes-table th:first-child,.mes-table th:nth-child(2){text-align:left;}
+.mes-table td{padding:7px 8px;border-bottom:1px solid var(--border);text-align:right;font-family:var(--font-m);font-size:11px;vertical-align:middle;}
+.mes-table td:first-child{text-align:left;font-family:var(--font-b);color:var(--navy);font-size:12px;}
+.mes-table td:nth-child(2){text-align:left;}
+.mes-table tr:hover td{background:var(--surface2);}
+.mes-table tr:last-child td{border-bottom:none;}
+.mes-table tfoot td{font-weight:700;background:var(--navy);color:#fff;border-bottom:none;}
+.mes-table tfoot td:first-child{text-align:left;}
+
+.badge{display:inline-block;padding:1px 7px;border-radius:20px;font-family:var(--font-m);font-size:8px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;}
+.badge-ativo{background:#e8f5ee;color:var(--green);}
+.badge-enc{background:#fdecea;color:var(--red);}
+
+.mono{font-family:var(--font-m);}
+.green{color:var(--green);}.red{color:var(--red);}.gold{color:var(--gold);}.navy{color:var(--navy);}
+.bold{font-weight:600;}
+
+/* FORM */
+.field{display:flex;flex-direction:column;gap:3px;}
+.field label{font-family:var(--font-m);font-size:8px;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;}
+.field input,.field select{background:#fff;border:1px solid var(--border);border-radius:5px;padding:6px 10px;font-family:var(--font-m);font-size:11px;color:var(--text);outline:none;width:100%;}
+.field input:focus,.field select:focus{border-color:var(--navy);}
+.field input::placeholder{color:#bbb;}
+
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:200;display:none;align-items:center;justify-content:center;padding:16px;}
+.modal-bg.open{display:flex;}
+.modal{background:#fff;border-radius:14px;padding:28px;max-width:560px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.2);max-height:90vh;overflow-y:auto;}
+.modal h3{font-family:var(--font-h);font-size:17px;color:var(--navy);margin-bottom:4px;}
+.modal-sub{font-size:13px;color:var(--text3);margin-bottom:18px;font-style:italic;}
+.modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.modal-grid.three{grid-template-columns:1fr 1fr 1fr;}
+.modal-grid.full{grid-template-columns:1fr;}
+.modal-section{font-family:var(--font-m);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin:14px 0 8px;padding-bottom:4px;border-bottom:1px solid var(--border);}
+.modal-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:20px;}
+.calculo-preview{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-top:12px;font-size:12px;}
+.calculo-row{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--border);}
+.calculo-row:last-child{border-bottom:none;font-weight:700;font-family:var(--font-m);}
+.calculo-row .label{color:var(--text3);}
+
+/* CONSOLIDADO */
+.consol-table{width:100%;border-collapse:collapse;font-size:12px;}
+.consol-table th{font-family:var(--font-m);font-size:8px;letter-spacing:.08em;text-transform:uppercase;padding:9px 12px;text-align:right;border-bottom:2px solid var(--border);background:var(--navy);color:rgba(255,255,255,0.6);}
+.consol-table th:first-child{text-align:left;}
+.consol-table td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:right;font-family:var(--font-m);font-size:11px;}
+.consol-table td:first-child{text-align:left;font-family:var(--font-h);font-size:12px;color:var(--navy);}
+.consol-table tfoot td{font-weight:700;background:var(--navy);color:#fff;border-bottom:none;}
+.consol-table tfoot td:first-child{text-align:left;}
+
+/* EVOLUÇÃO */
+.evol-wrap{overflow-x:auto;margin-top:12px;}
+.evol-table{border-collapse:collapse;font-size:11px;min-width:100%;}
+.evol-table th{font-family:var(--font-m);font-size:8px;letter-spacing:.06em;text-transform:uppercase;padding:6px 10px;text-align:right;border-bottom:2px solid var(--border);background:var(--surface2);white-space:nowrap;}
+.evol-table th:first-child{text-align:left;position:sticky;left:0;background:var(--surface2);}
+.evol-table td{padding:6px 10px;border-bottom:1px solid var(--border);text-align:right;font-family:var(--font-m);white-space:nowrap;}
+.evol-table td:first-child{text-align:left;font-family:var(--font-b);position:sticky;left:0;background:#fff;}
+.evol-table tr:hover td{background:#f5f4ef;}
+.evol-table tfoot td{font-weight:700;background:var(--navy);color:#fff;border-bottom:none;position:sticky;bottom:0;}
+.evol-table tfoot td:first-child{text-align:left;}
+
+/* CHART */
+.chart-bar-wrap{display:flex;align-items:flex-end;gap:2px;height:80px;margin-top:8px;}
+.chart-bar{flex:1;background:var(--navy);border-radius:2px 2px 0 0;min-height:2px;cursor:pointer;transition:opacity .2s;}
+.chart-bar:hover{opacity:.7;}
+.chart-bar.gold{background:var(--gold);}
+
+#pdfProgress{display:none;font-family:var(--font-m);font-size:10px;color:var(--text3);margin-top:6px;}
+
+@media(max-width:800px){
+  .totais-grid{grid-template-columns:1fr 1fr;}
+  .modal-grid,.modal-grid.three{grid-template-columns:1fr;}
+  .header-inner{padding:10px 14px;}
+  .main{padding:16px 10px;}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="logos">
+      <div class="logo-forme">FORME<span>SEGURO</span></div>
+      <div class="logo-sep"></div>
+      <div class="logo-xp"><span>parceria</span><strong>XP Investimentos</strong></div>
+    </div>
+    <div class="header-right">Gestão de Rentabilidade · Fundos de Formatura</div>
+  </div>
+  <div class="tabs">
+    <div class="tab active" onclick="showPanel('painel')">Painel</div>
+    <div class="tab" onclick="showPanel('turmas')">Turmas</div>
+    <div class="tab" onclick="showPanel('lancamento')">Lançamento Mensal</div>
+    <div class="tab" onclick="showPanel('consolidado')">Consolidado</div>
+    <div class="tab" onclick="showPanel('relatorios')">Relatórios</div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- ══ PAINEL ══ -->
+  <div class="panel active" id="panel-painel">
+    <div class="totais-grid">
+      <div class="total-card"><div class="total-label">Patrimônio Total Líquido</div><div class="total-value green" id="tot-liq">R$ 0,00</div><div class="total-sub">Saldo atual todas as turmas</div></div>
+      <div class="total-card"><div class="total-label">Total Arrecadado</div><div class="total-value" id="tot-arrec">R$ 0,00</div><div class="total-sub">Boletos + eventos</div></div>
+      <div class="total-card"><div class="total-label">Total Despesas</div><div class="total-value red" id="tot-desp">R$ 0,00</div><div class="total-sub">Todas as saídas</div></div>
+      <div class="total-card"><div class="total-label">Rentabilidade Gerada</div><div class="total-value gold" id="tot-rent">R$ 0,00</div><div class="total-sub">Rendimentos acumulados</div></div>
+      <div class="total-card"><div class="total-label">Honorários Forme</div><div class="total-value" id="tot-honor">R$ 0,00</div><div class="total-sub">50% da rentabilidade</div></div>
+    </div>
+    <div class="section-header">
+      <div class="section-title">Turmas Ativas</div>
+      <button class="btn btn-primary" onclick="abrirModalTurma()">+ Nova Turma</button>
+    </div>
+    <div id="painel-cards"></div>
+  </div>
+
+  <!-- ══ TURMAS ══ -->
+  <div class="panel" id="panel-turmas">
+    <div class="section-header">
+      <div class="section-title">Gestão de Turmas</div>
+      <button class="btn btn-primary" onclick="abrirModalTurma()">+ Nova Turma</button>
+    </div>
+    <div id="turmas-lista"></div>
+  </div>
+
+  <!-- ══ LANÇAMENTO MENSAL ══ -->
+  <div class="panel" id="panel-lancamento">
+    <div class="section-header">
+      <div class="section-title">Lançamento Mensal</div>
+      <div style="font-family:var(--font-m);font-size:10px;color:var(--text3);">Registre os dados do mês para uma turma</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:24px;box-shadow:var(--shadow);">
+      <div class="modal-grid" style="margin-bottom:16px;">
+        <div class="field"><label>Turma *</label>
+          <select id="lanc-turma" onchange="previewCalculo()">
+            <option value="">-- Selecione a turma --</option>
+          </select>
+        </div>
+        <div class="field"><label>Mês de Referência *</label><input type="month" id="lanc-mes" onchange="previewCalculo()"></div>
+      </div>
+
+      <div class="modal-section">Receitas</div>
+      <div class="modal-grid three">
+        <div class="field"><label>Boletos Pagos (R$)</label><input type="number" id="lanc-boletos" placeholder="0,00" min="0" step="0.01" oninput="previewCalculo()"></div>
+        <div class="field"><label>Lucro Eventos (R$)</label><input type="number" id="lanc-eventos" placeholder="0,00" min="0" step="0.01" oninput="previewCalculo()"></div>
+        <div class="field"><label>Rendimento % (mês)</label><input type="number" id="lanc-rend" placeholder="Ex: 1.02" step="0.0001" min="0" oninput="previewCalculo()"><div style="font-family:var(--font-m);font-size:8px;color:var(--text3);margin-top:2px;">Taxa líquida do extrato XP (já deduzido IR)</div></div>
+      </div>
+
+      <div class="modal-section">Despesas</div>
+      <div class="modal-grid three">
+        <div class="field"><label>Taxa Emissão Boletos (R$)</label><input type="number" id="lanc-taxa" placeholder="0,00" min="0" step="0.01" oninput="previewCalculo()"></div>
+        <div class="field"><label>Cerimonial / Shows (R$)</label><input type="number" id="lanc-cerimonial" placeholder="0,00" min="0" step="0.01" oninput="previewCalculo()"></div>
+        <div class="field"><label>Despesas de Rifa (R$)</label><input type="number" id="lanc-rifa" placeholder="0,00" min="0" step="0.01" oninput="previewCalculo()"></div>
+        <div class="field"><label>Devolução / Saída do Fundo (R$)</label><input type="number" id="lanc-devolucao" placeholder="0,00" min="0" step="0.01" oninput="previewCalculo()"></div>
+        <div class="field"><label>Outras Despesas (R$)</label><input type="number" id="lanc-outras" placeholder="0,00" min="0" step="0.01" oninput="previewCalculo()"></div>
+        <div class="field"><label>Observação</label><input type="text" id="lanc-obs" placeholder="Opcional"></div>
+      </div>
+
+      <!-- PREVIEW CÁLCULO -->
+      <div class="calculo-preview" id="calc-preview" style="display:none;">
+        <div style="font-family:var(--font-m);font-size:9px;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;">Prévia do Cálculo</div>
+        <div class="calculo-row"><span class="label">Saldo anterior (mês ant.)</span><span id="cp-saldo-ant" class="mono">R$ 0,00</span></div>
+        <div class="calculo-row"><span class="label">+ Boletos Pagos</span><span id="cp-boletos" class="mono green">R$ 0,00</span></div>
+        <div class="calculo-row"><span class="label">+ Lucro Eventos</span><span id="cp-eventos" class="mono green">R$ 0,00</span></div>
+        <div class="calculo-row"><span class="label">− Total Despesas</span><span id="cp-despesas" class="mono red">R$ 0,00</span></div>
+        <div class="calculo-row bold"><span class="label">= Saldo Parcial</span><span id="cp-parcial" class="mono navy">R$ 0,00</span></div>
+        <div class="calculo-row"><span class="label">× Rendimento (<span id="cp-rend-pct">0%</span>)</span><span id="cp-rentab" class="mono gold">R$ 0,00</span></div>
+        <div class="calculo-row"><span class="label">= Saldo Bruto</span><span id="cp-bruto" class="mono">R$ 0,00</span></div>
+        <div class="calculo-row"><span class="label">− Honorário Forme (50% do rendimento)</span><span id="cp-honor" class="mono red">R$ 0,00</span></div>
+        <div class="calculo-row bold"><span>SALDO FINAL LÍQUIDO</span><span id="cp-final" class="mono green" style="font-size:14px;">R$ 0,00</span></div>
+      </div>
+
+      <div class="btns-row" style="margin-top:16px;">
+        <button class="btn btn-primary" onclick="salvarLancamento()">✓ Salvar Lançamento</button>
+        <button class="btn btn-outline" onclick="limparLancamento()">Limpar</button>
+      </div>
+    </div>
+
+    <!-- Últimos lançamentos -->
+    <div style="margin-top:20px;">
+      <div class="section-title" style="margin-bottom:10px;">Histórico de Lançamentos</div>
+      <div id="historico-lanc"></div>
+    </div>
+  </div>
+
+  <!-- ══ CONSOLIDADO ══ -->
+  <div class="panel" id="panel-consolidado">
+    <div class="section-header">
+      <div class="section-title">Posição Consolidada — Conta XP</div>
+      <button class="btn btn-outline btn-sm" onclick="renderConsolidado()">↻ Atualizar</button>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow);">
+      <table class="consol-table">
+        <thead><tr><th>Turma</th><th>Arrecadado</th><th>Despesas</th><th>Rentabilidade</th><th>Honorários</th><th>Saldo Líquido</th><th>Meses</th></tr></thead>
+        <tbody id="consol-body"><tr><td colspan="7" style="text-align:center;padding:28px;color:var(--text3);font-style:italic;">Nenhuma turma cadastrada.</td></tr></tbody>
+        <tfoot id="consol-foot"></tfoot>
+      </table>
+    </div>
+    <div style="margin-top:20px;">
+      <div class="section-title" style="margin-bottom:10px;">Evolução Mensal Consolidada</div>
+      <div class="evol-wrap">
+        <table class="evol-table" id="evol-consol">
+          <thead><tr><th>Mês</th><th>Arrecadado</th><th>Despesas</th><th>Rentabilidade</th><th>Honorários</th><th>Saldo Líquido Acum.</th></tr></thead>
+          <tbody id="evol-consol-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ RELATÓRIOS ══ -->
+  <div class="panel" id="panel-relatorios">
+    <div class="section-header"><div class="section-title">Geração de Relatórios PDF</div></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:22px;box-shadow:var(--shadow);">
+        <div style="font-family:var(--font-h);font-size:13px;color:var(--navy);margin-bottom:6px;">Relatório Individual por Turma</div>
+        <div style="font-size:13px;color:var(--text2);margin-bottom:14px;">Selecione uma ou mais turmas para gerar PDF detalhado com todo o histórico mensal.</div>
+        <div id="check-turmas" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;"></div>
+        <div class="btns-row">
+          <button class="btn btn-outline btn-sm" onclick="selTodas(true)">Todas</button>
+          <button class="btn btn-outline btn-sm" onclick="selTodas(false)">Limpar</button>
+          <button class="btn btn-gold" onclick="gerarPDFIndividual()">⬇ Gerar PDF(s)</button>
+        </div>
+        <div id="pdfProgress"></div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:22px;box-shadow:var(--shadow);">
+        <div style="font-family:var(--font-h);font-size:13px;color:var(--navy);margin-bottom:6px;">Relatório Consolidado Total</div>
+        <div style="font-size:13px;color:var(--text2);margin-bottom:14px;">PDF landscape com todas as turmas, posição consolidada e evolução mensal da conta XP.</div>
+        <button class="btn btn-green" onclick="gerarPDFConsolidado()">⬇ Gerar PDF Consolidado</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NOVA TURMA -->
+<div class="modal-bg" id="modal-turma">
+  <div class="modal">
+    <h3 id="modal-turma-title">Nova Turma</h3>
+    <div class="modal-sub">Cadastre um novo centro de custo / fundo de formatura</div>
+    <div class="modal-grid">
+      <div class="field"><label>Nome da Turma *</label><input type="text" id="mt-nome" placeholder="Ex: Medicina Veterinária UVV 2026.2"></div>
+      <div class="field"><label>Curso / Instituição</label><input type="text" id="mt-curso" placeholder="Ex: Med. Veterinária — UVV"></div>
+      <div class="field"><label>Data de Início</label><input type="month" id="mt-inicio"></div>
+      <div class="field"><label>Representante</label><input type="text" id="mt-rep" placeholder="Ex: João Silva"></div>
+      <div class="field"><label>Previsão de Formatura</label><input type="month" id="mt-prev"></div>
+      <div class="field"><label>Nº Formandos</label><input type="number" id="mt-alunos" placeholder="Ex: 60" min="1"></div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn btn-outline" onclick="fecharModal('modal-turma')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarTurma()">Salvar Turma</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+// ESTADO
+// ══════════════════════════════════════════════════════
+let turmas = JSON.parse(localStorage.getItem('fs2-turmas') || '[]');
+let editandoTurmaId = null;
+
+function salvar(){ localStorage.setItem('fs2-turmas', JSON.stringify(turmas)); }
+
+// ── Dados históricos MED VET UVV migrados da planilha ──
+const HIST_MEDVET = [
+  {mes:"2023-03",boletos:1250,eventos:0,taxa:9.90,cerimonial:0,rifa:0,devolucao:0,outras:0,rend:0},
+  {mes:"2023-04",boletos:7643.43,eventos:0,taxa:59.40,cerimonial:0,rifa:0,devolucao:0,outras:0,rend:0},
+  {mes:"2023-05",boletos:10315.91,eventos:0,taxa:79.20,cerimonial:0,rifa:0,devolucao:0,outras:0,rend:0.0102},
+  {mes:"2023-06",boletos:4340.63,eventos:0,taxa:33.66,cerimonial:0,rifa:0,devolucao:0,outras:0,rend:0.0102},
+  {mes:"2023-07",boletos:5360.04,eventos:0,taxa:41.58,cerimonial:0,rifa:0,devolucao:0,outras:0,rend:0.0102},
+  {mes:"2023-08",boletos:9405.33,eventos:0,taxa:73.26,cerimonial:0,rifa:0,devolucao:0,outras:0,rend:0.0102},
+  {mes:"2023-09",boletos:5227.60,eventos:0,taxa:39.60,cerimonial:2571.42,rifa:140,devolucao:750,outras:0,rend:0.0097},
+  {mes:"2023-10",boletos:8171.10,eventos:0,taxa:63.36,cerimonial:0,rifa:0,devolucao:0,outras:0,rend:0.0074},
+  {mes:"2023-11",boletos:5320.43,eventos:0,taxa:39.60,cerimonial:0,rifa:140,devolucao:0,outras:0,rend:0.0103},
+  {mes:"2023-12",boletos:13811.30,eventos:0,taxa:91.08,cerimonial:0,rifa:0,devolucao:0,outras:0,rend:0.0098},
+  {mes:"2024-01",boletos:8954.68,eventos:0,taxa:69.30,cerimonial:0,rifa:0,devolucao:1150,outras:0,rend:0.0108},
+  {mes:"2024-02",boletos:7694.78,eventos:0,taxa:57.42,cerimonial:0,rifa:0,devolucao:0,outras:0,rend:0.0080},
+  {mes:"2024-03",boletos:11402.21,eventos:0,taxa:69.30,cerimonial:0,rifa:295,devolucao:0,outras:711.63,rend:0.008317},
+  {mes:"2024-04",boletos:11838.52,eventos:0,taxa:81.18,cerimonial:0,rifa:0,devolucao:0,outras:4000.23,rend:0.008874},
+  {mes:"2024-05",boletos:10697.50,eventos:0,taxa:71.28,cerimonial:2571.42,rifa:0,devolucao:0,outras:3907.68,rend:0.008324},
+  {mes:"2024-06",boletos:14600.72,eventos:0,taxa:110.88,cerimonial:0,rifa:1000,devolucao:0,outras:1469.50,rend:0.007883},
+  {mes:"2024-07",boletos:23117.35,eventos:0,taxa:146.52,cerimonial:2571.42,rifa:0,devolucao:0,outras:17102.29,rend:0.009071},
+  {mes:"2024-08",boletos:7414.91,eventos:6750,taxa:51.48,cerimonial:0,rifa:0,devolucao:2975,outras:15686.57,rend:0.008675},
+  {mes:"2024-09",boletos:6475.15,eventos:1872.65,taxa:70.59,cerimonial:0,rifa:0,devolucao:0,outras:0,rend:0.008352},
+  {mes:"2024-10",boletos:9632.94,eventos:0,taxa:87.15,cerimonial:0,rifa:0,devolucao:0,outras:6310,rend:0.009280},
+  {mes:"2024-11",boletos:3938.38,eventos:0,taxa:38.02,cerimonial:0,rifa:0,devolucao:0,outras:0,rend:0.007930},
+  {mes:"2024-12",boletos:9510.93,eventos:0,taxa:93.60,cerimonial:0,rifa:0,devolucao:0,outras:0,rend:0.009314},
+  {mes:"2025-01",boletos:4864.02,eventos:0,taxa:42.58,cerimonial:4191.43,rifa:0,devolucao:4480.50,outras:0,rend:0.0101},
+  {mes:"2025-02",boletos:7521.90,eventos:0,taxa:64.98,cerimonial:0,rifa:0,devolucao:0,outras:0,rend:0.0098},
+  {mes:"2025-03",boletos:4110.11,eventos:0,taxa:36.76,cerimonial:0,rifa:0,devolucao:0,outras:0,rend:0.0096},
+  {mes:"2025-04",boletos:7180.67,eventos:0,taxa:73.06,cerimonial:0,rifa:0,devolucao:0,outras:0,rend:0.0105},
+  {mes:"2025-05",boletos:5438.73,eventos:0,taxa:62.03,cerimonial:0,rifa:0,devolucao:0,outras:0,rend:0.0113},
+  {mes:"2025-06",boletos:7686.05,eventos:0,taxa:45.19,cerimonial:0,rifa:0,devolucao:0,outras:0,rend:0.0109},
+  {mes:"2025-07",boletos:5370.13,eventos:0,taxa:88.40,cerimonial:0,rifa:0,devolucao:0,outras:0,rend:0.0127},
+  {mes:"2025-08",boletos:10354.15,eventos:0,taxa:60.82,cerimonial:0,rifa:0,devolucao:0,outras:0,rend:0.0116},
+  {mes:"2025-09",boletos:7757.56,eventos:0,taxa:72.02,cerimonial:0,rifa:0,devolucao:0,outras:0,rend:0.0121},
+  {mes:"2025-10",boletos:6035.00,eventos:0,taxa:77.40,cerimonial:0,rifa:0,devolucao:0,outras:0,rend:0.0127},
+  {mes:"2025-11",boletos:3502.97,eventos:0,taxa:18.32,cerimonial:0,rifa:0,devolucao:0,outras:0,rend:0.0105},
+  {mes:"2025-12",boletos:8941.09,eventos:0,taxa:85.22,cerimonial:0,rifa:0,devolucao:0,outras:0,rend:0.0121},
+  {mes:"2026-01",boletos:4052.56,eventos:0,taxa:59.46,cerimonial:0,rifa:0,devolucao:6441.26,outras:0,rend:0.0116},
+  {mes:"2026-02",boletos:6960.90,eventos:0,taxa:65.13,cerimonial:0,rifa:0,devolucao:2875.00,outras:0,rend:0.0099},
+];
+
+// Injeta turma MED VET UVV se não existir
+function initDados(){
+  if(!turmas.find(t=>t.id==='medvet-uvv')){
+    turmas.push({
+      id:'medvet-uvv',
+      nome:'Medicina Veterinária UVV 2026.2',
+      curso:'Med. Veterinária — UVV',
+      inicio:'2023-03',
+      prev:'2026-12',
+      representante:'',
+      alunos:0,
+      meses: HIST_MEDVET
+    });
+    salvar();
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// CÁLCULOS (lógica da planilha)
+// ══════════════════════════════════════════════════════
+function calcMes(m, saldoAnt){
+  const desp = m.taxa + m.cerimonial + m.rifa + m.devolucao + m.outras;
+  const entrada = m.boletos + m.eventos;
+  const saldoParcial = saldoAnt + entrada - desp;
+  const rentab = saldoParcial * (m.rend/100 || m.rend);
+  const saldoBruto = saldoParcial + rentab;
+  const honorario = rentab * 0.5;
+  const saldoFinal = saldoBruto - honorario;
+  return {entrada, desp, saldoParcial, rentab, saldoBruto, honorario, saldoFinal};
+}
+
+function calcTurma(t){
+  let saldo=0, totArrec=0, totDesp=0, totRentab=0, totHonor=0;
+  const linhas = [];
+  (t.meses||[]).sort((a,b)=>a.mes.localeCompare(b.mes)).forEach(m=>{
+    const c = calcMes(m, saldo);
+    totArrec  += c.entrada;
+    totDesp   += c.desp;
+    totRentab += c.rentab;
+    totHonor  += c.honorario;
+    saldo = c.saldoFinal;
+    linhas.push({...m, ...c, saldoAnt: saldo - c.saldoFinal + (saldo - c.saldoFinal === 0 ? 0 : 0)});
+  });
+  // recalc com saldoAnt correto
+  let s2=0;
+  const linhas2=[];
+  (t.meses||[]).sort((a,b)=>a.mes.localeCompare(b.mes)).forEach(m=>{
+    const saldoAnt = s2;
+    const c = calcMes(m, s2);
+    linhas2.push({...m,...c,saldoAnt});
+    s2 = c.saldoFinal;
+  });
+  return {saldoFinal:s2, totArrec, totDesp, totRentab, totHonor, linhas:linhas2};
+}
+
+// ══════════════════════════════════════════════════════
+// NAVEGAÇÃO
+// ══════════════════════════════════════════════════════
+function showPanel(id){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  document.querySelectorAll('.tab').forEach(t=>{
+    if(t.textContent.toLowerCase().trim()===({painel:'painel',turmas:'turmas',lancamento:'lançamento mensal',consolidado:'consolidado',relatorios:'relatórios'}[id]||id)) t.classList.add('active');
+  });
+  if(id==='painel')       renderPainel();
+  if(id==='turmas')       renderTurmas();
+  if(id==='lancamento')   renderLancamento();
+  if(id==='consolidado')  renderConsolidado();
+  if(id==='relatorios')   renderRelatorios();
+}
+
+// ══════════════════════════════════════════════════════
+// FORMAT
+// ══════════════════════════════════════════════════════
+function fmt(v,d=2){return(v||0).toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d});}
+function fmtMes(m){
+  if(!m)return'—';
+  const[a,mo]=m.split('-');
+  return['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'][parseInt(mo)-1]+'/'+a.slice(2);
+}
+function fmtPct(v){return(v*100).toFixed(4)+'%';}
+
+// ══════════════════════════════════════════════════════
+// MODAL TURMA
+// ══════════════════════════════════════════════════════
+function abrirModalTurma(id){
+  editandoTurmaId = id||null;
+  document.getElementById('modal-turma-title').textContent = id ? 'Editar Turma' : 'Nova Turma';
+  if(id){
+    const t=turmas.find(t=>t.id===id);
+    document.getElementById('mt-nome').value=t.nome||'';
+    document.getElementById('mt-curso').value=t.curso||'';
+    document.getElementById('mt-inicio').value=t.inicio||'';
+    document.getElementById('mt-rep').value=t.representante||'';
+    document.getElementById('mt-prev').value=t.prev||'';
+    document.getElementById('mt-alunos').value=t.alunos||'';
+  } else {
+    ['mt-nome','mt-curso','mt-inicio','mt-rep','mt-prev','mt-alunos'].forEach(id=>document.getElementById(id).value='');
+  }
+  document.getElementById('modal-turma').classList.add('open');
+}
+function fecharModal(id){document.getElementById(id).classList.remove('open');}
+
+function salvarTurma(){
+  const nome=document.getElementById('mt-nome').value.trim();
+  if(!nome){alert('Informe o nome da turma.');return;}
+  if(editandoTurmaId){
+    const t=turmas.find(t=>t.id===editandoTurmaId);
+    Object.assign(t,{nome,curso:document.getElementById('mt-curso').value.trim(),inicio:document.getElementById('mt-inicio').value,representante:document.getElementById('mt-rep').value.trim(),prev:document.getElementById('mt-prev').value,alunos:parseInt(document.getElementById('mt-alunos').value)||0});
+  } else {
+    turmas.push({id:Date.now().toString(),nome,curso:document.getElementById('mt-curso').value.trim(),inicio:document.getElementById('mt-inicio').value,representante:document.getElementById('mt-rep').value.trim(),prev:document.getElementById('mt-prev').value,alunos:parseInt(document.getElementById('mt-alunos').value)||0,meses:[]});
+  }
+  salvar(); fecharModal('modal-turma');
+  renderPainel(); renderTurmas(); atualizarSelectTurmas();
+}
+
+// ══════════════════════════════════════════════════════
+// PAINEL
+// ══════════════════════════════════════════════════════
+function renderPainel(){
+  let totL=0,totA=0,totD=0,totR=0,totH=0;
+  const c=document.getElementById('painel-cards');
+  if(!turmas.length){c.innerHTML='<div style="text-align:center;padding:48px;color:var(--text3);font-style:italic;">Nenhuma turma cadastrada.</div>';atualizarTotaisTopo(0,0,0,0,0);return;}
+  c.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;">'+
+  turmas.map(t=>{
+    const r=calcTurma(t);
+    totL+=r.saldoFinal;totA+=r.totArrec;totD+=r.totDesp;totR+=r.totRentab;totH+=r.totHonor;
+    const ult=t.meses&&t.meses.length?fmtMes([...t.meses].sort((a,b)=>b.mes.localeCompare(a.mes))[0].mes):'—';
+    return`<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;box-shadow:var(--shadow);cursor:pointer;" onclick="showPanel('turmas')">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div style="font-family:var(--font-h);font-size:13px;font-weight:700;color:var(--navy);">${t.nome}</div>
+        <span class="badge badge-ativo">${t.meses?t.meses.length:0} meses</span>
+      </div>
+      <div style="font-family:var(--font-m);font-size:9px;color:var(--text3);margin-bottom:10px;">${t.curso||''} · Último: ${ult}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+        <div><div style="font-family:var(--font-m);font-size:8px;color:var(--text3);text-transform:uppercase;">Saldo Líquido</div><div style="font-family:var(--font-m);font-size:13px;color:var(--green);font-weight:600;">R$ ${fmt(r.saldoFinal)}</div></div>
+        <div><div style="font-family:var(--font-m);font-size:8px;color:var(--text3);text-transform:uppercase;">Rentabilidade</div><div style="font-family:var(--font-m);font-size:13px;color:var(--gold);">R$ ${fmt(r.totRentab)}</div></div>
+        <div><div style="font-family:var(--font-m);font-size:8px;color:var(--text3);text-transform:uppercase;">Arrecadado</div><div style="font-family:var(--font-m);font-size:12px;color:var(--navy);">R$ ${fmt(r.totArrec)}</div></div>
+        <div><div style="font-family:var(--font-m);font-size:8px;color:var(--text3);text-transform:uppercase;">Honorários</div><div style="font-family:var(--font-m);font-size:12px;color:var(--text2);">R$ ${fmt(r.totHonor)}</div></div>
+      </div>
+    </div>`;
+  }).join('')+'</div>';
+  atualizarTotaisTopo(totL,totA,totD,totR,totH);
+}
+
+function atualizarTotaisTopo(l,a,d,r,h){
+  document.getElementById('tot-liq').textContent='R$ '+fmt(l);
+  document.getElementById('tot-arrec').textContent='R$ '+fmt(a);
+  document.getElementById('tot-desp').textContent='R$ '+fmt(d);
+  document.getElementById('tot-rent').textContent='R$ '+fmt(r);
+  document.getElementById('tot-honor').textContent='R$ '+fmt(h);
+}
+
+// ══════════════════════════════════════════════════════
+// TURMAS DETALHE
+// ══════════════════════════════════════════════════════
+function renderTurmas(){
+  const c=document.getElementById('turmas-lista');
+  if(!turmas.length){c.innerHTML='<div style="text-align:center;padding:48px;color:var(--text3);font-style:italic;">Nenhuma turma.</div>';return;}
+  c.innerHTML=turmas.map(t=>renderCartaoTurma(t)).join('');
+}
+
+function renderCartaoTurma(t){
+  const r=calcTurma(t);
+  const mesesOrd=[...t.meses||[]].sort((a,b)=>a.mes.localeCompare(b.mes));
+
+  const linhasTabela=mesesOrd.length?mesesOrd.map((m,i)=>{
+    const c2=r.linhas[i]||{};
+    return`<tr>
+      <td>${fmtMes(m.mes)}</td>
+      <td class="mono">R$ ${fmt(c2.saldoAnt||0)}</td>
+      <td class="mono green">R$ ${fmt(m.boletos)}</td>
+      <td class="mono ${m.eventos?'green':''}">${m.eventos?'R$ '+fmt(m.eventos):'—'}</td>
+      <td class="mono red">R$ ${fmt(c2.desp||0)}</td>
+      <td class="mono navy bold">R$ ${fmt(c2.saldoParcial||0)}</td>
+      <td class="mono gold">${(m.rend*100).toFixed(4)}%</td>
+      <td class="mono gold">R$ ${fmt(c2.rentab||0)}</td>
+      <td class="mono">R$ ${fmt(c2.saldoBruto||0)}</td>
+      <td class="mono red">R$ ${fmt(c2.honorario||0)}</td>
+      <td class="mono green bold">R$ ${fmt(c2.saldoFinal||0)}</td>
+      <td>${m.obs||''}</td>
+      <td><button class="btn btn-red btn-sm" onclick="deletarMes('${t.id}','${m.mes}')">✕</button></td>
+    </tr>`;
+  }).join('')
+  :'<tr><td colspan="13" style="text-align:center;color:var(--text3);padding:16px;font-style:italic;">Nenhum lançamento registrado.</td></tr>';
+
+  return`<div class="turma-card" id="tc-${t.id}">
+    <div class="turma-head" onclick="toggleTurma('${t.id}')">
+      <input type="checkbox" style="width:16px;height:16px;accent-color:var(--navy);flex-shrink:0;" onclick="event.stopPropagation()" data-id="${t.id}">
+      <div class="turma-nome">${t.nome} <span style="font-size:10px;color:var(--text3);font-family:var(--font-m);font-weight:400;">${t.curso?'· '+t.curso:''}</span></div>
+      <div style="display:flex;gap:10px;align-items:center;margin-left:auto;">
+        <div style="text-align:right;">
+          <div style="font-family:var(--font-m);font-size:8px;color:var(--text3);text-transform:uppercase;">Saldo Líquido</div>
+          <div class="turma-saldo ${r.saldoFinal<0?'red':'green'}">R$ ${fmt(r.saldoFinal)}</div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();irLancamento('${t.id}')">+ Lançar</button>
+        <button class="btn btn-outline btn-sm" onclick="event.stopPropagation();abrirModalTurma('${t.id}')">✎</button>
+        <button class="btn btn-red btn-sm" onclick="event.stopPropagation();deletarTurma('${t.id}')">✕</button>
+        <span style="font-size:11px;color:var(--text3);margin-left:4px;" id="tog-${t.id}">▼</span>
+      </div>
+    </div>
+    <div class="turma-body" id="tb-${t.id}">
+      <!-- KPIs -->
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:16px;">
+        ${[['Arrecadado',fmt(r.totArrec),'navy'],['Despesas',fmt(r.totDesp),'red'],['Rentabilidade',fmt(r.totRentab),'gold'],['Honorários',fmt(r.totHonor),'text2'],['Saldo Líquido',fmt(r.saldoFinal),'green']].map(([label,val,cor])=>`
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px;">
+          <div style="font-family:var(--font-m);font-size:8px;color:var(--text3);text-transform:uppercase;margin-bottom:3px;">${label}</div>
+          <div style="font-family:var(--font-m);font-size:13px;color:var(--${cor});">R$ ${val}</div>
+        </div>`).join('')}
+      </div>
+
+      <!-- Tabela detalhada -->
+      <div style="overflow-x:auto;">
+        <table class="mes-table">
+          <thead><tr>
+            <th>Mês</th><th>Saldo Ant.</th><th>Boletos</th><th>Eventos</th>
+            <th>Despesas</th><th>Saldo Parcial</th><th>Rend%</th>
+            <th>Rentabilidade</th><th>Saldo Bruto</th><th>Honorário</th>
+            <th>Saldo Líquido</th><th>Obs.</th><th></th>
+          </tr></thead>
+          <tbody>${linhasTabela}</tbody>
+          <tfoot><tr>
+            <td>TOTAL</td><td>—</td>
+            <td class="green">R$ ${fmt(r.totArrec - (r.linhas.reduce((s,l)=>s+(l.eventos||0),0)))}</td>
+            <td class="green">R$ ${fmt(r.linhas.reduce((s,l)=>s+(l.eventos||0),0))}</td>
+            <td class="red">R$ ${fmt(r.totDesp)}</td>
+            <td>—</td><td>—</td>
+            <td class="gold">R$ ${fmt(r.totRentab)}</td>
+            <td>—</td>
+            <td class="red">R$ ${fmt(r.totHonor)}</td>
+            <td class="green">R$ ${fmt(r.saldoFinal)}</td>
+            <td colspan="2"></td>
+          </tr></tfoot>
+        </table>
+      </div>
+    </div>
+  </div>`;
+}
+
+function toggleTurma(id){
+  const b=document.getElementById('tb-'+id);
+  const tog=document.getElementById('tog-'+id);
+  b.classList.toggle('open');
+  tog.textContent=b.classList.contains('open')?'▲':'▼';
+}
+
+function irLancamento(id){
+  document.getElementById('lanc-turma').value=id;
+  showPanel('lancamento');
+  previewCalculo();
+}
+
+function deletarMes(turmaId,mes){
+  if(!confirm('Remover lançamento de '+fmtMes(mes)+'?'))return;
+  const t=turmas.find(t=>t.id===turmaId);
+  if(t) t.meses=t.meses.filter(m=>m.mes!==mes);
+  salvar(); renderTurmas(); renderPainel();
+}
+
+function deletarTurma(id){
+  if(!confirm('Remover esta turma e todo seu histórico?'))return;
+  turmas=turmas.filter(t=>t.id!==id);
+  salvar(); renderTurmas(); renderPainel(); atualizarSelectTurmas();
+}
+
+// ══════════════════════════════════════════════════════
+// LANÇAMENTO MENSAL
+// ══════════════════════════════════════════════════════
+function atualizarSelectTurmas(){
+  const sel=document.getElementById('lanc-turma');
+  const val=sel.value;
+  sel.innerHTML='<option value="">-- Selecione a turma --</option>'+
+    turmas.map(t=>`<option value="${t.id}">${t.nome}</option>`).join('');
+  sel.value=val;
+}
+
+function renderLancamento(){
+  atualizarSelectTurmas();
+  // Preenche mês atual
+  const hoje=new Date();
+  document.getElementById('lanc-mes').value=`${hoje.getFullYear()}-${String(hoje.getMonth()+1).padStart(2,'0')}`;
+  renderHistoricoLanc();
+}
+
+function g(id){return parseFloat(document.getElementById(id).value)||0;}
+
+function previewCalculo(){
+  const turmaId=document.getElementById('lanc-turma').value;
+  const mes=document.getElementById('lanc-mes').value;
+  const prev=document.getElementById('calc-preview');
+  if(!turmaId||!mes){prev.style.display='none';return;}
+  prev.style.display='block';
+
+  const t=turmas.find(t=>t.id===turmaId);
+  const r=calcTurma(t);
+  const saldoAnt=r.saldoFinal;
+
+  const boletos=g('lanc-boletos');
+  const eventos=g('lanc-eventos');
+  const rend=g('lanc-rend')/100;
+  const desp=g('lanc-taxa')+g('lanc-cerimonial')+g('lanc-rifa')+g('lanc-devolucao')+g('lanc-outras');
+  const saldoParcial=saldoAnt+boletos+eventos-desp;
+  const rentab=saldoParcial*rend;
+  const saldoBruto=saldoParcial+rentab;
+  const honorario=rentab*0.5;
+  const saldoFinal=saldoBruto-honorario;
+
+  document.getElementById('cp-saldo-ant').textContent='R$ '+fmt(saldoAnt);
+  document.getElementById('cp-boletos').textContent='R$ '+fmt(boletos);
+  document.getElementById('cp-eventos').textContent='R$ '+fmt(eventos);
+  document.getElementById('cp-despesas').textContent='R$ '+fmt(desp);
+  document.getElementById('cp-parcial').textContent='R$ '+fmt(saldoParcial);
+  document.getElementById('cp-rend-pct').textContent=(rend*100).toFixed(4)+'%';
+  document.getElementById('cp-rentab').textContent='R$ '+fmt(rentab);
+  document.getElementById('cp-bruto').textContent='R$ '+fmt(saldoBruto);
+  document.getElementById('cp-honor').textContent='R$ '+fmt(honorario);
+  document.getElementById('cp-final').textContent='R$ '+fmt(saldoFinal);
+}
+
+function salvarLancamento(){
+  const turmaId=document.getElementById('lanc-turma').value;
+  const mes=document.getElementById('lanc-mes').value;
+  if(!turmaId){alert('Selecione a turma.');return;}
+  if(!mes){alert('Informe o mês de referência.');return;}
+  const boletos=g('lanc-boletos');
+  if(!boletos&&!g('lanc-eventos')){alert('Informe ao menos o valor de boletos ou eventos.');return;}
+
+  const t=turmas.find(t=>t.id===turmaId);
+  // Remove se já existe (substituição)
+  t.meses=t.meses.filter(m=>m.mes!==mes);
+  t.meses.push({
+    mes, boletos, eventos:g('lanc-eventos'),
+    taxa:g('lanc-taxa'), cerimonial:g('lanc-cerimonial'),
+    rifa:g('lanc-rifa'), devolucao:g('lanc-devolucao'),
+    outras:g('lanc-outras'), rend:g('lanc-rend')/100,
+    obs:document.getElementById('lanc-obs').value.trim()
+  });
+  salvar();
+  renderHistoricoLanc();
+  renderPainel();
+  alert(`✓ Lançamento de ${fmtMes(mes)} salvo com sucesso!`);
+  limparLancamento();
+}
+
+function limparLancamento(){
+  ['lanc-boletos','lanc-eventos','lanc-taxa','lanc-cerimonial','lanc-rifa','lanc-devolucao','lanc-outras','lanc-rend','lanc-obs'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('calc-preview').style.display='none';
+}
+
+function renderHistoricoLanc(){
+  const c=document.getElementById('historico-lanc');
+  const todos=[];
+  turmas.forEach(t=>(t.meses||[]).forEach(m=>todos.push({...m,turmaId:t.id,turmaNome:t.nome})));
+  todos.sort((a,b)=>b.mes.localeCompare(a.mes));
+  if(!todos.length){c.innerHTML='<div style="text-align:center;padding:24px;color:var(--text3);font-style:italic;">Nenhum lançamento registrado.</div>';return;}
+  c.innerHTML=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow);">
+    <table class="mes-table">
+      <thead><tr><th>Mês</th><th>Turma</th><th>Boletos</th><th>Eventos</th><th>Despesas</th><th>Rend%</th><th></th></tr></thead>
+      <tbody>${todos.slice(0,20).map(m=>`<tr>
+        <td>${fmtMes(m.mes)}</td>
+        <td style="font-family:var(--font-b);font-size:12px;">${m.turmaNome}</td>
+        <td class="mono green">R$ ${fmt(m.boletos)}</td>
+        <td class="mono ${m.eventos?'green':'text3'}">${m.eventos?'R$ '+fmt(m.eventos):'—'}</td>
+        <td class="mono red">R$ ${fmt(m.taxa+m.cerimonial+m.rifa+m.devolucao+m.outras)}</td>
+        <td class="mono gold">${(m.rend*100).toFixed(4)}%</td>
+        <td><button class="btn btn-red btn-sm" onclick="deletarMes('${m.turmaId}','${m.mes}')">✕</button></td>
+      </tr>`).join('')}</tbody>
+    </table>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════
+// CONSOLIDADO
+// ══════════════════════════════════════════════════════
+function renderConsolidado(){
+  const tbody=document.getElementById('consol-body');
+  const tfoot=document.getElementById('consol-foot');
+  const evoBody=document.getElementById('evol-consol-body');
+  if(!turmas.length){tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:28px;color:var(--text3);">Nenhuma turma.</td></tr>';tfoot.innerHTML='';evoBody.innerHTML='';return;}
+
+  let totA=0,totD=0,totR=0,totH=0,totL=0;
+  tbody.innerHTML=turmas.map(t=>{
+    const r=calcTurma(t);
+    totA+=r.totArrec;totD+=r.totDesp;totR+=r.totRentab;totH+=r.totHonor;totL+=r.saldoFinal;
+    return`<tr>
+      <td>${t.nome}</td>
+      <td>R$ ${fmt(r.totArrec)}</td>
+      <td style="color:var(--red);">R$ ${fmt(r.totDesp)}</td>
+      <td style="color:var(--gold);">R$ ${fmt(r.totRentab)}</td>
+      <td>R$ ${fmt(r.totHonor)}</td>
+      <td style="color:var(--green);font-weight:600;">R$ ${fmt(r.saldoFinal)}</td>
+      <td>${(t.meses||[]).length}</td>
+    </tr>`;
+  }).join('');
+  tfoot.innerHTML=`<tr><td>TOTAL</td><td>R$ ${fmt(totA)}</td><td>R$ ${fmt(totD)}</td><td>R$ ${fmt(totR)}</td><td>R$ ${fmt(totH)}</td><td>R$ ${fmt(totL)}</td><td></td></tr>`;
+
+  // Evolução consolidada
+  const mapaEvol={};
+  turmas.forEach(t=>{
+    const r=calcTurma(t);
+    r.linhas.forEach(l=>{
+      if(!mapaEvol[l.mes]) mapaEvol[l.mes]={arrec:0,desp:0,rent:0,honor:0};
+      mapaEvol[l.mes].arrec+=l.entrada;
+      mapaEvol[l.mes].desp+=l.desp;
+      mapaEvol[l.mes].rent+=l.rentab;
+      mapaEvol[l.mes].honor+=l.honorario;
+    });
+  });
+  let saldAcum=0;
+  const evolLinhas=Object.keys(mapaEvol).sort().map(mes=>{
+    const d=mapaEvol[mes];
+    saldAcum+=d.arrec-d.desp+d.rent-d.honor;
+    return`<tr>
+      <td>${fmtMes(mes)}</td>
+      <td class="mono green">R$ ${fmt(d.arrec)}</td>
+      <td class="mono red">R$ ${fmt(d.desp)}</td>
+      <td class="mono gold">R$ ${fmt(d.rent)}</td>
+      <td class="mono">R$ ${fmt(d.honor)}</td>
+      <td class="mono green bold">R$ ${fmt(saldAcum)}</td>
+    </tr>`;
+  });
+  evoBody.innerHTML=evolLinhas.length?evolLinhas.join(''):'<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:16px;">Nenhum dado.</td></tr>';
+}
+
+// ══════════════════════════════════════════════════════
+// RELATÓRIOS
+// ══════════════════════════════════════════════════════
+function renderRelatorios(){
+  const c=document.getElementById('check-turmas');
+  c.innerHTML=turmas.map(t=>`<label style="display:flex;align-items:center;gap:6px;padding:6px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:12px;"><input type="checkbox" value="${t.id}" style="accent-color:var(--navy);"> ${t.nome}</label>`).join('');
+}
+function selTodas(s){document.querySelectorAll('#check-turmas input').forEach(c=>c.checked=s);}
+
+function gerarPDFIndividual(){
+  const sels=[...document.querySelectorAll('#check-turmas input:checked')].map(c=>c.value);
+  if(!sels.length){alert('Selecione ao menos uma turma.');return;}
+  const prog=document.getElementById('pdfProgress');prog.style.display='block';prog.textContent='Gerando...';
+  sels.forEach(id=>{const t=turmas.find(t=>t.id===id);if(t)pdfTurma(t);});
+  prog.textContent=sels.length+' PDF(s) gerado(s).';
+}
+
+function pdfTurma(t){
+  const{jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
+  const r=calcTurma(t);
+  const agora=new Date().toLocaleDateString('pt-BR');
+  let y=18;
+
+  // Header
+  doc.setFillColor(13,31,60);doc.rect(0,0,297,24,'F');
+  doc.setTextColor(255,255,255);doc.setFontSize(13);doc.setFont('helvetica','bold');
+  doc.text('FORME SEGURO',14,10);
+  doc.setFontSize(8);doc.setFont('helvetica','normal');
+  doc.text('XP Investimentos — Fundo de Formatura',14,17);
+  doc.text('Emitido: '+agora,240,17);
+  y=32;
+  doc.setTextColor(13,31,60);doc.setFontSize(14);doc.setFont('helvetica','bold');
+  doc.text(t.nome,14,y);y+=6;
+  if(t.curso){doc.setFontSize(9);doc.setFont('helvetica','normal');doc.setTextColor(100,100,100);doc.text(t.curso,14,y);y+=5;}
+  y+=3;
+
+  // KPIs
+  const kpis=[['Arrecadado','R$ '+fmt(r.totArrec)],['Despesas','R$ '+fmt(r.totDesp)],['Rentabilidade','R$ '+fmt(r.totRentab)],['Honorários','R$ '+fmt(r.totHonor)],['Saldo Líquido','R$ '+fmt(r.saldoFinal)]];
+  kpis.forEach((k,i)=>{
+    const x=14+i*55,yy=y;
+    doc.setFillColor(245,244,240);doc.roundedRect(x-1,yy-4,53,16,1,1,'F');
+    doc.setFontSize(6);doc.setFont('helvetica','normal');doc.setTextColor(120,120,120);doc.text(k[0],x,yy);
+    doc.setFontSize(9);doc.setFont('helvetica','bold');doc.setTextColor(13,31,60);doc.text(k[1],x,yy+7);
+  });
+  y+=22;
+
+  // Tabela mensal
+  doc.setFontSize(8);doc.setFont('helvetica','bold');doc.setTextColor(13,31,60);
+  doc.text('Relatório Detalhado — Mês a Mês',14,y);y+=4;
+  const hs=['Mês','Saldo Ant.','Boletos','Eventos','Despesas','Saldo Parcial','Rend%','Rentab.','Saldo Bruto','Honorário','Saldo Líquido'];
+  const ws=[18,24,24,20,24,28,14,24,28,22,28];
+  let x=14;
+  doc.setFillColor(13,31,60);doc.rect(14,y-3,269,7,'F');
+  doc.setTextColor(255,255,255);doc.setFontSize(6);doc.setFont('helvetica','bold');
+  hs.forEach((h,i)=>{doc.text(h,x+1,y);x+=ws[i];});y+=5;
+  doc.setFont('helvetica','normal');doc.setTextColor(30,30,30);
+  const mesesOrd=[...t.meses||[]].sort((a,b)=>a.mes.localeCompare(b.mes));
+  mesesOrd.forEach((m,i)=>{
+    if(y>188){doc.addPage();y=20;}
+    const l=r.linhas[i]||{};
+    if(i%2===0){doc.setFillColor(249,248,245);doc.rect(14,y-3,269,6,'F');}
+    x=14;
+    [fmtMes(m.mes),'R$ '+fmt(l.saldoAnt||0),'R$ '+fmt(m.boletos),m.eventos?'R$ '+fmt(m.eventos):'—','R$ '+fmt(l.desp||0),'R$ '+fmt(l.saldoParcial||0),(m.rend*100).toFixed(3)+'%','R$ '+fmt(l.rentab||0),'R$ '+fmt(l.saldoBruto||0),'R$ '+fmt(l.honorario||0),'R$ '+fmt(l.saldoFinal||0)].forEach((v,i)=>{doc.text(String(v),x+1,y);x+=ws[i];});
+    y+=6;
+  });
+
+  // Rodapé
+  doc.setFontSize(6);doc.setFont('helvetica','normal');doc.setTextColor(150,150,150);
+  doc.text('Forme Seguro Assessoria Ltda. — Documento gerado eletronicamente. Não substitui extrato oficial XP.',14,198);
+  doc.save('FormeSguro_'+t.nome.replace(/\s/g,'_')+'.pdf');
+}
+
+function gerarPDFConsolidado(){
+  if(!turmas.length){alert('Nenhuma turma.');return;}
+  const{jsPDF}=window.jspdf;
+  const doc=new jsPDF({orientation:'landscape',unit:'mm',format:'a4'});
+  const agora=new Date().toLocaleDateString('pt-BR');
+  let y=18;
+  doc.setFillColor(13,31,60);doc.rect(0,0,297,24,'F');
+  doc.setTextColor(255,255,255);doc.setFontSize(13);doc.setFont('helvetica','bold');
+  doc.text('FORME SEGURO — RELATÓRIO CONSOLIDADO',14,10);
+  doc.setFontSize(8);doc.setFont('helvetica','normal');
+  doc.text('XP Investimentos — Conta Única · Centros de Custo por Turma',14,17);
+  doc.text('Emitido: '+agora,240,17);
+  y=34;
+  doc.setFontSize(9);doc.setFont('helvetica','bold');doc.setTextColor(13,31,60);
+  doc.text('Posição por Centro de Custo',14,y);y+=4;
+  const hs=['Turma','Arrecadado','Despesas','Rentabilidade','Honorários','Saldo Líquido','Meses'];
+  const ws=[80,34,30,34,28,34,18];
+  let x=14;
+  doc.setFillColor(13,31,60);doc.rect(14,y-3,258,7,'F');
+  doc.setTextColor(255,255,255);doc.setFontSize(6);doc.setFont('helvetica','bold');
+  hs.forEach((h,i)=>{doc.text(h,x+1,y);x+=ws[i];});y+=5;
+  doc.setFont('helvetica','normal');doc.setTextColor(30,30,30);
+  let totA=0,totD=0,totR=0,totH=0,totL=0;
+  turmas.forEach((t,idx)=>{
+    const r=calcTurma(t);totA+=r.totArrec;totD+=r.totDesp;totR+=r.totRentab;totH+=r.totHonor;totL+=r.saldoFinal;
+    if(idx%2===0){doc.setFillColor(249,248,245);doc.rect(14,y-3,258,6,'F');}
+    x=14;
+    [t.nome,'R$ '+fmt(r.totArrec),'R$ '+fmt(r.totDesp),'R$ '+fmt(r.totRentab),'R$ '+fmt(r.totHonor),'R$ '+fmt(r.saldoFinal),(t.meses||[]).length+''].forEach((v,i)=>{doc.text(String(v).substring(0,i===0?40:18),x+1,y);x+=ws[i];});
+    y+=6;
+  });
+  doc.setFillColor(13,31,60);doc.rect(14,y-3,258,8,'F');
+  doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');x=14;
+  ['TOTAL','R$ '+fmt(totA),'R$ '+fmt(totD),'R$ '+fmt(totR),'R$ '+fmt(totH),'R$ '+fmt(totL),''].forEach((v,i)=>{doc.text(v,x+1,y+2);x+=ws[i];});
+  y+=14;
+
+  // Evolução consolidada
+  if(y>150){doc.addPage();y=20;}
+  const mapaEvol={};
+  turmas.forEach(t=>{const r=calcTurma(t);r.linhas.forEach(l=>{if(!mapaEvol[l.mes])mapaEvol[l.mes]={arrec:0,desp:0,rent:0,honor:0};mapaEvol[l.mes].arrec+=l.entrada;mapaEvol[l.mes].desp+=l.desp;mapaEvol[l.mes].rent+=l.rentab;mapaEvol[l.mes].honor+=l.honorario;});});
+  doc.setFontSize(9);doc.setFont('helvetica','bold');doc.setTextColor(13,31,60);
+  doc.text('Evolução Mensal Consolidada — Conta XP',14,y);y+=4;
+  const eH=['Mês','Arrecadado','Despesas','Rentabilidade','Honorários','Saldo Acumulado'];
+  const eW=[22,36,30,36,30,40];
+  x=14;doc.setFillColor(13,31,60);doc.rect(14,y-3,194,7,'F');
+  doc.setTextColor(255,255,255);doc.setFontSize(6);doc.setFont('helvetica','bold');
+  eH.forEach((h,i)=>{doc.text(h,x+1,y);x+=eW[i];});y+=5;
+  doc.setFont('helvetica','normal');doc.setTextColor(30,30,30);
+  let sAcum=0;
+  Object.keys(mapaEvol).sort().forEach((mes,idx)=>{
+    if(y>188){doc.addPage();y=20;}
+    const d=mapaEvol[mes];sAcum+=d.arrec-d.desp+d.rent-d.honor;
+    if(idx%2===0){doc.setFillColor(249,248,245);doc.rect(14,y-3,194,6,'F');}
+    x=14;[fmtMes(mes),'R$ '+fmt(d.arrec),'R$ '+fmt(d.desp),'R$ '+fmt(d.rent),'R$ '+fmt(d.honor),'R$ '+fmt(sAcum)].forEach((v,i)=>{doc.text(v,x+1,y);x+=eW[i];});
+    y+=6;
+  });
+  doc.setFontSize(6);doc.setFont('helvetica','normal');doc.setTextColor(150,150,150);
+  doc.text('Forme Seguro Assessoria Ltda. — Não substitui extrato oficial XP.',14,198);
+  doc.save('FormeSguro_Consolidado_'+agora.replace(/\//g,'-')+'.pdf');
+}
+
+// ══════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════
+initDados();
+renderPainel();
+document.querySelectorAll('.modal-bg').forEach(mb=>mb.addEventListener('click',e=>{if(e.target===mb)mb.classList.remove('open');}));
+</script>
+</body>
+</html>

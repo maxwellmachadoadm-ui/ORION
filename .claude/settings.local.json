@@ -18,7 +18,11 @@
       "Bash(curl:*)",
       "Bash(cp index.html index-legacy.html)",
       "Bash(mkdir -p src/lib src/contexts src/pages src/components supabase)",
-      "Bash(npx vite:*)"
+      "Bash(npx vite:*)",
+      "Bash(where psql:*)",
+      "Bash(npx supabase:*)",
+      "Bash(node supabase/setup.mjs)",
+      "Bash(node supabase/seed-run.mjs)"
     ]
   }
 }

@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e ':*)",
+      "Bash(git --version)",
+      "Bash(gh --version)",
+      "Bash(npx --version)",
+      "Bash(echo \"exit:$?\")",
+      "Bash(where gh:*)"
+    ]
+  }
+}

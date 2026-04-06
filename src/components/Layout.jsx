@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { ROLES } from '../contexts/AuthContext'
 import { useData } from '../contexts/DataContext'
 import Maxxxi from './Maxxxi'
+import { OrionLogo } from './OrionLogo'
+import { PDFExportButton } from './PDFExport'
 
 export default function Layout({ children }) {
   const { profile, signOut, isAdmin, inviteUser, getInvites, getUsers } = useAuth()
@@ -59,16 +62,11 @@ export default function Layout({ children }) {
         <div className="flex aic gap12">
           <button className="tb-btn burger-btn" onClick={() => setSidebarOpen(!sidebarOpen)}>☰</button>
           <div className="logo" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
-            <div className="logo-mark">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
-                <circle cx="12" cy="12" r="2.5" fill="white"/><circle cx="5" cy="6" r="1.5" fill="rgba(255,255,255,.7)"/>
-                <circle cx="19" cy="6" r="1.5" fill="rgba(255,255,255,.7)"/><circle cx="19" cy="18" r="1.5" fill="rgba(255,255,255,.5)"/>
-                <line x1="12" y1="12" x2="5" y2="6" stroke="rgba(255,255,255,.35)" strokeWidth="1"/>
-                <line x1="12" y1="12" x2="19" y2="6" stroke="rgba(255,255,255,.35)" strokeWidth="1"/>
-                <line x1="12" y1="12" x2="19" y2="18" stroke="rgba(255,255,255,.25)" strokeWidth="1"/>
-              </svg>
+            <OrionLogo size={34} />
+            <div className="logo-text">
+              <div className="orion-logo-text" style={{ fontSize: 17 }}>ORION</div>
+              <div className="logo-sub">Gestão Executiva</div>
             </div>
-            <div className="logo-text"><div className="logo-name">ORION</div><div className="logo-sub">Gestao Executiva</div></div>
           </div>
           <button className="tb-btn" onClick={() => setSearchOpen(true)}>⌘ Busca rapida</button>
         </div>
@@ -76,6 +74,7 @@ export default function Layout({ children }) {
           <button className="notif" onClick={() => { setAlertsOpen(!alertsOpen); setUserMenuOpen(false) }}>
             🔔{alerts.length > 0 && <span className="notif-dot"></span>}
           </button>
+          <PDFExportButton />
           <button className="tb-btn" id="api-indicator" title="API Claude" style={{ color: 'var(--green)', borderColor: 'rgba(16,185,129,0.3)' }}>⚡ API</button>
           <button className="user-btn" onClick={() => { setUserMenuOpen(!userMenuOpen); setAlertsOpen(false) }}>
             <div className="avatar">{initials}</div>
@@ -88,13 +87,15 @@ export default function Layout({ children }) {
         {/* SIDEBAR */}
         <nav className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
           <div className="sb-section">
-            <div className="sb-lbl">Navegacao</div>
+            <div className="sb-lbl">Navegação</div>
             <div className={isActive('/')} onClick={() => { navigate('/'); setSidebarOpen(false) }}>🏠 Home</div>
             <div className={isActive('/dashboard')} onClick={() => { navigate('/dashboard'); setSidebarOpen(false) }}>📊 Dashboard</div>
             <div className={isActive('/tarefas')} onClick={() => { navigate('/tarefas'); setSidebarOpen(false) }}>
               ☑ Tarefas <span className="sb-badge">{pending}</span>
             </div>
-            <div className={isActive('/ceo')} onClick={() => { navigate('/ceo'); setSidebarOpen(false) }}>📈 Visao CEO</div>
+            <div className={isActive('/crm')} onClick={() => { navigate('/crm'); setSidebarOpen(false) }}>🎯 CRM</div>
+            <div className={isActive('/financeiro')} onClick={() => { navigate('/financeiro'); setSidebarOpen(false) }}>💳 Financeiro</div>
+            <div className={isActive('/ceo')} onClick={() => { navigate('/ceo'); setSidebarOpen(false) }}>📈 Visão CEO</div>
           </div>
           <div className="sb-div"></div>
           <div className="sb-section">
@@ -115,12 +116,15 @@ export default function Layout({ children }) {
               <div key={e.id} className={location.pathname === `/empresa/${e.id}` ? 'sb-item active' : 'sb-item'}
                 onClick={() => { navigate(`/empresa/${e.id}`); setSidebarOpen(false) }}>💰 {e.nome}</div>
             ))}
+            <div className={isActive('/of-projetos')} onClick={() => { navigate('/of-projetos'); setSidebarOpen(false) }}>📷 OF Projetos</div>
           </div>
           {isAdmin && (
             <>
               <div className="sb-div"></div>
               <div className="sb-section">
-                <div className="sb-item" onClick={() => setInviteOpen(true)}>👥 Convidar usuario</div>
+                <div className="sb-lbl">Administração</div>
+                <div className={isActive('/admin')} onClick={() => { navigate('/admin'); setSidebarOpen(false) }}>⚙ Painel Admin</div>
+                <div className="sb-item" onClick={() => setInviteOpen(true)}>👥 Convidar usuário</div>
               </div>
             </>
           )}
@@ -198,9 +202,9 @@ export default function Layout({ children }) {
               <div className="form-group">
                 <label className="form-label">Permissao</label>
                 <select className="inp" value={inviteRole} onChange={e => setInviteRole(e.target.value)}>
-                  <option value="viewer">Visualizador</option>
-                  <option value="editor">Editor</option>
-                  <option value="admin">Administrador</option>
+                  {Object.entries(ROLES).map(([k, v]) => (
+                    <option key={k} value={k}>{v.label}</option>
+                  ))}
                 </select>
               </div>
               <button type="submit" className="btn-primary">Enviar Convite</button>

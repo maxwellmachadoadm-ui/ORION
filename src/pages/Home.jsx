@@ -67,7 +67,7 @@ export default function Home() {
           {greeting}, {firstName}
         </div>
         <h1 style={{ fontFamily: "'Syne',sans-serif", fontSize: 26, fontWeight: 900, color: '#fff', lineHeight: 1.1 }}>
-          Qual empresa vamos trabalhar agora?
+          Vamos começar a trabalhar
         </h1>
         <div style={{ fontSize: 13, color: 'var(--tx3)', marginTop: 4 }}>{dateStr}</div>
       </div>

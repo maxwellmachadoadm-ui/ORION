@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react'
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react'
 import { supabase, isDemoMode } from '../lib/supabase'
 import { useAuth } from './AuthContext'
 import { DEMO_DATA } from '../lib/demoData'
@@ -7,7 +7,7 @@ const DataContext = createContext(null)
 export const useData = () => useContext(DataContext)
 
 export function DataProvider({ children }) {
-  const { user } = useAuth()
+  const { user, userCompanies } = useAuth()
   const [empresas, setEmpresas] = useState([])
   const [tarefas, setTarefas] = useState([])
   const [kpis, setKpis] = useState([])
@@ -129,6 +129,12 @@ export function DataProvider({ children }) {
     })
   }
 
+  // ── Empresas filtradas pelo acesso do usuário ──
+  const empresasVisiveis = useMemo(() => {
+    if (!userCompanies || userCompanies.length === 0) return empresas
+    return empresas.filter(e => userCompanies.includes(e.id))
+  }, [empresas, userCompanies])
+
   // ── HELPERS ──
   function getEmpresa(id) { return empresas.find(e => e.id === id) }
   function getKpis(empId) { return kpis.filter(k => k.empresa_id === empId) }
@@ -149,7 +155,8 @@ export function DataProvider({ children }) {
 
   function generateAlerts() {
     const alerts = []
-    empresas.filter(e => e.id !== 'gp').forEach(e => {
+    // Alertas segmentados — apenas empresas visíveis ao usuário
+    empresasVisiveis.filter(e => e.id !== 'gp').forEach(e => {
       const inadKpi = getKpis(e.id).find(k => k.label.toLowerCase().includes('inadim'))
       if (inadKpi) {
         const val = parseFloat(inadKpi.valor)
@@ -170,10 +177,13 @@ export function DataProvider({ children }) {
 
   return (
     <DataContext.Provider value={{
-      empresas, tarefas, kpis, okrs, contratos, riscos, decisoes, crmLeads,
+      empresas: empresasVisiveis, // filtradas pelo acesso do usuário
+      _allEmpresas: empresas,      // todas, para uso interno
+      tarefas, kpis, okrs, contratos, riscos, decisoes, crmLeads,
       checkin, loaded, fmt,
       getEmpresa, getKpis, getOkrs, getTarefas, getContratos, getRiscos, getDecisoes, getCrmLeads,
-      addTask, updateTask, deleteTask, saveCheckin, generateAlerts, reload: loadAll
+      addTask, updateTask, deleteTask, saveCheckin, generateAlerts, reload: loadAll,
+      setCrmLeads,
     }}>
       {children}
     </DataContext.Provider>

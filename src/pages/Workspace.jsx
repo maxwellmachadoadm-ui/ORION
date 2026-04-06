@@ -2,7 +2,99 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useData } from '../contexts/DataContext'
 
-const BASE_TABS = ['KPIs', 'OKRs', 'Tarefas', 'Contratos', 'Riscos', 'Decisoes', 'CRM', 'Arquivos']
+const BASE_TABS = ['KPIs', 'OKRs', 'Tarefas', 'Contratos', 'Riscos', 'Decisões', 'CRM', 'Arquivos']
+
+// ── Componente de Projeções FS ──
+function ProjecoesFS({ emp, kpis, fmt }) {
+  const capitalAtual = 420000
+  const turmasAtivas = 3
+  const turmasPipeline = 5
+  const ticketMedio = 5000
+  const crescMensal = 0.08
+
+  const meses = Array.from({ length: 12 }, (_, i) => {
+    const m = new Date(2026, i, 1)
+    return {
+      label: m.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' }),
+      capital: Math.round(capitalAtual * Math.pow(1 + crescMensal, i + 1)),
+      receita: Math.round(turmasAtivas * ticketMedio * Math.pow(1 + crescMensal * 0.5, i)),
+    }
+  })
+
+  const maxCapital = Math.max(...meses.map(m => m.capital))
+
+  return (
+    <div>
+      {/* Resumo executivo */}
+      <div className="g4 mb">
+        <div className="module-card" style={{ padding: 16 }}>
+          <div className="lbl">Capital Projetado 12m</div>
+          <div className="val txt-purple" style={{ fontSize: 22 }}>{fmt(meses[11].capital)}</div>
+          <div className="delta-up">▲ +{((meses[11].capital / capitalAtual - 1) * 100).toFixed(0)}% vs hoje</div>
+        </div>
+        <div className="module-card" style={{ padding: 16 }}>
+          <div className="lbl">Turmas Ativas</div>
+          <div className="val" style={{ fontSize: 22 }}>{turmasAtivas}</div>
+          <div className="delta-neu">+ {turmasPipeline} em pipeline</div>
+        </div>
+        <div className="module-card" style={{ padding: 16 }}>
+          <div className="lbl">Receita Mensal Projetada</div>
+          <div className="val txt-green" style={{ fontSize: 22 }}>{fmt(meses[11].receita)}</div>
+          <div className="delta-up">▲ crescimento acumulado</div>
+        </div>
+        <div className="module-card" style={{ padding: 16 }}>
+          <div className="lbl">Ticket Médio / Turma</div>
+          <div className="val txt-blue" style={{ fontSize: 22 }}>{fmt(ticketMedio)}</div>
+          <div className="delta-neu">por mês</div>
+        </div>
+      </div>
+
+      {/* Gráfico de capital projetado */}
+      <div className="module-card mb">
+        <div className="module-card-title">📈 Evolução do Capital Gerenciado (12 meses)</div>
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 140, paddingTop: 8 }}>
+          {meses.map((m, i) => {
+            const h = Math.round((m.capital / maxCapital) * 120)
+            return (
+              <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                <div style={{ fontSize: 9, color: 'var(--tx3)', whiteSpace: 'nowrap' }}>{fmt(m.capital).replace('R$ ', '')}</div>
+                <div style={{ width: '100%', height: h, background: `linear-gradient(to top, #8b5cf6, #a78bfa)`, borderRadius: '3px 3px 0 0', opacity: 0.85 + i * 0.01 }}></div>
+                <div style={{ fontSize: 9, color: 'var(--tx3)' }}>{m.label}</div>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Tabela de projeções detalhadas */}
+      <div className="module-card">
+        <div className="module-card-title">📋 Projeção Detalhada Mensal</div>
+        <table className="exec-table">
+          <thead>
+            <tr>
+              <th>Mês</th>
+              <th>Capital Projetado</th>
+              <th>Receita Estimada</th>
+              <th>Crescimento</th>
+              <th>vs Atual</th>
+            </tr>
+          </thead>
+          <tbody>
+            {meses.map((m, i) => (
+              <tr key={i}>
+                <td style={{ fontWeight: 600 }}>{m.label}</td>
+                <td style={{ color: '#a78bfa', fontFamily: "'Syne',sans-serif", fontWeight: 700 }}>{fmt(m.capital)}</td>
+                <td style={{ color: 'var(--green)' }}>{fmt(m.receita)}</td>
+                <td><span className="pill pill-green">+{(crescMensal * 100).toFixed(0)}% ao mês</span></td>
+                <td style={{ color: 'var(--tx3)' }}>+{((m.capital / capitalAtual - 1) * 100).toFixed(1)}%</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
 
 const PRIORITY_COLORS = { alta: '#ef4444', media: '#f59e0b', baixa: '#3b82f6' }
 const STATUS_LABELS = { todo: 'A Fazer', doing: 'Em Andamento', done: 'Concluida' }
@@ -194,18 +286,7 @@ export default function Workspace() {
           </div>
         )
 
-      case 'Decisoes':
-        return (
-          <div className="decision-list">
-            {empDecisoes.map((d, i) => (
-              <div key={i} className="card decision-card">
-                <p className="decision-text">⚡ {d.descricao}</p>
-                <span className="decision-date">📅 {d.data}</span>
-              </div>
-            ))}
-            {empDecisoes.length === 0 && <p className="empty">Nenhuma decisao registrada.</p>}
-          </div>
-        )
+      // Decisoes (com acento tratado acima)
 
       case 'CRM':
         return (
@@ -260,22 +341,32 @@ export default function Workspace() {
           </div>
         )
 
-      case 'Gestao de Fundos':
+      case 'Decisões':
+        return (
+          <div className="decision-list">
+            {empDecisoes.map((d, i) => (
+              <div key={i} className="card decision-card">
+                <p className="decision-text">⚡ {d.descricao}</p>
+                <span className="decision-date">📅 {d.data}</span>
+              </div>
+            ))}
+            {empDecisoes.length === 0 && <p className="empty">Nenhuma decisão registrada.</p>}
+          </div>
+        )
+
+      case 'Gestão de Fundos':
         return (
           <div style={{ margin: '-24px -28px', height: 'calc(100vh - 240px)' }}>
             <iframe
               src="/forme-seguro-v2.html"
-              title="Forme Seguro — Gestao de Fundos"
-              style={{
-                width: '100%',
-                height: '100%',
-                border: 'none',
-                borderRadius: '0 0 var(--r) var(--r)',
-                background: '#f5f4f0',
-              }}
+              title="Forme Seguro — Gestão de Fundos"
+              style={{ width: '100%', height: '100%', border: 'none', borderRadius: '0 0 var(--r) var(--r)', background: '#f5f4f0' }}
             />
           </div>
         )
+
+      case 'Projeções':
+        return <ProjecoesFS emp={emp} kpis={empKpis} fmt={fmt} />
 
       default:
         return null
@@ -342,7 +433,7 @@ export default function Workspace() {
 
       {/* Tab Navigation */}
       <div className="tab-nav">
-        {[...BASE_TABS, ...(id === 'fs' ? ['Gestao de Fundos'] : [])].map(t => (
+        {[...BASE_TABS, ...(id === 'fs' ? ['Gestão de Fundos', 'Projeções'] : [])].map(t => (
           <button
             key={t}
             className={`tab-btn ${tab === t ? 'active' : ''}`}

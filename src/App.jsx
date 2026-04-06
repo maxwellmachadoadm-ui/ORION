@@ -7,6 +7,10 @@ import Dashboard from './pages/Dashboard'
 import Tasks from './pages/Tasks'
 import CEO from './pages/CEO'
 import Workspace from './pages/Workspace'
+import CRM from './pages/CRM'
+import Financeiro from './pages/Financeiro'
+import Admin from './pages/Admin'
+import OriginalFotografia from './pages/OriginalFotografia'
 
 export default function App() {
   const { user, loading } = useAuth()
@@ -15,8 +19,8 @@ export default function App() {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0f172a' }}>
         <div style={{ textAlign: 'center' }}>
-          <div style={{ fontFamily: 'Syne', fontSize: 24, fontWeight: 900, color: '#fff', letterSpacing: 2 }}>ORION</div>
-          <div style={{ fontSize: 12, color: '#64748b', marginTop: 8 }}>Carregando...</div>
+          <div style={{ fontFamily: 'Syne', fontSize: 28, fontWeight: 900, letterSpacing: 4, background: 'linear-gradient(135deg,#fff,#93c5fd)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>ORION</div>
+          <div style={{ fontSize: 11, color: '#64748b', marginTop: 10, letterSpacing: 3, textTransform: 'uppercase' }}>Carregando...</div>
         </div>
       </div>
     )
@@ -27,12 +31,16 @@ export default function App() {
   return (
     <Layout>
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/tarefas" element={<Tasks />} />
-        <Route path="/ceo" element={<CEO />} />
-        <Route path="/empresa/:id" element={<Workspace />} />
-        <Route path="*" element={<Navigate to="/" />} />
+        <Route path="/"                   element={<Home />} />
+        <Route path="/dashboard"          element={<Dashboard />} />
+        <Route path="/tarefas"            element={<Tasks />} />
+        <Route path="/crm"                element={<CRM />} />
+        <Route path="/financeiro"         element={<Financeiro />} />
+        <Route path="/ceo"                element={<CEO />} />
+        <Route path="/admin"              element={<Admin />} />
+        <Route path="/of-projetos"        element={<OriginalFotografia />} />
+        <Route path="/empresa/:id"        element={<Workspace />} />
+        <Route path="*"                   element={<Navigate to="/" />} />
       </Routes>
     </Layout>
   )

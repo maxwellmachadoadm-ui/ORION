@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { OrionLogo } from '../components/OrionLogo'
 
 export default function Login() {
   const { user, signIn, signUp, resetPassword, loading } = useAuth()
@@ -49,22 +50,10 @@ export default function Login() {
     <div className="login-screen">
       <div className="login-box">
         <div className="login-logo">
-          <div className="logo-mark" style={{ width: 40, height: 40, borderRadius: 10 }}>
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="none">
-              <circle cx="12" cy="12" r="2.5" fill="white"/>
-              <circle cx="5" cy="6" r="1.5" fill="rgba(255,255,255,.7)"/>
-              <circle cx="19" cy="6" r="1.5" fill="rgba(255,255,255,.7)"/>
-              <circle cx="19" cy="18" r="1.5" fill="rgba(255,255,255,.5)"/>
-              <circle cx="5" cy="18" r="1" fill="rgba(255,255,255,.4)"/>
-              <line x1="12" y1="12" x2="5" y2="6" stroke="rgba(255,255,255,.35)" strokeWidth="1"/>
-              <line x1="12" y1="12" x2="19" y2="6" stroke="rgba(255,255,255,.35)" strokeWidth="1"/>
-              <line x1="12" y1="12" x2="19" y2="18" stroke="rgba(255,255,255,.25)" strokeWidth="1"/>
-              <line x1="5" y1="6" x2="19" y2="6" stroke="rgba(255,255,255,.2)" strokeWidth=".8"/>
-            </svg>
-          </div>
+          <OrionLogo size={52} />
           <div>
-            <div style={{ fontFamily: "'Syne',sans-serif", fontWeight: 900, fontSize: 20, color: '#fff', letterSpacing: 2 }}>ORION</div>
-            <div style={{ fontSize: 9, color: 'var(--tx3)', letterSpacing: 3, textTransform: 'uppercase' }}>Gestao Executiva</div>
+            <div className="orion-logo-text">ORION</div>
+            <div style={{ fontSize: 9, color: 'var(--tx3)', letterSpacing: 3, textTransform: 'uppercase' }}>Gestão Executiva</div>
           </div>
         </div>
 

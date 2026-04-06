@@ -1,0 +1,1346 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Forme Seguro | Simulador de Projeções (Pro)</title>
+  <link rel="icon" type="image/png" href="data:image/png;base64,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"/>
+  <style>
+    :root{
+      --fs-navy:#2A1F4B;
+      --fs-teal:#0DB2AA;
+      --fs-gray:#3C3C3B;
+      --fs-gray2:#6f6f6f;
+      --bg:#f6f8fb;
+      --card:#ffffff;
+      --border:#e6e9f2;
+      --soft:#fbfcff;
+      --warn:#b02a37;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Bahnschrift,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--fs-gray);}
+    header{
+      background:linear-gradient(90deg,var(--fs-navy), #201a3a);
+      color:#fff;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+    }
+    .brand{display:flex;align-items:center;gap:10px}
+    .dot{width:12px;height:12px;border-radius:3px;background:var(--fs-teal);box-shadow:0 0 0 3px rgba(13,178,170,.15)}
+    h1{font-size:16px;margin:0;font-weight:900;letter-spacing:.2px}
+    .subtitle{font-size:12px;opacity:.88}
+    main{display:grid;grid-template-columns: 380px 1fr;gap:16px;padding:16px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:14px;box-shadow:0 6px 18px rgba(42,31,75,.06)}
+    .card h2{margin:0 0 10px 0;font-size:13px;color:var(--fs-navy);letter-spacing:.2px}
+    .row{display:flex;gap:10px;margin:10px 0;flex-wrap:wrap}
+    label{font-size:12px;color:var(--fs-gray2);display:block;margin-bottom:6px}
+    .field{flex:1;min-width:160px}
+    .field input,.field select{
+      width:100%;padding:10px;border:1px solid var(--border);border-radius:12px;background:#fff;color:var(--fs-gray);font-size:13px;outline:none;
+    }
+    .field input:focus,.field select:focus{border-color:rgba(13,178,170,.45);box-shadow:0 0 0 4px rgba(13,178,170,.12)}
+    button{
+      cursor:pointer;border:none;background:var(--fs-teal);color:#062f2d;font-weight:900;
+      padding:10px 12px;border-radius:12px;font-size:13px;
+    }
+    .btn-outline{background:#fff;border:1px solid var(--border);color:var(--fs-navy);font-weight:900}
+    .hint{font-size:12px;color:var(--fs-gray2);line-height:1.4;border-left:4px solid rgba(13,178,170,.35);padding-left:10px;margin-top:10px}
+    .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 12px 0}
+    .tab{
+      padding:10px 12px;border-radius:12px;border:1px solid var(--border);background:#fff;cursor:pointer;
+      font-weight:900;color:var(--fs-navy);font-size:12.5px;
+    }
+    .tab.active{background:rgba(13,178,170,.14);border-color:rgba(13,178,170,.35)}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    table{
+      width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border-radius:14px;border:1px solid var(--border);background:#fff;
+    }
+    thead th{
+      background:rgba(13,178,170,.14);color:var(--fs-navy);font-weight:900;font-size:12px;padding:10px;
+      border-bottom:1px solid var(--border);text-align:center;white-space:nowrap;
+    }
+    tbody td, tbody th{
+      border-bottom:1px solid var(--border);padding:9px 10px;font-size:12.5px;text-align:center;white-space:nowrap;
+    }
+    tbody th{text-align:left;color:var(--fs-gray);background:var(--soft);font-weight:900}
+    tbody tr:last-child td, tbody tr:last-child th{border-bottom:none;}
+    .foot{display:flex;gap:10px;justify-content:space-between;align-items:flex-start;margin-top:10px;flex-wrap:wrap}
+    .kpi{font-size:13px;color:var(--fs-navy);font-weight:900}
+    .muted{color:var(--fs-gray2);font-weight:700;font-size:12px;line-height:1.35}
+    .pill{display:inline-block;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:900;vertical-align:middle}
+    .ok{background:rgba(13,178,170,.16);color:#0a5e5a}
+    .bad{background:rgba(220,53,69,.12);color:var(--warn)}
+    .badge{display:inline-block;padding:4px 8px;border-radius:10px;font-size:12px;font-weight:900;background:rgba(42,31,75,.08);color:var(--fs-navy)}
+    .pdfHeader{display:none}
+    .note{margin-top:10px;padding:10px;border:1px dashed rgba(42,31,75,.20);border-radius:12px;background:#fff}
+    .note b{color:var(--fs-navy)}
+    .twoColSummary{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+    .summaryBox{border:1px solid var(--border);border-radius:14px;padding:10px;background:#fff}
+    .summaryBox .t{font-weight:900;color:var(--fs-navy);font-size:12px}
+    .summaryBox .v{font-weight:900;color:var(--fs-gray);margin-top:6px}
+    .summaryBox .s{font-weight:700;color:var(--fs-gray2);font-size:12px;margin-top:4px}
+    .printOnly{display:none}
+    .pdf-resumo{display:none}
+
+    /* ── Validação visual campos ── */
+    .field-ok > label::after{ content:" ✓"; color:#0a7a75; font-weight:900; }
+    .field-ok > input, .field-ok > select{
+      background:#e8fdf5 !important; border-color:#0DB2AA !important;
+      box-shadow:0 0 0 3px rgba(13,178,170,.18) !important;
+      transition: background .2s, border-color .2s;
+    }
+    .field-err > label::after{ content:" — obrigatório"; color:#c0392b; font-weight:900; font-size:11px; }
+    .field-err > input, .field-err > select{
+      background:#fff0f0 !important; border-color:#e74c3c !important;
+      box-shadow:0 0 0 3px rgba(231,76,60,.18) !important;
+      transition: background .2s, border-color .2s;
+    }
+    @keyframes fshake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+
+    @media (max-width: 1020px){ main{grid-template-columns:1fr} }
+
+    /* PRINT / PDF */
+    @media print{
+      *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+      @page{margin:8mm 10mm}
+      body{background:#fff;font-size:8px}
+      header,.noPrint{display:none!important}
+      main{padding:0;grid-template-columns:1fr!important;gap:0}
+      .card{border:none;box-shadow:none;border-radius:0;padding:0}
+      /* cada bloco de plano = 1 pagina */
+      #tableWrap > div{page-break-after:always;page-break-inside:avoid;overflow:hidden}
+      #tableWrap > div:last-child{page-break-after:auto}
+      .pdfpg{page-break-before:always!important;page-break-inside:avoid!important}
+      /* cabecalho */
+      .pdfHeader{display:none}
+      body.pdf3 .pdfHeader{display:none!important}
+      body.pdf3 .pdf-planheader{display:block!important}
+      .pdf-planheader{display:none}
+      .pdf-planheader.pdfHeader{display:block;margin:0 0 5px;padding:6px 0;border-bottom:2px solid #2A1F4B}
+      .pdfHeader .line1{position:relative;display:flex;align-items:center;justify-content:center;min-height:28px}
+      .pdfHeader .logo{position:absolute;left:0;display:flex;align-items:center}
+      .pdfHeader .logo img{filter:brightness(0)!important;height:24px;width:auto}
+      .pdfHeader .pdftitle{font-size:11px;font-weight:900;color:#2A1F4B;letter-spacing:.3px;text-align:center;line-height:1.2}
+      .pdfHeader .doc{display:none!important}
+      .pdfHeader .meta{margin-top:2px;color:#444;font-size:6.5px;line-height:1.3;text-align:center}
+      .pdfturma{display:none}
+      .pdfturma.on{display:block;text-align:center;font-size:9px;font-weight:900;color:#2A1F4B;margin-top:1px}
+      /* badge */
+      .badge{display:block;text-align:center;font-size:9px;font-weight:900;color:#fff;background:#2A1F4B!important;padding:3px 6px;border-radius:3px;margin-bottom:3px;letter-spacing:.3px}
+      /* tabela */
+      .printOnly{display:block}
+      table{border-radius:0;border:1px solid #2A1F4B;border-collapse:collapse;width:100%;font-size:6.5px;page-break-inside:avoid;margin-top:2px}
+      thead th{background:#2A1F4B!important;color:#fff!important;border:1px solid #1a1234;padding:2px 2px;font-size:6.5px;font-weight:900;text-align:center;white-space:nowrap}
+      tbody td,tbody th{border:1px solid #b0bac8;padding:1.5px 2px;font-size:6.5px;text-align:center;white-space:nowrap}
+      tbody tr:nth-child(even) td,tbody tr:nth-child(even) th{background:#f7f8fc!important}
+      tbody th{background:#eef0f8!important;font-weight:700;text-align:left;border-right:1px solid #9aa0be}
+      tfoot td{border:1px solid #2A1F4B;border-top:2px solid #2A1F4B;background:rgba(13,178,170,.18)!important;font-weight:900;font-size:6.5px;padding:2px 2px;color:#2A1F4B;text-align:center}
+      /* resumo e outros */
+      .col-turma{display:none!important}
+      .pdf-resumo{display:block;margin-top:3px;font-size:6.5px}
+      .muted{font-size:6.5px!important;margin-bottom:2px!important}
+      .twoColSummary{display:none}
+      .note{display:none!important}
+      .field-err>label::after,.field-ok>label::after{content:""!important}
+      /* futuro e planCaracteristicas */
+      .futuro-aviso{font-size:6.5px;padding:4px 6px;margin-bottom:2px;border-radius:3px}
+      .futuro-aviso .fa-title{font-size:7px;margin-bottom:2px}
+      .futuro-aviso .fa-grid{gap:2px;margin-top:2px}
+      .futuro-aviso .fa-item{padding:2px 4px}
+      .futuro-aviso .fa-item .lbl{font-size:6px}
+      .futuro-aviso .fa-item .val{font-size:7px}
+      .futuro-parcel{padding:3px 6px;margin-top:2px}
+      .futuro-parcel .fp-label{font-size:6px}
+      .futuro-parcel .fp-val{font-size:11px}
+      .futuro-parcel .fp-sub{font-size:6px}
+      /* planCaracteristicas mini-card */
+      #tableWrap > div > div[style*="border:1px solid rgba(13,178,170"]{font-size:6.5px;padding:5px 7px;margin-bottom:3px}
+    }
+  
+    
+  
+    .brl-input{ font-variant-numeric: tabular-nums; letter-spacing:.3px; }
+    /* ── Plano Pagamento Futuro ── */
+    .futuro-aviso{
+      background:linear-gradient(135deg,rgba(42,31,75,.07),rgba(13,178,170,.07));
+      border:1.5px solid rgba(42,31,75,.18);
+      border-radius:12px;padding:12px 14px;margin-bottom:10px;font-size:12.5px;
+    }
+    .futuro-aviso .fa-title{font-weight:900;color:#2A1F4B;font-size:13px;margin-bottom:6px}
+    .futuro-aviso .fa-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+    .futuro-aviso .fa-item{background:#fff;border:1px solid rgba(42,31,75,.12);border-radius:8px;padding:8px 10px}
+    .futuro-aviso .fa-item .lbl{font-size:11px;color:#6f6f6f;font-weight:700}
+    .futuro-aviso .fa-item .val{font-weight:900;color:#2A1F4B;font-size:13px;margin-top:2px}
+    .futuro-parcel{background:rgba(13,178,170,.12);border:1.5px solid rgba(13,178,170,.4);border-radius:8px;padding:8px 12px;text-align:center;margin-top:8px}
+    .futuro-parcel .fp-label{font-size:11px;font-weight:700;color:#0a7a75}
+    .futuro-parcel .fp-val{font-size:18px;font-weight:900;color:#2A1F4B}
+    .futuro-parcel .fp-sub{font-size:11px;color:#6f6f6f;margin-top:2px}
+    .logoWhite{filter: brightness(0) invert(1);}
+  </style>
+</head>
+<body>
+<header class="noPrint">
+  <div class="brand">
+    <div class="dot"></div>
+    <div>
+      <div style="display:flex;align-items:center;gap:10px"><img alt="Forme Seguro" class="logoWhite" style="height:26px" src="data:image/png;base64,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"/><h1 style="margin:0">Simulador de Projeções — Arrecadação (Pro)</h1></div>
+      
+    </div>
+  </div>
+  <div class="row" style="margin:0">
+    <button class="btn-outline" id="btnPrint">Gerar PDF (Imprimir)</button>
+  </div>
+</header>
+
+<main>
+  <!-- INPUTS -->
+  <section class="card noPrint">
+    <h2>Entradas da Simulação</h2>
+
+    <div class="row">
+      <div class="field" style="flex:1 1 100%">
+        <label>Nome da Turma (obrigatório para o PDF)</label>
+        <input id="nomeTurma" type="text" placeholder="Ex: Medicina UNIFESP — Turma 2030" style="font-weight:700"/>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label>Meta total individual (R$)</label>
+        <input id="metaTotal" type="text" inputmode="numeric" value="" class="brl-input" placeholder="Ex: 30.000,00"/>
+      </div>
+      <div class="field">
+        <label>Nº de alunos (turma)</label>
+        <input id="alunos" type="number" value="" step="1" min="0" placeholder="Ex: 40"/>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label>Início arrecadação</label>
+        <select id="inicio"></select>
+      </div>
+      <div class="field">
+        <label>Fim arrecadação</label>
+        <select id="fim"></select>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label>Taxa de adesão (R$)</label>
+        <input id="adesaoValor" type="text" inputmode="numeric" value="" class="brl-input" placeholder="Ex: 1.000,00"/>
+      </div>
+      <div class="field">
+        <label>Mês da TX. ADESÃO</label>
+        <select id="adesaoMes"></select>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label>Rifas (opcional)</label>
+        <select id="rifaFreq">
+          <option value="">— selecione —</option>
+          <option value="0">Nenhuma</option>
+          <option value="1">Anual (1 evento/ano)</option>
+          <option value="2">Semestral (2 eventos/ano)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Valor anual total das rifas (R$)</label>
+        <input id="rifaAnual" type="text" inputmode="numeric" value="" class="brl-input" placeholder="Ex: 1.000,00"/>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label>Plano VARIÁVEL: crescimento semestral <span style="color:var(--fs-teal);font-weight:900">(%)</span></label>
+        <div style="display:flex;align-items:center;gap:6px">
+          <input id="gSemPct" type="number" value="10" step="0.5" min="0" max="50" style="width:90px"/>
+          <span style="font-weight:900;color:var(--fs-navy);font-size:13px">%</span>
+          <span id="gPreview" style="font-size:11px;color:var(--fs-gray2);font-weight:700"></span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Plano BALÃO: % do saldo no balão final <span style="color:var(--fs-teal);font-weight:900">(máx. 30%)</span></label>
+        <div style="display:flex;align-items:center;gap:6px">
+          <input id="pctBalaoPct" type="number" value="30" step="1" min="1" max="30" style="width:90px"/>
+          <span style="font-weight:900;color:var(--fs-navy);font-size:13px">%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <button id="btnGerar">Gerar Simulação</button>
+      <button class="btn-outline" id="btnReset">Resetar</button>
+    </div>
+
+
+  </section>
+
+  <!-- OUTPUT -->
+  <section class="card">
+    <!-- PDF header -->
+    <div class="pdfHeader">
+      <div class="line1">
+        <div class="logo"><img alt="Forme Seguro" style="height:30px" src="data:image/png;base64,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"/></div>
+        <div class="pdftitle">PROJEÇÃO DE ARRECADAÇÃO</div>
+        <div class="doc">Simulador Oficial (Pro)</div>
+      </div>
+      <div class="meta" id="pdfMeta"></div>
+      <div class="pdfturma" id="pdfTurmaEl"></div>
+    </div>
+
+    <h2 class="noPrint">Projeção</h2>
+
+    <div class="tabs noPrint">
+      <div class="tab active" data-tab="VARIAVEL">VARIÁVEL</div>
+      <div class="tab" data-tab="FIXO">FIXO</div>
+      <div class="tab" data-tab="BALAO">FIXO + PARC. FINAL</div>
+      <div class="tab" data-tab="FUTURO" style="background:rgba(42,31,75,.06);border-color:rgba(42,31,75,.25)">PAGAMENTO FUTURO</div>
+    </div>
+
+    <div id="planTitle" class="badge noPrint" style="margin-bottom:10px">—</div>
+
+    <div id="tableWrap"></div>
+
+    <div class="twoColSummary">
+      <div class="summaryBox">
+        <div class="t">Resumo da Simulação</div>
+        <div class="v" id="resumo1">—</div>
+        <div class="s" id="resumo2">—</div>
+      </div>
+      <div class="summaryBox">
+        <div class="t">Total por Aluno</div>
+        <div class="v" id="valida1">—</div>
+      </div>
+    </div>
+
+    <div class="note printOnly">
+      <div class="muted">
+        <b>Observação:</b> Projeção gerada automaticamente a partir de META, Adesão, Rifas e período de arrecadação.
+        Os três planos mantêm o <b>mesmo total final</b>, variando apenas a forma de distribuição das mensalidades.
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+  const MESES = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+  const STAGES = ["1 e 2","3 e 4","5 e 6","7 e 8","9 e 10","11 e 12","13 e 14","15 e 16"];
+
+  // ── MÁSCARA FINANCEIRA pt-BR ─────────────────────────────────
+  function mascaraBRL(el){
+    el.addEventListener("input", function(){
+      let v = this.value.replace(/\D/g,"");
+      if(!v){ this.value=""; return; }
+      v = (parseInt(v,10)/100).toFixed(2);
+      this.value = Number(v).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});
+    });
+    el.addEventListener("focus", function(){
+      // seleciona tudo ao focar para facilitar edição
+      setTimeout(()=>this.select(),0);
+    });
+    el.addEventListener("blur", function(){
+      // garante formatação completa ao sair
+      const n = lerBRL(this.value);
+      if(!isNaN(n) && n >= 0){
+        this.value = n.toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});
+      }
+    });
+  }
+
+  function lerBRL(str){
+    // "30.000,00" → 30000.00
+    if(typeof str !== "string") return Number(str)||0;
+    const s = str.replace(/\./g,"").replace(",",".");
+    return parseFloat(s)||0;
+  }
+
+  // ══════════════════════════════════════════════════════════
+  // VALIDAÇÃO VISUAL — TODOS OS CAMPOS DO FORMULÁRIO
+  // Regra: campo com valor válido = VERDE | vazio/inválido = VERMELHO
+  // Nunca fica neutro/branco após abertura ou reset
+  // ══════════════════════════════════════════════════════════
+
+  // Campos obrigatórios para gerar (bloqueiam o botão Gerar)
+  const CAMPOS_OBRIG = [
+    { id:"nomeTurma",   ok: v => v.trim().length > 0 },
+    { id:"metaTotal",   ok: v => lerBRL(v) > 0 },
+    { id:"alunos",      ok: v => Number(v) > 0 },
+    { id:"inicio",      ok: v => v !== "" },
+    { id:"fim",         ok: v => v !== "" },
+    { id:"adesaoValor", ok: v => lerBRL(v) > 0 },
+    { id:"adesaoMes",   ok: v => v !== "" },
+    { id:"rifaFreq",    ok: v => v !== "" },
+    { id:"rifaAnual",   ok: v => {
+        const freq = document.getElementById("rifaFreq")?.value;
+        if(freq === "0") return true;
+        return v.trim() !== "";
+      }
+    },
+  ];
+
+  // TODOS os campos do formulário (incluindo opcionais — também ficam verde/vermelho)
+  const TODOS_CAMPOS = [
+    { id:"nomeTurma",   ok: v => v.trim().length > 0 },
+    { id:"metaTotal",   ok: v => lerBRL(v) > 0 },
+    { id:"alunos",      ok: v => Number(v) > 0 },
+    { id:"inicio",      ok: v => v !== "" },          // vermelho até selecionar
+    { id:"fim",         ok: v => v !== "" },          // vermelho até selecionar
+    { id:"adesaoValor", ok: v => lerBRL(v) > 0 },
+    { id:"adesaoMes",   ok: v => v !== "" },          // vermelho até selecionar
+    { id:"rifaFreq",    ok: v => v !== "" },          // vermelho até selecionar (inclui "Nenhuma"=0)
+    { id:"rifaAnual",   ok: v => {                    // só obrigatório se rifas ativas
+        const freq = document.getElementById("rifaFreq")?.value;
+        if(freq === "0") return true; // Nenhuma = rifaAnual dispensado
+        return v.trim() !== "";
+      }
+    },
+    { id:"gSemPct",     ok: v => v !== "" && Number(v) >= 0 },
+    { id:"pctBalaoPct", ok: v => v !== "" && Number(v) > 0 },
+  ];
+
+  function marcarCampo(id, valido){
+    const el = document.getElementById(id);
+    const field = el && el.closest(".field");
+    if(!field) return;
+    field.classList.toggle("field-ok",  valido);
+    field.classList.toggle("field-err", !valido);
+  }
+
+  function validarTodos(){
+    // Valida apenas os obrigatórios (para bloquear o botão Gerar)
+    let ok = true;
+    TODOS_CAMPOS.forEach(({id, ok: fn}) => {
+      const el = document.getElementById(id);
+      if(!el) return;
+      const valido = fn(el.value);
+      marcarCampo(id, valido);
+      if(CAMPOS_OBRIG.find(c => c.id === id) && !valido) ok = false;
+    });
+    return ok;
+  }
+
+  // Marca estado inicial: TODOS vermelhos (exceto os que já têm valor válido)
+  function marcarTodosInicial(){
+    TODOS_CAMPOS.forEach(({id}) => {
+      const el = document.getElementById(id);
+      const field = el && el.closest(".field");
+      if(!field) return;
+      field.classList.remove("field-ok");
+      field.classList.add("field-err");
+    });
+  }
+
+  // Reavalia TODOS em tempo real ao editar — nunca fica branco
+  document.addEventListener("DOMContentLoaded", () => {
+    TODOS_CAMPOS.forEach(({id, ok: fn}) => {
+      const el = document.getElementById(id);
+      if(el){
+        const reavalia = () => marcarCampo(id, fn(el.value));
+        el.addEventListener("input",  reavalia);
+        el.addEventListener("change", reavalia);
+      }
+    });
+  });
+  // ══════════════════════════════════════════════════════════
+
+
+  // Aplica máscara em todos os campos financeiros
+  document.addEventListener("DOMContentLoaded", ()=>{
+    document.querySelectorAll(".brl-input").forEach(mascaraBRL);
+  });
+  // ─────────────────────────────────────────────────────────────
+
+  function brl(v){
+    return (v ?? 0).toLocaleString("pt-BR", {style:"currency", currency:"BRL", minimumFractionDigits:2, maximumFractionDigits:2});
+  }
+  function round2(x){ return Math.round((x + Number.EPSILON) * 100) / 100; }
+  function ymLabel(key){
+    const [y, m] = key.split("-").map(Number);
+    return `${MESES[m-1]}/${y}`;
+  }
+
+  function monthRange(startKey, endKey){
+    const [sy, sm] = startKey.split("-").map(Number);
+    const [ey, em] = endKey.split("-").map(Number);
+    const out = [];
+    let y=sy, m=sm;
+    while(y < ey || (y===ey && m<=em)){
+      out.push({y, m});
+      m++; if(m===13){ m=1; y++; }
+    }
+    return out;
+  }
+
+  function initDateSelects(){
+    const inicio = document.getElementById("inicio");
+    const fim = document.getElementById("fim");
+    const adesaoMes = document.getElementById("adesaoMes");
+
+    const options = [];
+    const _hoje = new Date();
+    const _anoAtual = _hoje.getFullYear();
+    const _mesAtual = _hoje.getMonth() + 1; // 1-12
+    // Começa no mês atual, vai até dez/2036
+    for(let y=_anoAtual; y<=2036; y++){
+      const mStart = (y === _anoAtual) ? _mesAtual : 1;
+      for(let m=mStart; m<=12; m++){
+        const key = `${y}-${String(m).padStart(2,"0")}`;
+        options.push({key, label:`${MESES[m-1]}/${y}`});
+      }
+    }
+    // Opção vazia obrigatória — força usuário a selecionar
+    [inicio, fim, adesaoMes].forEach(sel => {
+      const empty = document.createElement("option");
+      empty.value = ""; empty.textContent = "— selecione —"; empty.disabled = false;
+      sel.appendChild(empty);
+    });
+
+    for(const o of options){
+      const a=document.createElement("option"); a.value=o.key; a.textContent=o.label; inicio.appendChild(a);
+      const b=document.createElement("option"); b.value=o.key; b.textContent=o.label; fim.appendChild(b);
+      const c=document.createElement("option"); c.value=o.key; c.textContent=o.label; adesaoMes.appendChild(c);
+    }
+
+    // Sem pré-seleção — todos começam vazios (vermelhos)
+    inicio.value = "";
+    fim.value = "";
+    adesaoMes.value = "";
+  }
+
+  
+  function computeRifas(range, freq, rifaAnual){
+    // Regras Forme Seguro (padrão das projeções):
+    // - Nenhuma: 0
+    // - Anual: evento em DEZEMBRO (ou último mês disponível do ano dentro do período)
+    // - Semestral: eventos em JULHO e DEZEMBRO (ou último mês disponível do semestre/ano dentro do período)
+    if(freq===0 || rifaAnual<=0) return {total:0, eventos:new Map()};
+    const years = [...new Set(range.map(x=>x.y))];
+    const eventos = new Map(); // key "YYYY-MM" -> valor
+
+    for(const y of years){
+      const yearMonths = range.filter(x=>x.y===y).map(x=>x.m).sort((a,b)=>a-b);
+      if(!yearMonths.length) continue;
+
+      if(freq===1){
+        // anual: dezembro; se não existir, último mês do ano no intervalo
+        const mDec = yearMonths.includes(12) ? 12 : Math.max(...yearMonths);
+        const key = `${y}-${String(mDec).padStart(2,"0")}`;
+        eventos.set(key, round2((eventos.get(key)||0) + rifaAnual));
+      } else if(freq===2){
+        // semestral: julho e dezembro
+        const half = round2(rifaAnual / 2);
+
+        // evento JULHO: preferir mês 7; se não existir dentro do ano no intervalo, usar o primeiro mês disponível >=7;
+        // se ainda assim não existir (não há meses no 2º semestre), não lança julho.
+        const h2 = yearMonths.filter(m=>m>=7 && m<=12);
+        if(h2.length){
+          const mJul = h2.includes(7) ? 7 : Math.min(...h2);
+          const keyJul = `${y}-${String(mJul).padStart(2,"0")}`;
+          eventos.set(keyJul, round2((eventos.get(keyJul)||0) + half));
+
+          // evento DEZ: preferir 12; se não existir, usar o último mês disponível do 2º semestre
+          const mDez = h2.includes(12) ? 12 : Math.max(...h2);
+          const keyDez = `${y}-${String(mDez).padStart(2,"0")}`;
+          eventos.set(keyDez, round2((eventos.get(keyDez)||0) + half));
+        } else {
+          // Se o período no ano não tem 2º semestre, não lança rifas semestrais.
+        }
+      }
+    }
+
+    const total = round2([...eventos.values()].reduce((a,b)=>a+b,0));
+    return {total, eventos};
+  }
+
+
+  function roundAndAdjust(values, targetSum){
+    const out = values.map(v=>round2(v));
+    const sum = round2(out.reduce((a,b)=>a+b,0));
+    const dif = round2(targetSum - sum);
+    out[out.length-1] = round2(out[out.length-1] + dif);
+    return out;
+  }
+
+  
+  // Máscara de cobrança: mês de adesão NÃO tem mensalidade.
+  function buildChargeMask(range, adesaoMesKey){
+    return range.map(x => {
+      const key = `${x.y}-${String(x.m).padStart(2,"0")}`;
+      return key !== adesaoMesKey;
+    });
+  }
+
+  // Agrupa meses cobrados em "períodos" com regra fixa:
+  // - O valor só muda em JANEIRO e JULHO.
+  // - Se mudou em janeiro, repete jan..jun; se mudou em julho, repete jul..dez.
+  // (Quando o período começa no meio do semestre, o patamar vale até a próxima virada Jan/Jul.)
+  function buildJanJulPeriods(range, chargeMask){
+    const periods = [];
+    let current = null;
+    for(let i=0;i<range.length;i++){
+      if(!chargeMask[i]) continue; // mês sem mensalidade (adesão)
+      const m = range[i].m; // 1..12
+      const y = range[i].y;
+      const half = (m<=6) ? 1 : 2; // Jan-Jun / Jul-Dec
+      const key = `${y}-H${half}`;
+      if(!current || current.key !== key){
+        current = {key, idxs: []};
+        periods.push(current);
+      }
+      current.idxs.push(i);
+    }
+    return periods;
+  }
+
+  // Plano 1: FIXO (saldo ÷ meses cobrados). Sem mensalidade no mês da adesão.
+  function planFixo(saldo, range, chargeMask){
+    const idxs = [];
+    for(let i=0;i<range.length;i++) if(chargeMask[i]) idxs.push(i);
+    const N = idxs.length;
+    const base = saldo / N;
+
+    const raw = Array.from({length: range.length}, ()=>0);
+    for(const i of idxs) raw[i] = base;
+
+    // Ajuste de centavos no último mês cobrado (normalmente o mês FIM)
+    const out = raw.map(v=>round2(v));
+    const sum = round2(out.reduce((a,b)=>a+b,0));
+    const dif = round2(saldo - sum);
+    const lastIdx = idxs[idxs.length-1];
+    out[lastIdx] = round2(out[lastIdx] + dif);
+    return out;
+  }
+
+  // Plano 2: VARIÁVEL (crescente por períodos Jan/Jul).
+  // O valor dentro do mesmo período (Jan-Jun ou Jul-Dez) é constante.
+  // Cresce a cada período sequencial.
+  function planVariavelJanJul(saldo, range, chargeMask, g){
+    const periods = buildJanJulPeriods(range, chargeMask); // sequência cronológica
+    // pesos por período: (1+g)^(p-1)
+    const weights = periods.map((_, p)=>Math.pow(1+g, p));
+    // soma ponderada = Σ (qtdMesesNoPeriodo * pesoPeriodo)
+    let denom = 0;
+    for(let p=0;p<periods.length;p++){
+      denom += periods[p].idxs.length * weights[p];
+    }
+    const base = saldo / denom;
+
+    const raw = Array.from({length: range.length}, ()=>0);
+    for(let p=0;p<periods.length;p++){
+      const v = base * weights[p];
+      for(const idx of periods[p].idxs) raw[idx] = v;
+    }
+
+    // Ajuste de centavos no último mês cobrado
+    const out = raw.map(v=>round2(v));
+    const sum = round2(out.reduce((a,b)=>a+b,0));
+    const dif = round2(saldo - sum);
+    // último mês cobrado:
+    let lastIdx = -1;
+    for(let i=range.length-1;i>=0;i--){
+      if(chargeMask[i]){ lastIdx = i; break; }
+    }
+    out[lastIdx] = round2(out[lastIdx] + dif);
+    return out;
+  }
+
+  // Plano 3: FIXO + PARC. FINAL (1 balão no último mês cobrado = fim)
+  // Sem "mensalidade fixa": tudo deriva do saldo. Aqui usamos pctBalao do saldo no último mês.
+  function planBalaoFinal(saldo, range, chargeMask, pctBalao){
+    // último mês cobrado (fim)
+    let lastIdx = -1;
+    for(let i=range.length-1;i>=0;i--){
+      if(chargeMask[i]){ lastIdx = i; break; }
+    }
+    // meses cobrados excluindo o último (balão)
+    const idxs = [];
+    for(let i=0;i<range.length;i++){
+      if(chargeMask[i] && i !== lastIdx) idxs.push(i);
+    }
+    const balao = saldo * pctBalao;
+    const baseTotal = saldo - balao;
+    const baseMes = baseTotal / idxs.length;
+
+    const raw = Array.from({length: range.length}, ()=>0);
+    for(const i of idxs) raw[i] = baseMes;
+    raw[lastIdx] = balao;
+
+    // Ajuste de centavos no próprio balão (último mês) para fechar no centavo
+    const out = raw.map(v=>round2(v));
+    const sum = round2(out.reduce((a,b)=>a+b,0));
+    const dif = round2(saldo - sum);
+    out[lastIdx] = round2(out[lastIdx] + dif);
+    return out;
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // Plano 4: PAGAMENTO FUTURO
+  // Mensalidades mensais = 0. Nos últimos 6 meses paga saldo×1.30 em 6 parcelas iguais.
+  // Adesão = dobro dos demais. Rifas = igual. Para 1 aluno.
+  // ══════════════════════════════════════════════════════════════
+  function planPagamentoFuturo(totalComJuros, range, chargeMask){
+    // totalComAcres = saldo individual + 30% — já calculado em gerar()
+    // As 6 parcelas finais nos últimos 6 meses cobrados
+    const idxsCobrados = [];
+    for(let i=0; i<range.length; i++) if(chargeMask[i]) idxsCobrados.push(i);
+
+    const ultimos6 = idxsCobrados.slice(-6);
+    const parcela = round2(totalComJuros / 6);
+    const raw = Array.from({length: range.length}, ()=>0);
+    for(const i of ultimos6) raw[i] = parcela;
+
+    // Ajuste de centavos no último dos 6
+    const out = raw.map(v=>round2(v));
+    const totalPago = round2(out.reduce((a,b)=>a+b,0));
+    const dif = round2(totalComJuros - totalPago);
+    const lastFuturo = ultimos6[ultimos6.length-1];
+    out[lastFuturo] = round2(out[lastFuturo] + dif);
+    return out;
+  }
+
+  // buildPlan adaptado para o plano FUTURO: adesão dobrada, mensalidades = parcela futura
+  function buildPlanFuturo(range, mensalArr, chargeMask, adesaoMesKey, adesaoValor, rifasEventos){
+    const map = new Map();
+    range.forEach((x, idx)=>{
+      const key = `${x.y}-${String(x.m).padStart(2,"0")}`;
+      const mensal = mensalArr[idx]; // 0 nos meses normais, parcela nos últimos 6
+      const adesao = (key === adesaoMesKey) ? round2(adesaoValor * 2) : 0; // DOBRO
+      const rifa = rifasEventos.has(key) ? rifasEventos.get(key) : 0;
+      const total = round2(mensal + adesao + rifa);
+      map.set(key, {mensal, rifa, adesao, total});
+    });
+    return map;
+  }
+
+  function buildPlan(range, mensalArr, chargeMask, adesaoMesKey, adesaoValor, rifasEventos){
+    // Retorna Map<YYYY-MM, {mensal, rifa, adesao, total}>
+    const map = new Map();
+    range.forEach((x, idx)=>{
+      const key = `${x.y}-${String(x.m).padStart(2,"0")}`;
+
+      const mensal = chargeMask[idx] ? mensalArr[idx] : 0; // mês da adesão: 0 mensalidade
+      const adesao = (key === adesaoMesKey) ? adesaoValor : 0;
+      const rifa = rifasEventos.has(key) ? rifasEventos.get(key) : 0;
+
+      const total = round2(mensal + adesao + rifa);
+      map.set(key, {mensal, rifa, adesao, total});
+    });
+    return map;
+  }
+
+  function buildMatrix(range, valuesByMonthKey){
+    const years = [...new Set(range.map(x=>x.y))];
+    const minY = Math.min(...years);
+    const maxY = Math.max(...years);
+    const allYears = [];
+    for(let y=minY; y<=maxY; y++) allYears.push(y);
+
+    const set = new Set(range.map(x=>`${x.y}-${String(x.m).padStart(2,"0")}`));
+
+    const rows = MESES.map((mes, mi)=> {
+      const m = mi+1;
+      const row = {mes};
+      for(const y of allYears){
+        const key = `${y}-${String(m).padStart(2,"0")}`;
+        if(!set.has(key)){
+          row[y] = {type:"dash"};
+        } else {
+          row[y] = {type:"val", key, data: (valuesByMonthKey.get(key) || {mensal:0, rifa:0, adesao:0, total:0})};
+        }
+      }
+      return row;
+    });
+
+    return {years: allYears, rows};
+  }
+
+  function renderCellLines(d){
+    // Mostra sempre separado quando houver rifa e mensalidade no mesmo mês
+    // e mostra TX. ADESÃO como linha própria.
+    const lines = [];
+    if(d.adesao && d.adesao !== 0){
+      lines.push(`<div style="font-weight:900;color:var(--fs-navy)">TX. ADESÃO</div><div style="font-weight:900">${brl(d.adesao)}</div>`);
+    }
+    if(d.mensal && d.mensal !== 0){
+      lines.push(`<div style="font-size:10px;font-weight:700;color:var(--fs-gray2);letter-spacing:.3px">MENSALIDADE</div><div style="font-size:13px;font-weight:900;color:var(--fs-navy)">${brl(d.mensal)}</div>`);
+    } else {
+      // sem mensalidade (ex.: mês da adesão) não mostra linha "mensalidade"
+    }
+    if(d.rifa && d.rifa !== 0){
+      lines.push(`<div style="font-size:10px;font-weight:700;color:var(--fs-gray2);letter-spacing:.3px">RIFA</div><div style="font-size:13px;font-weight:900;color:var(--fs-navy)">${brl(d.rifa)}</div>`);
+    }
+    if(lines.length===0){
+      return "-";
+    }
+    // compacta: cada item já tem 2 divs (label+valor)
+    return `<div style="display:grid;gap:6px">${lines.map(x=>`<div style="display:grid;gap:2px">${x}</div>`).join("")}</div>`;
+  }
+
+  function renderTable(matrix, title, subtitle, alunos, rangeSet, periodosTurno){
+    const {years, rows} = matrix;
+
+    // Helper: detecta se o mês m é início de período semestral (Jan=1 ou Jul=7)
+    function isViradasem(m){ return m===1 || m===7; }
+
+    let html = `<div class="muted" style="margin-bottom:6px;font-size:11px">${subtitle}</div>`;
+    html += `<table><thead><tr><th style="text-align:left">Meses</th>`;
+    years.forEach((y, i)=>{
+      const stage = STAGES[i] || `Etapa ${i+1}`;
+      html += `<th>${stage}<br/><span style="font-weight:800;color:var(--fs-gray2)">${y}</span></th>`;
+    });
+    if(alunos > 1) html += `<th class="col-turma" style="background:rgba(42,31,75,.09)">Por Aluno<br/><span style="font-weight:800;color:var(--fs-gray2)">Total Mês</span></th>`;
+    html += `</tr></thead><tbody>`;
+
+    // Totais por ano
+    const anoTotais = {};
+    years.forEach(y=>{ anoTotais[y] = 0; });
+
+    for(const r of rows){
+      const mIdx = MESES.indexOf(r.mes) + 1; // 1..12
+      const virada = isViradasem(mIdx);
+      const rowStyle = virada ? ` style="background:rgba(13,178,170,.07)"` : "";
+      html += `<tr${rowStyle}><th>${r.mes}${virada ? ` <span style="font-size:10px;color:var(--fs-teal);font-weight:900">↑</span>` : ""}</th>`;
+      let rowTotal = 0;
+      years.forEach(y=>{
+        const cell = r[y];
+        if(cell.type==="dash"){
+          html += `<td>-</td>`;
+        } else {
+          const d = cell.data;
+          anoTotais[y] = round2(anoTotais[y] + d.total);
+          rowTotal = round2(rowTotal + d.total);
+          html += `<td>${renderCellLines(d)}</td>`;
+        }
+      });
+      if(alunos > 1){
+        const totalTurma = rowTotal > 0 ? `<div style="font-weight:900;color:var(--fs-navy)">${brl(rowTotal)}</div><div style="font-size:11px;color:var(--fs-gray2);font-weight:900">turma: ${brl(round2(rowTotal*alunos))}</div>` : `-`;
+        html += `<td class="col-turma" style="background:rgba(42,31,75,.04)">${totalTurma}</td>`;
+      }
+      html += `</tr>`;
+    }
+
+    // Linha de totais anuais
+    html += `<tr style="background:rgba(13,178,170,.13)"><th style="color:var(--fs-navy)">TOTAL ANO</th>`;
+    years.forEach(y=>{
+      const v = anoTotais[y];
+      html += `<td style="font-weight:900;color:var(--fs-navy)">${v > 0 ? brl(v) : "–"}</td>`;
+    });
+    if(alunos > 1){
+      const totalGeral = round2(Object.values(anoTotais).reduce((a,b)=>a+b,0));
+      html += `<td class="col-turma" style="background:rgba(42,31,75,.08);font-weight:900;color:var(--fs-navy)">${brl(totalGeral)}<br/><span style="font-size:11px;color:var(--fs-gray2)">turma: ${brl(round2(totalGeral*alunos))}</span></td>`;
+    }
+    html += `</tr>`;
+
+    html += `</tbody></table>`;
+
+    // ── RESUMO PDF: totais por ano e total da turma ──────────
+    const totalGeral = round2(Object.values(anoTotais).reduce((a,b)=>a+b,0));
+    const totalTurmaGeral = round2(totalGeral * alunos);
+
+    // Tabela de totais anuais por aluno
+    let resumoRows = "";
+    years.forEach(y => {
+      const v = anoTotais[y];
+      if(v > 0){
+        const turmaAno = round2(v * alunos);
+        resumoRows += `<tr>
+          <td style="font-weight:700;color:var(--fs-gray2);text-align:left;padding:4px 6px;border:1px solid #cfd6e0;white-space:nowrap">${y}</td>
+          <td style="font-weight:900;color:var(--fs-navy);text-align:right;padding:4px 6px;border:1px solid #cfd6e0;white-space:nowrap">${brl(v)}</td>
+          <td style="font-weight:900;color:var(--fs-navy);text-align:right;padding:4px 6px;border:1px solid #cfd6e0;white-space:nowrap">${brl(turmaAno)}</td>
+        </tr>`;
+      }
+    });
+
+    html += `<div class="pdf-resumo" style="margin-top:10px;font-size:8.5px">
+      <table style="width:auto;border-collapse:collapse;font-size:8.5px">
+        <thead>
+          <tr>
+            <th style="background:#2A1F4B;color:#fff;padding:4px 6px;border:1px solid #1a1234;text-align:left;white-space:nowrap">Ano</th>
+            <th style="background:#2A1F4B;color:#fff;padding:4px 6px;border:1px solid #1a1234;text-align:right;white-space:nowrap">Total por aluno</th>
+            <th style="background:#2A1F4B;color:#fff;padding:4px 6px;border:1px solid #1a1234;text-align:right;white-space:nowrap">Total turma (${alunos} alunos)</th>
+          </tr>
+        </thead>
+        <tbody>${resumoRows}</tbody>
+        <tfoot>
+          <tr>
+            <td style="font-weight:900;color:#2A1F4B;text-align:left;padding:5px 6px;border:1px solid #2A1F4B;border-top:2px solid #2A1F4B;background:rgba(13,178,170,.18)">TOTAL GERAL</td>
+            <td style="font-weight:900;color:#2A1F4B;text-align:right;padding:5px 6px;border:1px solid #2A1F4B;border-top:2px solid #2A1F4B;background:rgba(13,178,170,.18)">${brl(totalGeral)}</td>
+            <td style="font-weight:900;color:#2A1F4B;text-align:right;padding:5px 6px;border:1px solid #2A1F4B;border-top:2px solid #2A1F4B;background:rgba(13,178,170,.18)">${brl(totalTurmaGeral)}</td>
+          </tr>
+        </tfoot>
+      </table>
+      <div style="margin-top:5px;font-size:7.5px;color:#666;font-style:italic">
+        * Valores projetados. O total efetivo depende da confirmação do número de alunos e dos valores pactuados.
+      </div>
+    </div>`;
+    // ─────────────────────────────────────────────────────────
+
+    return html;
+  }
+
+  function sumMap(m){ return round2([...m.values()].reduce((a,b)=>a+b.total,0)); }
+
+  // ── Mini-card de características por plano (aparece em cada página do PDF) ──
+  function planCaracteristicas(tabKey){
+    const dados = {
+      VARIAVEL: {
+        icon: "📈",
+        titulo: "PLANO VARIÁVEL — Crescimento semestral",
+        desc: "As mensalidades começam mais baixas e crescem a cada semestre (Jan/Jul), de forma proporcional ao percentual de crescimento definido. Indicado para quem prefere começar pagando menos e tem capacidade crescente ao longo do tempo.",
+        pontos: [
+          "Parcelas menores no início do período",
+          "Reajuste automático a cada semestre",
+          "Mesmo total final que os demais planos"
+        ]
+      },
+      FIXO: {
+        icon: "📋",
+        titulo: "PLANO FIXO — Mensalidade constante",
+        desc: "Mensalidade de valor igual todos os meses durante todo o período de arrecadação. Modelo simples e previsível, ideal para quem prioriza organização financeira com valor recorrente fixo.",
+        pontos: [
+          "Valor idêntico em todos os meses",
+          "Facilita o planejamento financeiro mensal",
+          "Sem surpresas ou variações ao longo do período"
+        ]
+      },
+      BALAO: {
+        icon: "🎯",
+        titulo: "PLANO FIXO + PARCELA FINAL — Com balão",
+        desc: "Mensalidades fixas durante o período, com uma parcela maior concentrada no último mês (balão). O aluno paga um valor menor mês a mês e reserva um montante maior para o encerramento.",
+        pontos: [
+          "Mensalidades fixas e reduzidas durante o período",
+          "Parcela final maior (balão) no último mês",
+          "Exige planejamento e reserva para o encerramento"
+        ]
+      },
+      FUTURO: {
+        icon: "⏳",
+        titulo: "PLANO PAGAMENTO FUTURO — Concentrado no final",
+        desc: "Nenhuma mensalidade é cobrada durante o período regular. O saldo total é pago em 6 parcelas iguais nos últimos 6 meses, acrescido de 30% sobre as mensalidades para recomposição dos rendimentos não gerados ao fundo.",
+        pontos: [
+          "Zero mensalidades durante o período regular",
+          "Taxa de adesão em dobro no mês de início",
+          "Acréscimo de 30% sobre o saldo de mensalidades",
+          "6 parcelas iguais nos últimos 6 meses do período"
+        ]
+      }
+    };
+    const d = dados[tabKey] || dados["FIXO"];
+    const pontosHTML = d.pontos.map(p =>
+      '<div style="display:flex;gap:5px;margin-top:3px">' +
+        '<span style="color:#0DB2AA;font-weight:900;flex-shrink:0">▸</span>' +
+        '<span>' + p + '</span>' +
+      '</div>'
+    ).join('');
+    return '<div style="border:1px solid rgba(13,178,170,.35);border-radius:6px;padding:8px 10px;margin-bottom:6px;background:rgba(13,178,170,.04);font-size:8.5px">' +
+      '<div style="font-weight:900;color:#2A1F4B;font-size:9px;margin-bottom:4px">' + d.icon + ' ' + d.titulo + '</div>' +
+      '<div style="color:#333;line-height:1.45;margin-bottom:4px">' + d.desc + '</div>' +
+      pontosHTML +
+    '</div>';
+  }
+
+  // ── Página final do PDF: considerações gerais (aparece uma única vez) ──
+  function paginaConsideracoes(metaHTML, logoSrc, turma){
+    const titleLine = turma
+      ? 'CONSIDERAÇÕES GERAIS &nbsp;|&nbsp; <span style="color:#0DB2AA">' + turma + '</span>'
+      : 'CONSIDERAÇÕES GERAIS';
+    const header = '<div class="pdf-planheader pdfHeader" style="display:block">' +
+      '<div class="line1">' +
+        '<div class="logo"><img src="' + logoSrc + '" style="height:30px;filter:brightness(0)"/></div>' +
+        '<div class="pdftitle">' + titleLine + '</div>' +
+      '</div>' +
+      '<div class="meta">' + metaHTML + '</div>' +
+    '</div>';
+
+    const cardStyle = 'border:1px solid rgba(42,31,75,.15);border-radius:6px;padding:10px 12px;background:#fff;font-size:8.5px;line-height:1.5';
+    const tituloStyle = 'font-weight:900;color:#2A1F4B;font-size:9.5px;margin-bottom:6px;border-bottom:1.5px solid rgba(13,178,170,.4);padding-bottom:4px';
+
+    const card1 = '<div style="' + cardStyle + '">' +
+      '<div style="' + tituloStyle + '">📌 Finalidade deste simulador</div>' +
+      '<p style="margin:0 0 5px">Este simulador tem finalidade <b>exclusivamente informativa</b> e foi desenvolvido para ajudar cada aluno a <b>comparar os planos disponíveis</b> e escolher o modelo que melhor se adequa à sua realidade financeira.</p>' +
+      '<p style="margin:0">As projeções exibem valores, prazos e distribuição de pagamentos ao longo do tempo, apoiando uma <b>decisão consciente e individual</b>. Os valores apresentados são estimados com base nas informações fornecidas e podem variar conforme a evolução das condições pactuadas.</p>' +
+    '</div>';
+
+    const card2 = '<div style="' + cardStyle + '">' +
+      '<div style="' + tituloStyle + '">💼 Gestão e aplicação dos valores arrecadados</div>' +
+      '<p style="margin:0 0 5px">Os valores arrecadados no fundo são <b>organizados, administrados e aplicados</b> de forma planejada, buscando preservar os recursos ao longo do tempo e aumentar a previsibilidade financeira do evento de formatura.</p>' +
+      '<p style="margin:0">As aplicações seguem critérios de <b>segurança, liquidez e responsabilidade</b>, compatíveis com o prazo do fundo. Este simulador não representa promessa de rentabilidade — apenas projeções estimadas com base nos parâmetros informados.</p>' +
+    '</div>';
+
+    const card3 = '<div style="' + cardStyle + '">' +
+      '<div style="' + tituloStyle + '">⚖️ Critérios de escolha do plano</div>' +
+      '<p style="margin:0 0 5px">A escolha do plano deve considerar a <b>realidade financeira atual e futura</b> do aluno. Priorize o modelo que permita cumprir os pagamentos com tranquilidade e regularidade ao longo de todo o período.</p>' +
+      '<p style="margin:0">Os três planos principais (Variável, Fixo e Fixo + Parcela Final) mantêm o <b>mesmo total individual ao final do período</b>, variando apenas a forma de distribuição das mensalidades. O Plano Pagamento Futuro possui acréscimo de 30% sobre o saldo de mensalidades em razão do adiamento dos vencimentos.</p>' +
+    '</div>';
+
+    const card4 = '<div style="' + cardStyle + ';background:rgba(42,31,75,.03)">' +
+      '<div style="' + tituloStyle + '">⚠️ Aviso importante</div>' +
+      '<p style="margin:0">As projeções apresentadas neste documento têm caráter <b>estimativo e informativo</b>. Valores efetivos de mensalidades, rifas e demais encargos estão sujeitos à confirmação formal pela comissão organizadora e às condições pactuadas individualmente. Em caso de dúvidas, consulte a comissão de formatura.</p>' +
+    '</div>';
+
+    return '<div class="pdfpg">' + header +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">' +
+        card1 + card2 + card3 + card4 +
+      '</div>' +
+    '</div>';
+  }
+
+  function renderAvisoFuturo(saldo, adesaoBase, parcelaFUT, rifasTotal, totalComAcres){
+    // saldo = mensalidades individuais; totalComAcres = saldo + 30%
+    const acrescimo = round2(saldo * 0.30);
+    const totalAluno = round2(totalComAcres + round2(adesaoBase * 2) + rifasTotal);
+    return '<div class="futuro-aviso">' +
+      '<div class="fa-title">⚠ PAGAMENTO FUTURO — Projeção individual (1 aluno)</div>' +
+      '<div style="font-size:11.5px;color:#444;line-height:1.4">Nenhuma mensalidade é cobrada durante o período. ' +
+      'As mensalidades são pagas em <b>6 parcelas iguais nos últimos 6 meses</b>, com acréscimo de <b>30%</b> ' +
+      'sobre o saldo de mensalidades, para recomposição dos rendimentos não gerados ao fundo e proteção inflacionária.</div>' +
+      '<div class="fa-grid">' +
+        '<div class="fa-item"><div class="lbl">Saldo mensalidades (individual)</div><div class="val">' + brl(saldo) + '</div></div>' +
+        '<div class="fa-item"><div class="lbl">Acréscimo de 30%</div><div class="val">+ ' + brl(acrescimo) + '</div></div>' +
+        '<div class="fa-item"><div class="lbl">Total das 6 parcelas</div><div class="val">' + brl(totalComAcres) + '</div></div>' +
+        '<div class="fa-item"><div class="lbl">Taxa de Adesão (dobro)</div><div class="val">' + brl(round2(adesaoBase*2)) + '</div></div>' +
+      '</div>' +
+      '<div class="futuro-parcel">' +
+        '<div class="fp-label">VALOR DE CADA PARCELA MENSAL (últimos 6 meses)</div>' +
+        '<div class="fp-val">' + brl(parcelaFUT) + '</div>' +
+        '<div class="fp-sub">Total do aluno: ' + brl(totalAluno) + ' &nbsp;•&nbsp; Rifas seguem o mesmo calendário dos demais planos</div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function setActiveTab(tab){
+    window.__TAB__ = tab;
+    document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active", t.dataset.tab===tab));
+  }
+
+  function showError(msg){
+    const wrap = document.getElementById("tableWrap");
+    wrap.innerHTML = `<div style="padding:16px;border:1.5px solid var(--warn);border-radius:14px;background:#fff5f5;color:var(--warn);font-weight:900;font-size:13px">⚠ ${msg}</div>`;
+    document.getElementById("planTitle").textContent = "—";
+    document.getElementById("resumo1").textContent = "—";
+    document.getElementById("resumo2").textContent = "—";
+    document.getElementById("valida1").textContent = "—";
+  }
+
+  function gerar_REMOVIDA(){}
+
+  function atualizaGPreview(){
+    const gPct = Number(document.getElementById("gSemPct").value || 0);
+    const g = gPct / 100;
+    const x4 = Math.pow(1+g, 4).toFixed(2);
+    const x8 = Math.pow(1+g, 8).toFixed(2);
+    const el = document.getElementById("gPreview");
+    if(el) el.textContent = `→ 4 sem: ×${x4} | 8 sem: ×${x8}`;
+  }
+
+  function gerar(){
+    if(!validarTodos()){
+      // Scroll suave até primeiro campo com erro
+      const errado = document.querySelector(".field-err input, .field-err select");
+      if(errado) errado.scrollIntoView({behavior:"smooth", block:"center"});
+      return;
+    }
+    const meta          = lerBRL(document.getElementById("metaTotal").value);
+    const alunos        = Number(document.getElementById("alunos").value      || 0);
+    const inicioKey     = document.getElementById("inicio").value;
+    const fimKey        = document.getElementById("fim").value;
+    const adesaoValor   = lerBRL(document.getElementById("adesaoValor").value);
+    const adesaoMesKey  = document.getElementById("adesaoMes").value;
+    const rifaFreq      = Number(document.getElementById("rifaFreq").value);
+    const rifaAnual     = lerBRL(document.getElementById("rifaAnual").value);
+    const gPct          = Number(document.getElementById("gSemPct").value     || 0);
+    const g             = gPct / 100;
+    const pctBalaoPct   = Number(document.getElementById("pctBalaoPct").value || 0);
+    const pctBalao      = pctBalaoPct / 100;
+
+    atualizaGPreview();
+
+    // ── VALIDAÇÕES ──────────────────────────────────────────────
+    if(meta   <= 0){ showError("Meta individual deve ser maior que zero."); return; }
+    if(alunos <= 0){ showError("Número de alunos deve ser maior que zero."); return; }
+    const [sy,sm] = inicioKey.split("-").map(Number);
+    const [ey,em] = fimKey.split("-").map(Number);
+    if(ey < sy || (ey===sy && em < sm)){ showError("Fim da arrecadação deve ser posterior ao Início."); return; }
+    const [ay,am] = adesaoMesKey.split("-").map(Number);
+    const adesaoTs = ay*12+am, inicioTs = sy*12+sm, fimTs = ey*12+em;
+    if(adesaoTs < inicioTs || adesaoTs > fimTs){ showError("O mês da Taxa de Adesão deve estar dentro do período de arrecadação."); return; }
+    if(gPct < 0 || gPct > 50){ showError("Crescimento semestral deve estar entre 0% e 50%."); return; }
+    if(pctBalaoPct <= 0 || pctBalaoPct > 30){ showError("% do Balão deve ser entre 1% e 30% (limite máximo)."); return; }
+    // ────────────────────────────────────────────────────────────
+
+    const range = monthRange(inicioKey, fimKey);
+    const N     = range.length;
+    const rifas  = computeRifas(range, rifaFreq, rifaAnual);
+    // META é usada integralmente para mensalidades; adesão e rifas são ADICIONAIS
+    const saldo  = meta;
+    const chargeMask    = buildChargeMask(range, adesaoMesKey);
+    const nMensalidades = chargeMask.filter(Boolean).length;
+    const subtitle      = `Período: ${ymLabel(inicioKey)} → ${ymLabel(fimKey)} • ${N} meses no período • ${nMensalidades} mensalidades efetivas`;
+
+    try {
+      localStorage.setItem("fs_sim_params", JSON.stringify({
+        meta, alunos, inicioKey, fimKey, adesaoValor, adesaoMesKey,
+        rifaFreq, rifaAnual, gPct, pctBalaoPct
+      }));
+    } catch(e){}
+
+    const mensalFIXO = planFixo(saldo, range, chargeMask);
+    const mensalVAR  = planVariavelJanJul(saldo, range, chargeMask, g);
+    const mensalBAL  = planBalaoFinal(saldo, range, chargeMask, pctBalao);
+
+    const mapFIXO = buildPlan(range, mensalFIXO, chargeMask, adesaoMesKey, adesaoValor, rifas.eventos);
+    const mapVAR  = buildPlan(range, mensalVAR,  chargeMask, adesaoMesKey, adesaoValor, rifas.eventos);
+    const mapBAL  = buildPlan(range, mensalBAL,  chargeMask, adesaoMesKey, adesaoValor, rifas.eventos);
+
+    const totalFIXO = sumMap(mapFIXO);
+    const totalVAR  = sumMap(mapVAR);
+    const totalBAL  = sumMap(mapBAL);
+
+    // Plano FUTURO — 1 aluno, adesão dobrada
+    // Base: saldo INDIVIDUAL do aluno + 30% de acréscimo, dividido em 6 parcelas
+    const acrescimoFUT  = round2(saldo * 0.30);
+    const totalComAcres = round2(saldo + acrescimoFUT);   // ex: 10.000 + 3.000 = 13.000
+    const parcelaFUT    = round2(totalComAcres / 6);
+    // Total do aluno FUTURO = saldo+30% + adesão dobrada + rifas
+    const totalFUT      = round2(totalComAcres + round2(adesaoValor * 2) + rifas.total);
+    const mensalFUT     = planPagamentoFuturo(totalComAcres, range, chargeMask);
+    const mapFUT        = buildPlanFuturo(range, mensalFUT, chargeMask, adesaoMesKey, adesaoValor, rifas.eventos);
+
+    const tab = window.__TAB__ || "VARIAVEL";
+    setActiveTab(tab);
+
+    let tableHTML = "", planTitle = "", totalAtual = 0, mapAtual = mapVAR;
+    if(tab === "VARIAVEL"){
+      planTitle  = `VARIÁVEL (crescente semestral) • ${gPct}% por semestre`;
+      tableHTML  = renderTable(buildMatrix(range, mapVAR),  "VARIÁVEL",           subtitle, alunos);
+      totalAtual = totalVAR;  mapAtual = mapVAR;
+    } else if(tab === "FIXO"){
+      planTitle  = "FIXO (saldo ÷ N mensalidades)";
+      tableHTML  = renderTable(buildMatrix(range, mapFIXO), "FIXO",               subtitle, alunos);
+      totalAtual = totalFIXO; mapAtual = mapFIXO;
+    } else if(tab === "BALAO"){
+      planTitle  = `FIXO + PARC. FINAL (balão = ${pctBalaoPct}% do saldo no último mês)`;
+      tableHTML  = renderTable(buildMatrix(range, mapBAL),  "FIXO + PARC. FINAL", subtitle, alunos);
+      totalAtual = totalBAL;  mapAtual = mapBAL;
+    } else {
+      // FUTURO — 1 aluno, adesão dobrada, mensalidades nos últimos 6 meses
+      planTitle  = "PAGAMENTO FUTURO";
+      const avisoHTML = renderAvisoFuturo(saldo, adesaoValor, parcelaFUT, rifas.total, totalComAcres);
+      tableHTML  = avisoHTML + renderTable(buildMatrix(range, mapFUT), "PAGAMENTO FUTURO", subtitle, 1);
+      totalAtual = totalFUT; mapAtual = mapFUT;
+    }
+
+    document.getElementById("planTitle").textContent = planTitle;
+    document.getElementById("tableWrap").innerHTML   = tableHTML;
+
+    const rifaTxt = rifaFreq===0 ? "Sem rifas"
+                  : rifaFreq===1 ? `Rifas anuais: ${brl(rifaAnual)}/ano`
+                  :                `Rifas semestrais: ${brl(rifaAnual)}/ano`;
+
+    const _dataGeracao = new Date().toLocaleDateString("pt-BR", {day:"2-digit",month:"2-digit",year:"numeric"});
+    document.getElementById("pdfMeta").innerHTML =
+      `<b>Meta mensalidades:</b> ${brl(meta)} &nbsp;•&nbsp; <b>Adesão:</b> ${brl(adesaoValor)} (${ymLabel(adesaoMesKey)}) &nbsp;•&nbsp; <b>${rifaTxt}</b><br/>` +
+      `<b>Arrecadação estimada:</b> ${brl(round2(meta + adesaoValor + rifas.total))}/aluno &nbsp;•&nbsp; <b>Período:</b> ${ymLabel(inicioKey)} → ${ymLabel(fimKey)} &nbsp;•&nbsp; <b>Nº de alunos:</b> ${alunos} &nbsp;•&nbsp; <b>Gerado em:</b> ${_dataGeracao}`;
+
+    // Turma no cabeçalho PDF
+    const nomeTurmaVal = (document.getElementById("nomeTurma").value||"").trim();
+    const elTurma = document.getElementById("pdfTurmaEl");
+    if(elTurma){ elTurma.textContent = nomeTurmaVal; elTurma.className = nomeTurmaVal ? "pdfturma on" : "pdfturma"; }
+
+    const arrecadacaoEstimada = round2(meta + adesaoValor + rifas.total);
+    document.getElementById("resumo1").textContent = `Meta mensalidades: ${brl(meta)} • Adesão: ${brl(adesaoValor)} • Rifas (período): ${brl(rifas.total)}`;
+    document.getElementById("resumo2").textContent = `Arrecadação estimada total: ${brl(arrecadacaoEstimada)} (por aluno)`;
+    // Total por aluno — mensalidades + adesão + rifas
+    const _totalLabel = tab === "FUTURO"
+      ? `Total Pagamento Futuro: ${brl(totalFUT)}`
+      : `Total por aluno: ${brl(totalAtual)} (mensalidades: ${brl(meta)} + adesão: ${brl(adesaoValor)} + rifas: ${brl(rifas.total)})`;
+    document.getElementById("valida1").textContent = _totalLabel;
+  }
+
+  // Tabs
+  document.querySelectorAll(".tab").forEach(t=>{
+    t.addEventListener("click", ()=>{ setActiveTab(t.dataset.tab); gerar(); });
+  });
+
+  // Preview ao digitar g%
+  document.getElementById("gSemPct").addEventListener("input", atualizaGPreview);
+
+  // Quando rifas muda, reavaliar rifaAnual (pode dispensar ou exigir)
+  document.getElementById("rifaFreq").addEventListener("change", () => {
+    const freq = document.getElementById("rifaFreq").value;
+    const fn = TODOS_CAMPOS.find(c => c.id === "rifaAnual")?.ok;
+    if(fn){
+      const val = document.getElementById("rifaAnual").value;
+      marcarCampo("rifaAnual", fn(val));
+    }
+    // Se nenhuma, marcar campo como verde automaticamente
+    if(freq === "0") marcarCampo("rifaAnual", true);
+  });
+
+  // Buttons
+  document.getElementById("btnGerar").addEventListener("click", gerar);
+  document.getElementById("btnReset").addEventListener("click", ()=>{
+    try { localStorage.removeItem("fs_sim_params"); } catch(e){}
+    document.getElementById("nomeTurma").value  = "";
+    document.getElementById("metaTotal").value  = "";
+    document.getElementById("alunos").value     = "";
+    document.getElementById("inicio").value     = "";
+    document.getElementById("fim").value        = "";
+    document.getElementById("adesaoValor").value= "";
+    document.getElementById("adesaoMes").value  = "";
+    document.getElementById("rifaFreq").value   = "";
+    document.getElementById("rifaAnual").value  = "";
+    document.getElementById("gSemPct").value    = 10;
+    document.getElementById("pctBalaoPct").value= 30;
+    setActiveTab("VARIAVEL");
+    marcarTodosInicial();
+    // Reavalia todos — os que têm valor padrão ficam verdes
+    TODOS_CAMPOS.forEach(({id, ok: fn}) => {
+      const el = document.getElementById(id);
+      if(el) marcarCampo(id, fn(el.value));
+    });
+    document.getElementById("tableWrap").innerHTML = "";
+    document.getElementById("planTitle").textContent = "—";
+    document.getElementById("resumo1").textContent = "—";
+    document.getElementById("resumo2").textContent = "—";
+    document.getElementById("valida1").textContent = "—";
+  });
+
+  document.getElementById("btnPrint").addEventListener("click", () => {
+    // Valida campos obrigatórios
+    if(!validarTodos()){
+      const errado = document.querySelector(".field-err input, .field-err select");
+      if(errado) errado.scrollIntoView({behavior:"smooth", block:"center"});
+      return;
+    }
+
+    // Lê todos os inputs
+    const _meta       = lerBRL(document.getElementById("metaTotal").value);
+    const _alunos     = Number(document.getElementById("alunos").value||0);
+    const _inicioKey  = document.getElementById("inicio").value;
+    const _fimKey     = document.getElementById("fim").value;
+    const _adesaoVal  = lerBRL(document.getElementById("adesaoValor").value);
+    const _adesaoMes  = document.getElementById("adesaoMes").value;
+    const _rifaFreq   = Number(document.getElementById("rifaFreq").value);
+    const _rifaAnual  = lerBRL(document.getElementById("rifaAnual").value);
+    const _gPct       = Number(document.getElementById("gSemPct").value||0);
+    const _g          = _gPct / 100;
+    const _pctBPct    = Number(document.getElementById("pctBalaoPct").value||0);
+    const _pctB       = _pctBPct / 100;
+    const _turma      = (document.getElementById("nomeTurma").value||"").trim();
+
+    // Calcula usando as mesmas funções de gerar()
+    const _range   = monthRange(_inicioKey, _fimKey);
+    const _N       = _range.length;
+    const _rifas   = computeRifas(_range, _rifaFreq, _rifaAnual);
+    // META é usada integralmente para mensalidades; adesão e rifas são ADICIONAIS
+    const _saldo   = _meta;
+    const _mask    = buildChargeMask(_range, _adesaoMes);
+    const _nMens   = _mask.filter(Boolean).length;
+    const _sub     = "Período: " + ymLabel(_inicioKey) + " → " + ymLabel(_fimKey) +
+                     " • " + _N + " meses no período • " + _nMens + " mensalidades efetivas";
+
+    const _mVAR  = planVariavelJanJul(_saldo, _range, _mask, _g);
+    const _mFIX  = planFixo(_saldo, _range, _mask);
+    const _mBAL  = planBalaoFinal(_saldo, _range, _mask, _pctB);
+    const _acrescimoFUT  = round2(_saldo * 0.30);
+    const _totalComJuros = round2(_saldo + _acrescimoFUT);  // saldo individual + 30%
+    const _parcelaFUT    = round2(_totalComJuros / 6);
+
+    const _mpVAR = buildPlan(_range, _mVAR, _mask, _adesaoMes, _adesaoVal, _rifas.eventos);
+    const _mpFIX = buildPlan(_range, _mFIX, _mask, _adesaoMes, _adesaoVal, _rifas.eventos);
+    const _mpBAL = buildPlan(_range, _mBAL, _mask, _adesaoMes, _adesaoVal, _rifas.eventos);
+
+    const _rifaTxt = _rifaFreq===0 ? "Sem rifas"
+                   : _rifaFreq===1 ? "Rifas anuais: " + brl(_rifaAnual) + "/ano"
+                   : "Rifas semestrais: " + brl(_rifaAnual) + "/ano";
+
+    const _dataGer = new Date().toLocaleDateString("pt-BR", {day:"2-digit",month:"2-digit",year:"numeric"});
+    const _metaHTML = "<b>Meta individual:</b> " + brl(_meta) +
+      " &nbsp;•&nbsp; <b>Adesão:</b> " + brl(_adesaoVal) +
+      " (" + ymLabel(_adesaoMes) + ") &nbsp;•&nbsp; <b>" + _rifaTxt + "</b><br/>" +
+      "<b>Período:</b> " + ymLabel(_inicioKey) + " → " + ymLabel(_fimKey) +
+      " &nbsp;•&nbsp; <b>Nº de alunos:</b> " + _alunos +
+      " &nbsp;•&nbsp; <b>Gerado em:</b> " + _dataGer;
+
+    const _turmaLine = _turma
+      ? '<div class="pdfturma on">' + _turma + '</div>'
+      : '';
+
+    // Pega o src da logo já presente no DOM
+    const _logoEl  = document.querySelector(".pdfHeader .logo img");
+    const _logoSrc = _logoEl ? _logoEl.src : "";
+
+    const _titleLine = _turma
+      ? 'PROJEÇÃO DE ARRECADAÇÃO &nbsp;|&nbsp; <span style="color:#0DB2AA">' + _turma + '</span>'
+      : 'PROJEÇÃO DE ARRECADAÇÃO';
+
+    function mkHeader(){
+      return '<div class="pdf-planheader pdfHeader" style="display:block">' +
+        '<div class="line1">' +
+          '<div class="logo"><img src="' + _logoSrc + '" style="height:30px;filter:brightness(0)"/></div>' +
+          '<div class="pdftitle">' + _titleLine + '</div>' +
+        '</div>' +
+        '<div class="meta">' + _metaHTML + '</div>' +
+      '</div>';
+    }
+
+    // Plano FUTURO no PDF
+    const _mensalFUT  = planPagamentoFuturo(_totalComJuros, _range, _mask);
+    const _mpFUT      = buildPlanFuturo(_range, _mensalFUT, _mask, _adesaoMes, _adesaoVal, _rifas.eventos);
+
+    const planos = [
+      { label:"VARIÁVEL",             title:"PLANO VARIÁVEL",             mp:_mpVAR, alunos:_alunos, aviso:"" },
+      { label:"FIXO",                 title:"PLANO FIXO",                 mp:_mpFIX, alunos:_alunos, aviso:"" },
+      { label:"FIXO + PARCELA FINAL", title:"PLANO FIXO + PARCELA FINAL", mp:_mpBAL, alunos:_alunos, aviso:"" },
+      { label:"PAGAMENTO FUTURO",     title:"PLANO PAGAMENTO FUTURO",     mp:_mpFUT, alunos:1,
+        aviso: renderAvisoFuturo(_saldo, _adesaoVal, _parcelaFUT, _rifas.total, _totalComJuros) },
+    ];
+
+    const _tabKeys = ["VARIAVEL","FIXO","BALAO","FUTURO"];
+    let allHTML = "";
+    planos.forEach((pl, i) => {
+      const tbl    = renderTable(buildMatrix(_range, pl.mp), pl.label, _sub, pl.alunos);
+      const pgcls  = i === 0 ? "" : ' class="pdfpg"';
+      const bdg    = '<div class="badge" style="margin-bottom:5px">' + pl.title + '</div>';
+      const caract = planCaracteristicas(_tabKeys[i]);
+      allHTML += '<div' + pgcls + '>' + mkHeader() + bdg + caract + pl.aviso + tbl + '</div>';
+    });
+    // Página final: considerações gerais (uma única vez)
+    allHTML += paginaConsideracoes(_metaHTML, _logoSrc, _turma);
+
+    const _savedTab = window.__TAB__ || "VARIAVEL";
+    document.getElementById("tableWrap").innerHTML = allHTML;
+    document.getElementById("pdfMeta").innerHTML   = _metaHTML;
+    const _te = document.getElementById("pdfTurmaEl");
+    if(_te){ _te.textContent = _turma; _te.className = _turma ? "pdfturma on" : "pdfturma"; }
+
+    document.body.classList.add("pdf3");
+    setTimeout(function(){
+      window.print();
+      setTimeout(function(){
+        document.body.classList.remove("pdf3");
+        setActiveTab(_savedTab);
+        gerar();
+      }, 500);
+    }, 200);
+  });
+
+
+  // 1. Popula os selects de data primeiro
+  initDateSelects();
+  setActiveTab("VARIAVEL");
+
+  // 2. Marca TODOS vermelhos primeiro
+  marcarTodosInicial();
+
+  // 3. Reavalia todos — os que já têm valor válido ficam verdes
+  TODOS_CAMPOS.forEach(({id, ok: fn}) => {
+    const el = document.getElementById(id);
+    if(el) marcarCampo(id, fn(el.value));
+  });
+</script>
+</body>
+</html>

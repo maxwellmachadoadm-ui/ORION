@@ -366,7 +366,15 @@ export default function Workspace() {
         )
 
       case 'Projeções':
-        return <ProjecoesFS emp={emp} kpis={empKpis} fmt={fmt} />
+        return (
+          <div style={{ margin: '-24px -28px', height: 'calc(100vh - 240px)' }}>
+            <iframe
+              src="/projecao-forme-seguro.html"
+              title="Forme Seguro — Projeções"
+              style={{ width: '100%', height: '100%', border: 'none', borderRadius: '0 0 var(--r) var(--r)', background: '#fff' }}
+            />
+          </div>
+        )
 
       default:
         return null

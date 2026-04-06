@@ -29,41 +29,62 @@ export function logAudit(action, details, userId, userName) {
 }
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null)
+  const [user, setUser]       = useState(null)
   const [profile, setProfile] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(true)  // começa true — app espera verificação
 
   useEffect(() => {
+    // ── MODO DEMO (sem Supabase configurado) ──
     if (isDemoMode) {
-      // NEVER auto-restore demo session — always require login
+      // NUNCA restaura sessão automaticamente em modo demo.
+      // O usuário SEMPRE precisa fazer login.
+      setUser(null)
+      setProfile(null)
       setLoading(false)
       return
     }
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    // ── MODO SUPABASE ──
+    // Verifica sessão existente. Se houver sessão válida do Supabase,
+    // carrega o perfil. Caso contrário, redireciona para login.
+    let cancelled = false
+
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (cancelled) return
       if (session?.user) {
         setUser(session.user)
-        fetchProfile(session.user.id)
+        await fetchProfileSilent(session.user.id)
       }
-      setLoading(false)
+      // Só marca como "carregado" DEPOIS de tentar buscar o perfil
+      if (!cancelled) setLoading(false)
+    }).catch(() => {
+      if (!cancelled) setLoading(false)
     })
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    // Listener para mudanças de sessão (login/logout/expiração)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (cancelled) return
       if (session?.user) {
         setUser(session.user)
-        fetchProfile(session.user.id)
+        await fetchProfileSilent(session.user.id)
       } else {
+        // Sem sessão válida: limpa estado → App.jsx redireciona para Login
         setUser(null)
         setProfile(null)
       }
     })
 
-    return () => subscription.unsubscribe()
+    return () => {
+      cancelled = true
+      subscription.unsubscribe()
+    }
   }, [])
 
-  async function fetchProfile(userId) {
-    const { data } = await supabase.from('profiles').select('*').eq('id', userId).single()
-    if (data) setProfile(data)
+  async function fetchProfileSilent(userId) {
+    try {
+      const { data } = await supabase.from('profiles').select('*').eq('id', userId).single()
+      if (data) setProfile(data)
+    } catch (_) {}
   }
 
   async function signIn(email, password) {
@@ -72,7 +93,9 @@ export function AuthProvider({ children }) {
       const u = users.find(x => x.email === email && x.pass === btoa(password))
       if (!u) throw new Error('Usuário ou senha incorretos')
       if (u.role === 'pendente') throw new Error('Conta pendente de aprovação. Aguarde o administrador liberar seu acesso.')
-      if (u.access_expires && new Date(u.access_expires) < new Date()) throw new Error('Acesso expirado. Entre em contato com o administrador.')
+      if (u.access_expires && new Date(u.access_expires) < new Date()) {
+        throw new Error('Acesso expirado. Entre em contato com o administrador.')
+      }
       setUser({ id: u.id })
       setProfile(u)
       logAudit('LOGIN', 'Sessão iniciada', u.id, u.name)
@@ -102,7 +125,7 @@ export function AuthProvider({ children }) {
         setUser({ id: u.id })
         setProfile(u)
       } else {
-        throw new Error('Conta criada com sucesso! Aguarde a aprovação do administrador para acessar.')
+        throw new Error('Conta criada! Aguarde a aprovação do administrador para acessar.')
       }
       return
     }
@@ -123,12 +146,11 @@ export function AuthProvider({ children }) {
 
   async function signOut() {
     if (user && profile) logAudit('LOGOUT', 'Sessão encerrada', user?.id, profile?.name)
-    if (isDemoMode) {
-      setUser(null)
-      setProfile(null)
-      return
+    setUser(null)
+    setProfile(null)
+    if (!isDemoMode) {
+      await supabase.auth.signOut()
     }
-    await supabase.auth.signOut()
   }
 
   async function updateProfile(updates) {
@@ -195,7 +217,7 @@ export function AuthProvider({ children }) {
         users[idx].access_expires = accessExpires || null
         localStorage.setItem('orion_users', JSON.stringify(users))
       }
-      logAudit('ACESSO_ATUALIZADO', `Usuário ${userId} — empresas: ${companiesAccess?.join(',') || 'todas'}${accessExpires ? ' — expira: ' + accessExpires : ''}`, user?.id, profile?.name)
+      logAudit('ACESSO_ATUALIZADO', `Usuário ${userId} — empresas: ${companiesAccess?.join(',') || 'todas'}`, user?.id, profile?.name)
       return
     }
     await supabase.from('profiles').update({ companies_access: companiesAccess, access_expires: accessExpires }).eq('id', userId)
@@ -212,7 +234,7 @@ export function AuthProvider({ children }) {
   const isAdmin    = profile?.role === 'admin'
   const isGestor   = ['admin', 'gestor'].includes(profile?.role)
   const canEdit    = ['admin', 'gestor', 'contador'].includes(profile?.role)
-  const userCompanies = profile?.companies_access || null  // null = acesso total
+  const userCompanies = profile?.companies_access || null
 
   return (
     <AuthContext.Provider value={{

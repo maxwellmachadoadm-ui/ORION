@@ -6,7 +6,7 @@ insert into public.empresas (id, nome, sigla, descricao, cor, rgb, score, status
   ('dw', 'Doctor Wealth', 'DW', 'Ecossistema Financeiro Medico', '#3b82f6', '59,130,246', 80, 'Crescimento', '#10b981', 48500, 60000, 22000, 18.4, 'https://drive.google.com'),
   ('of', 'Original Fotografia', 'OF', 'Estudio & Eventos Visuais', '#f59e0b', '245,158,11', 52, 'Turnaround', '#f59e0b', 28000, 35000, 4200, -4.2, 'https://drive.google.com'),
   ('fs', 'Forme Seguro', 'FS', 'Fundos de Formatura Premium', '#8b5cf6', '139,92,246', 65, 'Lancamento', '#06b6d4', 15000, 50000, 8500, 50, 'https://drive.google.com'),
-  ('cdl', 'CDL Divinopolis', 'CDL', 'Camara de Dirigentes Lojistas', '#10b981', '16,185,129', 88, 'Estavel', '#10b981', 35000, 40000, 12000, 5.3, 'https://drive.google.com'),
+  ('cdl', 'CDL ITAPERUNA', 'CDL', 'Camara de Dirigentes Lojistas Itaperuna', '#10b981', '16,185,129', 88, 'Estavel', '#10b981', 35000, 40000, 12000, 5.3, 'https://drive.google.com'),
   ('gp', 'Gestao Pessoal', 'GP', 'Patrimonio & Financas Pessoais', '#ec4899', '236,72,153', 75, 'Saudavel', '#10b981', 0, 0, 0, 0, 'https://drive.google.com');
 
 -- KPIs

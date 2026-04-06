@@ -596,7 +596,7 @@ select.inp{cursor:pointer;appearance:none;background-image:url("data:image/svg+x
     </div>
     <div class="sb-item" id="sb-cdl" onclick="openEmp('cdl')">
       <div class="sb-dot" style="background:#10b981"></div>
-      <span style="flex:1;font-size:13px">CDL Divinopolis</span>
+      <span style="flex:1;font-size:13px">CDL ITAPERUNA</span>
       <span class="sb-score good">88</span>
     </div>
     <div class="sb-add" onclick="addEmpresa()">+ Nova empresa</div>
@@ -865,7 +865,7 @@ select.inp{cursor:pointer;appearance:none;background-image:url("data:image/svg+x
           <option value="dw">Doctor Wealth</option>
           <option value="of">Original Fotografia</option>
           <option value="fs">Forme Seguro</option>
-          <option value="cdl">CDL Divinopolis</option>
+          <option value="cdl">CDL ITAPERUNA</option>
           <option value="gp">Gestao Pessoal</option>
         </select>
       </div>
@@ -1026,7 +1026,7 @@ const EMPS = {
     riscos:[{r:'Concorrencia de bancos tradicionais nos fundos',n:'medio'},{r:'Dependencia total de captacao via indicacao',n:'alto'}],
     decisoes:[{d:'Contratar comercial dedicado para novas turmas',dt:'Abr/2026'},{d:'Criar landing page Forme Seguro',dt:'Mar/2026'}],
     crm:[{fase:'Lead',cor:'#3b82f6',itens:[{n:'UNIFAL Medicina 2027',v:'Projeto 5 anos'},{n:'UFLA Medicina 2026',v:'Projeto 4 anos'}]},{fase:'Proposta',cor:'#8b5cf6',itens:[{n:'UNIFENAS Odonto 2026',v:'Projeto 3 anos'}]},{fase:'Negociacao',cor:'#f59e0b',itens:[{n:'UNIMONTES Med 2026',v:'Projeto 4 anos'}]},{fase:'Fechado',cor:'#10b981',itens:[{n:'UNIFENAS Med 2026',v:'R$ 5.000/mes'}]}]},
-  cdl:{id:'cdl',nome:'CDL Divinopolis',sigla:'CDL',desc:'Camara de Dirigentes Lojistas',
+  cdl:{id:'cdl',nome:'CDL ITAPERUNA',sigla:'CDL',desc:'Camara de Dirigentes Lojistas Itaperuna',
     cor:'#10b981',rgb:'16,185,129',score:88,status:'Estavel',statusCor:'#10b981',
     fat:35000,meta:40000,result:12000,cresc:5.3,
     drive:'https://drive.google.com',
@@ -2139,12 +2139,12 @@ function buildSystemPrompt(){
   const taskSummary=pendingTasks.slice(0,10).map(t=>'- ['+EMPS[t.emp]?.sigla+'] '+t.title+' ('+t.priority+')').join('\n');
 
   return 'Voce e MAXXXI — Agente Executivo IA da plataforma ORION de Maxwell Oliveira Machado.\n'+
-    'Maxwell e CEO, Contador, Presidente da CDL de Divinopolis, MG.\n\n'+
+    'Maxwell e CEO, Contador, Presidente da CDL ITAPERUNA (Itaperuna, MG).\n\n'+
     'EMPRESAS DO ECOSSISTEMA:\n'+
     '1. Doctor Wealth (DW) — contabilidade medica, 47 clientes, R$ 48,5k/mes, meta R$ 60k, score 80\n'+
     '2. Original Fotografia (OF) — estudio, turnaround, inadimplencia 8,7%, score 52\n'+
     '3. Forme Seguro (FS) — fundos de formatura universitaria premium, 3 fundos, R$ 420k gerenciados, score 65\n'+
-    '4. CDL Divinopolis (CDL) — 1.100 associados, score 88, estavel\n'+
+    '4. CDL ITAPERUNA (CDL) — 1.100 associados, score 88, estavel\n'+
     '5. Gestao Pessoal (GP) — patrimonio R$ 1,2M, renda R$ 52k/mes\n\n'+
     'FATURAMENTO TOTAL: R$ 126,5k | RESULTADO LIQUIDO: R$ 46,7k\n\n'+
     'EMPRESA ATIVA AGORA: '+(curEmp?EMPS[curEmp]?.nome:'Visao Geral do Ecossistema')+'.\n\n'+

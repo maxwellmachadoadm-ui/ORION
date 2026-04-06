@@ -66,7 +66,7 @@ export default function Home() {
         <div style={{ fontSize: 12, color: 'var(--blue3)', fontWeight: 600, letterSpacing: 4, textTransform: 'uppercase', marginBottom: 4 }}>
           {greeting}, {firstName}
         </div>
-        <h1 style={{ fontFamily: "'Syne',sans-serif", fontSize: 26, fontWeight: 900, color: '#fff', lineHeight: 1.1 }}>
+        <h1 style={{ fontFamily: "'Syne',sans-serif", fontSize: 20, fontWeight: 700, color: '#fff', lineHeight: 1.2, letterSpacing: 0.3 }}>
           Vamos começar a trabalhar
         </h1>
         <div style={{ fontSize: 13, color: 'var(--tx3)', marginTop: 4 }}>{dateStr}</div>

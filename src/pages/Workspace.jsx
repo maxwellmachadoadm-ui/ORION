@@ -446,15 +446,23 @@ export default function Workspace() {
 
   // Tabs by company — filtradas pelos módulos ativos
   const modulosAtivos = emp ? getEmpresaModulos(emp.id) : DEFAULT_MODULOS
-  const baseTabsFiltradas = modulosAtivos.filter(t => BASE_TABS.includes(t))
-  const extraTabs = []
-  if (id === 'fs') {
-    if (modulosAtivos.includes('Gestão de Fundos')) extraTabs.push('Gestão de Fundos')
-    if (modulosAtivos.includes('Projeções')) extraTabs.push('Projeções')
+
+  // GP tem abas específicas enxutas
+  const GP_TABS = ['Patrimônio', 'KPIs', 'OKRs', 'Tarefas', 'Fluxo de Caixa', 'Arquivos']
+
+  let TABS
+  if (id === 'gp') {
+    TABS = GP_TABS.filter(t => modulosAtivos.includes(t))
+  } else {
+    const baseTabsFiltradas = modulosAtivos.filter(t => BASE_TABS.includes(t))
+    const extraTabs = []
+    if (id === 'fs') {
+      if (modulosAtivos.includes('Gestão de Fundos')) extraTabs.push('Gestão de Fundos')
+      if (modulosAtivos.includes('Projeções')) extraTabs.push('Projeções')
+    }
+    if (id === 'of' && modulosAtivos.includes('Projetos')) extraTabs.push('Projetos')
+    TABS = [...baseTabsFiltradas, ...extraTabs]
   }
-  if (id === 'gp' && modulosAtivos.includes('Patrimônio')) extraTabs.push('Patrimônio')
-  if (id === 'of' && modulosAtivos.includes('Projetos')) extraTabs.push('Projetos')
-  const TABS = [...baseTabsFiltradas, ...extraTabs]
 
   function removeFile(fileId) {
     setFiles(prev => {
@@ -824,17 +832,6 @@ export default function Workspace() {
 
   return (
     <div className="page workspace">
-      <div className="emp-tabs">
-        {empresas.filter(e => e.id !== id).map(e => (
-          <button key={e.id} className="emp-tab"
-            style={{ opacity: 0.7 }}
-            onClick={() => navigate(`/empresa/${e.id}`)}>
-            <span className="emp-sigla-sm" style={{ background: e.cor }}>{e.sigla}</span>
-            {safeName(e.nome)}
-          </button>
-        ))}
-      </div>
-
       <div className="workspace-header" style={{ borderLeft: `4px solid ${emp.cor}` }}>
         <div className="workspace-title">
           <span className="emp-sigla" style={{ background: emp.cor }}>{emp.sigla}</span>

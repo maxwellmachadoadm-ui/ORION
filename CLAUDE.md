@@ -247,6 +247,14 @@ empresa_modulos (empresa_id, modulo, ativo)
 - `supabase/automacoes_log.sql` — tabela automacoes_log com RLS
 - `supabase/fix_rls_avatar.sql` — políticas RLS para upload de avatar
 
+### Correções v12 (Abril 2026) ✅
+- **NaN% e Health Score** — demoData com valores reais verificados; calculateHealthScore com proteção isFinite em margem, crescimento e inadimplência; mínimo 5
+- **Barra de empresas removida** — Workspace não mostra mais abas de outras empresas no topo; apenas header da empresa ativa
+- **Módulos configuráveis** — Admin já tem ⚙ Módulos com 16 opções; Workspace filtra abas por getEmpresaModulos; localStorage orion_empresa_modulos
+- **Tarefas filtradas** — getTarefas(empId) filtra por empresa_id (já correto)
+- **CRM filtrado** — getCrmLeads(empId) filtra por empresa_id (já correto)
+- **Gestão Pessoal enxuta** — GP mostra apenas: Patrimônio, KPIs, OKRs, Tarefas, Fluxo de Caixa, Arquivos (sem CRM, Pipeline, Riscos, Decisões, DRE)
+
 ### Módulos Principais Pendentes
 - Integração Supabase em produção (currently demo mode)
 - Supabase Storage: executar supabase/create_buckets.sql no painel do Supabase

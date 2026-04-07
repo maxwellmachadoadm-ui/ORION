@@ -268,13 +268,6 @@ export function AuthProvider({ children }) {
       throw new Error('E-mail inválido. Verifique o formato e tente novamente.')
     }
 
-    // Verificar duplicidade
-    const existingInvites = JSON.parse(localStorage.getItem('orion_invites') || '[]')
-    const alreadyInvited = existingInvites.find(i => i.email === cleanEmail && !i.accepted)
-    if (alreadyInvited) {
-      throw new Error(`Já existe um convite pendente para ${cleanEmail}.`)
-    }
-
     const invite = {
       id: Date.now(), email: cleanEmail, role,
       companies_access: companiesAccess,

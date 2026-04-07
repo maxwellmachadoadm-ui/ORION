@@ -8,7 +8,6 @@ import Dashboard from './pages/Dashboard'
 import Tasks from './pages/Tasks'
 import CEO from './pages/CEO'
 import Workspace from './pages/Workspace'
-import CRM from './pages/CRM'
 import Financeiro from './pages/Financeiro'
 import Admin from './pages/Admin'
 import OriginalFotografia from './pages/OriginalFotografia'
@@ -97,7 +96,7 @@ export default function App() {
         <Route path="/"                   element={<Home />} />
         <Route path="/dashboard"          element={<Dashboard />} />
         <Route path="/tarefas"            element={<Tasks />} />
-        <Route path="/crm"                element={<CRM />} />
+
         <Route path="/financeiro"         element={<Financeiro />} />
         <Route path="/ceo"                element={<CEO />} />
         <Route path="/admin"              element={<Admin />} />

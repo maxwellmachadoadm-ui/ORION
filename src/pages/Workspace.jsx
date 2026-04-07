@@ -5,7 +5,7 @@ import { useAuth } from '../contexts/AuthContext'
 import Biblioteca from './Biblioteca'
 import OriginalFotografia from './OriginalFotografia'
 
-const BASE_TABS = ['KPIs', 'OKRs', 'Tarefas', 'Contratos', 'Riscos', 'Decisões', 'CRM', 'Pipeline', 'Fluxo de Caixa', 'DRE', 'Arquivos', 'Biblioteca']
+const BASE_TABS = ['KPIs', 'OKRs', 'Tarefas', 'Contratos', 'Riscos', 'Decisões', 'Pipeline', 'Fluxo de Caixa', 'DRE', 'Arquivos', 'Biblioteca']
 
 // ── Componente de Projeções FS ──
 function ProjecoesFS({ emp, kpis, fmt }) {
@@ -403,15 +403,13 @@ const STATUS_LABELS = { todo: 'A Fazer', doing: 'Em Andamento', done: 'Concluíd
 const STATUS_COLORS = { todo: '#ef4444', doing: '#f59e0b', done: '#10b981' }
 const CONTRATO_STATUS = { ativo: '#10b981', inadim: '#ef4444', negoc: '#f59e0b' }
 const RISCO_COLORS = { alto: '#ef4444', medio: '#f59e0b', baixo: '#3b82f6' }
-const CRM_FASES = ['Lead', 'Proposta', 'Negociacao', 'Fechado', 'Perdido']
-const CRM_COLORS = { Lead: '#3b82f6', Proposta: '#f59e0b', Negociacao: '#8b5cf6', Fechado: '#10b981', Perdido: '#ef4444' }
 
 export default function Workspace() {
   const { id } = useParams()
   const navigate = useNavigate()
   const {
     empresas, getEmpresa, getKpis, getOkrs, getTarefas, getContratos,
-    getRiscos, getDecisoes, getCrmLeads, crmLeads, setCrmLeads, fmt, loaded, updateTask,
+    getRiscos, getDecisoes, fmt, loaded, updateTask,
     arquivos, addArquivo, deleteArquivo,
     getCashFlow, getDRE, getPipeline, getPatrimonio, savePatrimonio,
     DEFAULT_MODULOS, getEmpresaModulos,
@@ -442,7 +440,6 @@ export default function Workspace() {
   const empContratos = getContratos(id)
   const empRiscos = getRiscos(id)
   const empDecisoes = getDecisoes(id)
-  const empLeads = getCrmLeads(id)
 
   // Tabs by company — filtradas pelos módulos ativos
   const modulosAtivos = emp ? getEmpresaModulos(emp.id) : DEFAULT_MODULOS
@@ -615,46 +612,6 @@ export default function Workspace() {
               ))}
               {empDecisoes.length === 0 && <p className="empty">Nenhuma decisão registrada.</p>}
             </div>
-          </div>
-        )
-
-      case 'CRM':
-        return (
-          <div className="crm-pipeline">
-            {CRM_FASES.map(fase => {
-              const leads = empLeads.filter(l => l.fase === fase)
-              return (
-                <div key={fase} className="crm-col"
-                  onDragOver={e => { e.preventDefault(); e.currentTarget.style.boxShadow = '0 0 0 2px var(--gold), 0 0 20px rgba(245,158,11,.15)' }}
-                  onDragLeave={e => { e.currentTarget.style.boxShadow = 'none' }}
-                  onDrop={e => {
-                    e.preventDefault(); e.currentTarget.style.boxShadow = 'none'
-                    const leadIdx = e.dataTransfer.getData('leadIdx')
-                    if (leadIdx != null && leadIdx !== '') {
-                      const updated = [...crmLeads]
-                      const li = parseInt(leadIdx)
-                      if (updated[li]) { updated[li] = { ...updated[li], fase }; setCrmLeads(updated) }
-                    }
-                  }}>
-                  <div className="crm-col-header" style={{ borderBottom: `3px solid ${CRM_COLORS[fase]}` }}>
-                    <h4>{fase}</h4>
-                    <span className="count">{leads.length}</span>
-                  </div>
-                  {leads.map((l, i) => {
-                    const globalIdx = crmLeads.findIndex(x => x === l)
-                    return (
-                      <div key={i} className="card crm-card" draggable
-                        onDragStart={e => { e.dataTransfer.setData('leadIdx', String(globalIdx)); e.dataTransfer.effectAllowed = 'move'; e.currentTarget.style.opacity = '0.4' }}
-                        onDragEnd={e => { e.currentTarget.style.opacity = '1' }}
-                        style={{ cursor: 'grab' }}>
-                        <strong>{l.nome}</strong>
-                        <span className="crm-val">{l.valor}</span>
-                      </div>
-                    )
-                  })}
-                </div>
-              )
-            })}
           </div>
         )
 

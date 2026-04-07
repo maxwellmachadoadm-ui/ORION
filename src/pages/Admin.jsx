@@ -4,7 +4,7 @@ import { useData, DEFAULT_MODULOS } from '../contexts/DataContext'
 
 const ALL_MODULOS = [
   'KPIs', 'OKRs', 'Tarefas', 'Contratos', 'Riscos', 'Decisões',
-  'CRM', 'Pipeline', 'Fluxo de Caixa', 'DRE', 'Arquivos',
+  'Pipeline', 'Fluxo de Caixa', 'DRE', 'Arquivos',
   'Biblioteca', 'Gestão de Fundos', 'Projeções', 'Projetos', 'Patrimônio'
 ]
 

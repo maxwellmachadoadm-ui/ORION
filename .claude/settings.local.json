@@ -22,7 +22,14 @@
       "Bash(where psql:*)",
       "Bash(npx supabase:*)",
       "Bash(node supabase/setup.mjs)",
-      "Bash(node supabase/seed-run.mjs)"
+      "Bash(node supabase/seed-run.mjs)",
+      "Bash(cp \"C:/Users/Forme Seguro/Desktop/forme-seguro-v2.html\" \"C:/Users/Forme Seguro/Documents/ORION/public/forme-seguro-v2.html\")",
+      "Bash(find '/c/Users/Forme Seguro/Documents/ORION' -maxdepth 4 -name *PROJ* -o -name *proj* -o -name *FORMA*)",
+      "Bash(find '/c/Users/Forme Seguro/Documents' -maxdepth 3 -name *.html)",
+      "Bash(grep -rn \"CDL\\\\|Divinopolis\\\\|Divinópolis\\\\|ITAPERUNA\" '/c/Users/Forme Seguro/Documents/ORION' --include=*.js --include=*.jsx --include=*.ts --include=*.sql --include=*.json --include=*.html)",
+      "Bash(find '/c/Users/Forme Seguro' -maxdepth 5 -name *PROJ* -o -name *Proj* -o -name *proj*)",
+      "Bash(npm run:*)",
+      "Bash(\"C:\\\\Users\\\\Forme Seguro\\\\Documents\\\\ORION\\\\index.html\":*)"
     ]
   }
 }

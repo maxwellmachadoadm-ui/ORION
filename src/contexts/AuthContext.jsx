@@ -45,10 +45,19 @@ export function AuthProvider({ children }) {
     }
 
     // ── MODO SUPABASE ──
-    // Verifica sessão existente com timeout de 5s.
-    // Se Supabase não responder (projeto pausado, URL errada, rede lenta),
-    // o timeout garante que o loading seja liberado e o usuário vá para o Login.
+    // Flag de sessão ativa na sessionStorage.
+    // sessionStorage é por-aba: nova aba/janela = sem flag = login obrigatório.
+    // Refresh na mesma aba: flag presente = sessão restaurada (comportamento esperado).
+    const sessionFlag = sessionStorage.getItem('orion_session_active')
+
     let cancelled = false
+
+    // Se não há flag de sessão ativa nesta aba → força logout e redireciona para login.
+    if (!sessionFlag) {
+      supabase.auth.signOut().catch(() => {})
+      if (!cancelled) setLoading(false)
+      return
+    }
 
     const sessionPromise = supabase.auth.getSession()
     const timeoutPromise = new Promise(resolve =>
@@ -62,6 +71,9 @@ export function AuthProvider({ children }) {
         setUser(session.user)
         // fetchProfileSilent também tem timeout interno de 3s
         await fetchProfileSilent(session.user.id)
+      } else {
+        // Token expirado ou inválido — remove flag
+        sessionStorage.removeItem('orion_session_active')
       }
       if (!cancelled) setLoading(false)
     }).catch(() => {
@@ -107,13 +119,13 @@ export function AuthProvider({ children }) {
       }
       setUser({ id: u.id })
       setProfile(u)
-      // Persiste sessão demo na sessionStorage (expira ao fechar aba, máx 8h)
-      sessionStorage.setItem('orion_demo_session', JSON.stringify({ id: u.id, ts: Date.now() }))
       logAudit('LOGIN', 'Sessão iniciada', u.id, u.name)
       return
     }
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) throw error
+    // Marca sessão ativa nesta aba — necessário para restaurar após refresh
+    sessionStorage.setItem('orion_session_active', '1')
   }
 
   async function signUp(email, password, name, phone, cpf) {
@@ -159,7 +171,8 @@ export function AuthProvider({ children }) {
     if (user && profile) logAudit('LOGOUT', 'Sessão encerrada', user?.id, profile?.name)
     setUser(null)
     setProfile(null)
-    // Limpa sessão demo da sessionStorage
+    // Remove flag de sessão — próxima abertura do app exigirá login
+    sessionStorage.removeItem('orion_session_active')
     sessionStorage.removeItem('orion_demo_session')
     if (!isDemoMode) {
       await supabase.auth.signOut()

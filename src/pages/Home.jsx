@@ -100,8 +100,9 @@ export default function Home() {
       <div className="emp-grid">
         {empresas.map(e => {
           const pct = e.meta > 0 ? Math.min(e.faturamento / e.meta * 100, 100).toFixed(0) : 0
-          const crescC = e.crescimento >= 0 ? 'var(--green)' : 'var(--red)'
-          const crescS = e.crescimento >= 0 ? '▲' : '▼'
+          const cresc = (e.crescimento != null && isFinite(e.crescimento)) ? e.crescimento : null
+          const crescC = (cresc ?? 0) >= 0 ? 'var(--green)' : 'var(--red)'
+          const crescS = (cresc ?? 0) >= 0 ? '▲' : '▼'
           const scoreColor = e.score >= 70 ? 'var(--green)' : e.score >= 40 ? 'var(--amber)' : 'var(--red)'
           return (
             <div key={e.id} className="emp-card" onClick={() => navigate(`/empresa/${e.id}`)}
@@ -119,7 +120,7 @@ export default function Home() {
                   <div className="emp-nums">
                     <div><div className="emp-nlbl">Faturamento</div><div className="emp-nval" style={{ color: e.cor }}>{presentationMode ? '••••' : fmt(e.faturamento)}</div></div>
                     <div><div className="emp-nlbl">Margem</div><div className="emp-nval">{e.faturamento > 0 ? ((e.resultado / e.faturamento) * 100).toFixed(0) + '%' : '—'}</div></div>
-                    <div><div className="emp-nlbl">vs Meta</div><div className="emp-nval" style={{ color: crescC }}>{crescS} {Math.abs(e.crescimento)}%</div></div>
+                    <div><div className="emp-nlbl">vs Meta</div><div className="emp-nval" style={{ color: crescC }}>{cresc != null ? `${crescS} ${Math.abs(cresc)}%` : '—'}</div></div>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--tx3)', marginBottom: 4 }}>
                     <span>{presentationMode ? '••••' : fmt(e.faturamento)}</span>

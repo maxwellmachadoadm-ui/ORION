@@ -55,6 +55,12 @@ const DEMO_LANCAMENTOS_V4 = [
   { id:'l15', empresa_id:'dw', tipo:'despesa',  categoria:'IMPOSTOS',   subcategoria:'Simples Nacional',          banco:'Nubank',         origem:null,            valor:4100,  mes:'2026-02', descricao:'DAS Simples Nacional fev',        data:'2026-02-20', status:'aprovado', anexo_nome:null, criado_por:'admin', criado_em:'2026-02-20T08:00:00Z' },
 ]
 
+// ── UTILITÁRIO: valor seguro — retorna '—' se NaN/undefined/Infinity ──
+export function safeVal(val, decimals = 1, suffix = '%') {
+  if (val == null || isNaN(val) || !isFinite(val)) return '—'
+  return Number(val).toFixed(decimals) + suffix
+}
+
 // ── CALCULATE HEALTH SCORE ──
 export function calculateHealthScore(emp, lancamentos = []) {
   if (!emp) return 0
@@ -80,7 +86,8 @@ export function calculateHealthScore(emp, lancamentos = []) {
   else if (emp.crescimento >= -10) score -= 5
   else score -= 15
 
-  return Math.max(0, Math.min(100, Math.round(score)))
+  const result = Math.max(0, Math.min(100, Math.round(score)))
+  return isNaN(result) ? (emp.score || 50) : result
 }
 
 // ── DEMO AGENDA ──
@@ -158,7 +165,7 @@ export function DataProvider({ children }) {
             .replace(/Divin[oó]polis.*?lojistas/gi, 'Itaperuna — lojistas')
           if (fixed !== customEmpsRaw) {
             localStorage.setItem('orion_custom_empresas', fixed)
-            console.info('[ORION] Migração CDL: "CDL Divinópolis" → "CDL ITAPERUNA" aplicada no localStorage.')
+            console.info('[ORION] Migração CDL: nome incorreto → "CDL ITAPERUNA" corrigido no localStorage.')
           }
         }
       } catch (_) {}

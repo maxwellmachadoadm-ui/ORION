@@ -3,12 +3,13 @@ import { useAuth } from '../contexts/AuthContext'
 import { useData } from '../contexts/DataContext'
 import { useNavigate } from 'react-router-dom'
 
-// ── Modelos disponíveis ──
+// ── Modelos disponíveis (IDs validados da Anthropic) ──
 const MODELS = {
-  'claude-haiku-4-5':  { label: 'Haiku',  desc: 'Rápido · Cotidiano',      badge: '⚡', color: '#10b981' },
-  'claude-sonnet-4-5': { label: 'Sonnet', desc: 'Padrão · Análises',        badge: '🎯', color: '#3b82f6' },
-  'claude-opus-4-5':   { label: 'Opus',   desc: 'Avançado · Estratégico',   badge: '🧠', color: '#8b5cf6' },
+  'claude-3-5-haiku-20241022': { label: 'Haiku',  desc: 'Rápido · Cotidiano',    badge: '⚡', color: '#10b981' },
+  'claude-sonnet-4-5':         { label: 'Sonnet', desc: 'Padrão · Análises',      badge: '🎯', color: '#3b82f6' },
+  'claude-opus-4-5':           { label: 'Opus',   desc: 'Avançado · Estratégico', badge: '🧠', color: '#8b5cf6' },
 }
+const DEFAULT_MODEL = 'claude-3-5-haiku-20241022'
 
 // ── Log do MAXXXI ──
 function logMaxxxiAction(userId, userName, message, mode, tokens) {
@@ -89,7 +90,9 @@ export default function Maxxxi() {
   const [serverApi, setServerApi] = useState(null)
   const [showLog, setShowLog] = useState(false)
   const [selectedModel, setSelectedModel] = useState(() => {
-    return localStorage.getItem('orion_maxxxi_model') || 'claude-haiku-4-5'
+    const saved = localStorage.getItem('orion_maxxxi_model')
+    // Valida se o modelo salvo ainda existe; caso contrário usa o default
+    return (saved && MODELS[saved]) ? saved : DEFAULT_MODEL
   })
   const msgsRef = useRef(null)
 
@@ -284,19 +287,42 @@ Responda em português brasileiro. Seja direto e executivo.`
     try {
       const apiMessages = newMsgs.filter(m => m.role === 'user' || m.role === 'assistant').slice(1).slice(-14)
       const maxTokens = selectedModel === 'claude-opus-4-5' ? 2048 : 1024
+
+      // Timeout de 30s para evitar loading infinito
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 30000)
+
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model: selectedModel, max_tokens: maxTokens, system: buildSystemPrompt(), messages: apiMessages })
+        body: JSON.stringify({ model: selectedModel, max_tokens: maxTokens, system: buildSystemPrompt(), messages: apiMessages }),
+        signal: controller.signal
       })
+      clearTimeout(timeoutId)
+
       const data = await res.json()
-      const reply = data.content?.[0]?.text || 'Sem resposta.'
-      const tokens = data.usage?.output_tokens || null
-      setMessages(prev => [...prev, { role: 'assistant', content: reply }])
-      logMaxxxiAction(user?.id, profile?.name, txt, 'server', tokens)
+
+      if (!res.ok) {
+        // Erro da API (ex: modelo inválido, quota, etc.) → fallback local
+        const errMsg = data?.error?.message || data?.error || `Erro ${res.status}`
+        console.warn('MAXXXI API error:', errMsg)
+        const localFallback = getLocalResponse(txt)
+        setMessages(prev => [...prev, { role: 'assistant', content: `⚠️ API indisponível (${errMsg})\n\n${localFallback}` }])
+        logMaxxxiAction(user?.id, profile?.name, txt, `error-${res.status}`, null)
+      } else {
+        const reply = data.content?.[0]?.text || 'Sem resposta.'
+        const tokens = data.usage?.output_tokens || null
+        setMessages(prev => [...prev, { role: 'assistant', content: reply }])
+        logMaxxxiAction(user?.id, profile?.name, txt, 'server', tokens)
+      }
     } catch (e) {
-      setMessages(prev => [...prev, { role: 'assistant', content: 'Erro de conexão: ' + e.message }])
-      logMaxxxiAction(user?.id, profile?.name, txt, 'error', null)
+      // Timeout ou falha de rede → usa resposta local
+      const isTimeout = e.name === 'AbortError'
+      const fallback = getLocalResponse(txt)
+      setMessages(prev => [...prev, { role: 'assistant', content: isTimeout
+        ? `⏱ Tempo limite atingido. Resposta local:\n\n${fallback}`
+        : `📶 Sem conexão. Resposta local:\n\n${fallback}` }])
+      logMaxxxiAction(user?.id, profile?.name, txt, isTimeout ? 'timeout' : 'error', null)
     }
     setLoading(false)
   }

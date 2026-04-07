@@ -162,6 +162,39 @@ export function AuthProvider({ children }) {
     }
   }
 
+  // ── UPLOAD DE AVATAR ──
+  async function uploadAvatar(file) {
+    if (!file) throw new Error('Nenhum arquivo selecionado')
+    // Validação: apenas imagens
+    if (!file.type.startsWith('image/')) throw new Error('Apenas imagens são aceitas (PNG, JPG, WebP)')
+
+    if (isDemoMode) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = async (ev) => {
+          const url = ev.target.result
+          await updateProfile({ avatar_url: url })
+          logAudit('AVATAR_ATUALIZADO', 'Foto de perfil alterada (demo)', user?.id, profile?.name)
+          resolve(url)
+        }
+        reader.onerror = () => reject(new Error('Erro ao ler arquivo'))
+        reader.readAsDataURL(file)
+      })
+    }
+
+    // Supabase Storage
+    const ext = file.name.split('.').pop().toLowerCase()
+    const path = `avatars/${user.id}.${ext}`
+    const { error: upErr } = await supabase.storage
+      .from('orion-assets')
+      .upload(path, file, { upsert: true, contentType: file.type })
+    if (upErr) throw upErr
+    const { data: { publicUrl } } = supabase.storage.from('orion-assets').getPublicUrl(path)
+    await updateProfile({ avatar_url: publicUrl })
+    logAudit('AVATAR_ATUALIZADO', 'Foto de perfil alterada', user?.id, profile?.name)
+    return publicUrl
+  }
+
   async function updateProfile(updates) {
     if (isDemoMode) {
       const p = { ...profile, ...updates }
@@ -280,7 +313,7 @@ export function AuthProvider({ children }) {
   return (
     <AuthContext.Provider value={{
       user, profile, loading, isAdmin, isGestor, canEdit, canDelete, userCompanies,
-      signIn, signUp, signOut, resetPassword, updateProfile,
+      signIn, signUp, signOut, resetPassword, updateProfile, uploadAvatar,
       inviteUser, getInvites, getUsers, updateUserRole, updateUserAccess,
       updateUserPermissions, hasPermission,
       getAuditLog, logAction,

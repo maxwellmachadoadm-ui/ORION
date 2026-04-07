@@ -1,7 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { useAuth } from '../contexts/AuthContext'
-import { ROLES } from '../contexts/AuthContext'
+import { useAuth, ROLES } from '../contexts/AuthContext'
 import { useData } from '../contexts/DataContext'
 import { useApp } from '../contexts/AppContext'
 import Maxxxi from './Maxxxi'
@@ -10,23 +9,40 @@ import { PDFExportButton } from './PDFExport'
 
 const TIPO_ICON = { contrato: '📋', meta: '🎯', inadimplencia: '💳', fluxo: '💰', tarefa: '☑' }
 
+const ALL_INVITE_PERMISSIONS = [
+  { key: 'view',     label: 'Visualizar dados' },
+  { key: 'attach',   label: 'Anexar arquivos' },
+  { key: 'classify', label: 'Classificar despesas' },
+  { key: 'report',   label: 'Emitir relatórios' },
+]
+
 export default function Layout({ children }) {
-  const { profile, signOut, isAdmin, inviteUser, getInvites, getUsers } = useAuth()
+  const { profile, signOut, isAdmin, inviteUser, uploadAvatar } = useAuth()
   const { empresas, tarefas, generateAlerts, generateAlertsV5 } = useData()
   const { presentationMode, togglePresentation } = useApp()
   const navigate = useNavigate()
   const location = useLocation()
+  const avatarInputRef = useRef(null)
+
   const [searchOpen, setSearchOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [alertsOpen, setAlertsOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [inviteOpen, setInviteOpen] = useState(false)
-  const [inviteEmail, setInviteEmail] = useState('')
-  const [inviteRole, setInviteRole] = useState('viewer')
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [avatarLoading, setAvatarLoading] = useState(false)
+
+  // Invite form state
+  const [inviteEmail, setInviteEmail] = useState('')
+  const [inviteRole, setInviteRole] = useState('pendente')
+  const [inviteCompanies, setInviteCompanies] = useState([])
+  const [invitePermissions, setInvitePermissions] = useState([])
+  const [inviteExpiry, setInviteExpiry] = useState('')
+  const [inviteLoading, setInviteLoading] = useState(false)
+  const [inviteFeedback, setInviteFeedback] = useState(null)
 
   const pending = tarefas.filter(t => t.status !== 'done').length
-  const alerts = generateAlertsV5 ? generateAlertsV5() : generateAlerts()
+  const alerts = generateAlertsV5 ? generateAlertsV5() : (generateAlerts ? generateAlerts() : [])
   const isActive = (path) => location.pathname === path ? 'sb-item active' : 'sb-item'
 
   useEffect(() => {
@@ -48,16 +64,60 @@ export default function Layout({ children }) {
       })
   ] : []
 
+  // ── Invite handler ──
   async function handleInvite(e) {
     e.preventDefault()
     if (!inviteEmail) return
-    await inviteUser(inviteEmail, inviteRole)
-    alert(`Convite enviado para ${inviteEmail}`)
-    setInviteEmail('')
-    setInviteOpen(false)
+    setInviteLoading(true)
+    setInviteFeedback(null)
+    try {
+      await inviteUser(
+        inviteEmail,
+        inviteRole,
+        inviteCompanies.length > 0 ? inviteCompanies : null,
+        invitePermissions.length > 0 ? invitePermissions : null
+      )
+      setInviteFeedback({ type: 'ok', msg: `Convite enviado para ${inviteEmail}` })
+      setTimeout(() => {
+        setInviteEmail('')
+        setInviteRole('pendente')
+        setInviteCompanies([])
+        setInvitePermissions([])
+        setInviteExpiry('')
+        setInviteFeedback(null)
+        setInviteOpen(false)
+      }, 1800)
+    } catch (err) {
+      setInviteFeedback({ type: 'err', msg: err.message })
+    }
+    setInviteLoading(false)
   }
 
-  const initials = profile?.name?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?'
+  function toggleInviteCompany(id) {
+    setInviteCompanies(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
+  }
+
+  function toggleInvitePermission(key) {
+    setInvitePermissions(prev => prev.includes(key) ? prev.filter(x => x !== key) : [...prev, key])
+  }
+
+  // ── Avatar upload ──
+  async function handleAvatarChange(e) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setAvatarLoading(true)
+    setUserMenuOpen(false)
+    try {
+      await uploadAvatar(file)
+    } catch (err) {
+      alert('Erro ao enviar foto: ' + err.message)
+    }
+    setAvatarLoading(false)
+    // Reset input
+    if (avatarInputRef.current) avatarInputRef.current.value = ''
+  }
+
+  const initials = profile?.name?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || '??'
 
   return (
     <div className={`app ${presentationMode ? 'presentation-mode' : ''}`}>
@@ -84,7 +144,7 @@ export default function Layout({ children }) {
               </div>
             )
           })()}
-          <button className="tb-btn" onClick={() => setSearchOpen(true)}>⌘ Busca rapida</button>
+          <button className="tb-btn" onClick={() => setSearchOpen(true)}>⌘ Busca rápida</button>
         </div>
         <div className="flex aic gap8">
           <button className="notif" onClick={() => { setAlertsOpen(!alertsOpen); setUserMenuOpen(false) }}>
@@ -101,11 +161,28 @@ export default function Layout({ children }) {
           </button>
           <button className="tb-btn" id="api-indicator" title="API Claude" style={{ color: 'var(--green)', borderColor: 'rgba(16,185,129,0.3)' }}>⚡ API</button>
           <button className="user-btn" onClick={() => { setUserMenuOpen(!userMenuOpen); setAlertsOpen(false) }}>
-            <div className="avatar">{initials}</div>
-            <span>{profile?.name || 'Usuario'}</span>
+            {/* Avatar: foto se disponível, senão iniciais */}
+            <div className="avatar" style={{ overflow: 'hidden', padding: 0 }}>
+              {avatarLoading
+                ? <span style={{ fontSize: 10 }}>⏳</span>
+                : profile?.avatar_url
+                  ? <img src={profile.avatar_url} alt={initials} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
+                  : initials
+              }
+            </div>
+            <span>{profile?.name?.split(' ')[0] || 'Usuário'}</span>
           </button>
         </div>
       </header>
+
+      {/* Hidden avatar file input */}
+      <input
+        ref={avatarInputRef}
+        type="file"
+        accept="image/png,image/jpeg,image/webp"
+        style={{ display: 'none' }}
+        onChange={handleAvatarChange}
+      />
 
       <div className="main">
         {/* SIDEBAR */}
@@ -126,19 +203,26 @@ export default function Layout({ children }) {
           <div className="sb-section">
             <div className="sb-lbl">Portfolio</div>
             {empresas.filter(e => e.id !== 'gp').map(e => (
-              <div key={e.id} className={location.pathname === `/empresa/${e.id}` ? 'sb-item active' : 'sb-item'}
+              <div key={e.id}
+                className={location.pathname === `/empresa/${e.id}` ? 'sb-item active' : 'sb-item'}
                 onClick={() => { navigate(`/empresa/${e.id}`); setSidebarOpen(false) }}>
-                <div className="sb-dot" style={{ background: e.cor }}></div>
+                {/* Logo or color dot */}
+                {e.logo_url
+                  ? <img src={e.logo_url} alt={e.sigla}
+                      style={{ width: 16, height: 16, borderRadius: 3, objectFit: 'cover', flexShrink: 0 }} />
+                  : <div className="sb-dot" style={{ background: e.cor }}></div>
+                }
                 <span style={{ flex: 1, fontSize: 13 }}>{e.nome}</span>
                 <span className={`sb-score ${e.score >= 75 ? 'good' : e.score >= 55 ? 'warn' : 'bad'}`}>{e.score}</span>
               </div>
             ))}
-            <div className="sb-add" onClick={() => alert('Funcionalidade em desenvolvimento')}>+ Nova empresa</div>
+            <div className="sb-add" onClick={() => { navigate('/admin'); setSidebarOpen(false) }}>+ Nova empresa</div>
           </div>
           <div className="sb-div"></div>
           <div className="sb-section">
             {empresas.filter(e => e.id === 'gp').map(e => (
-              <div key={e.id} className={location.pathname === `/empresa/${e.id}` ? 'sb-item active' : 'sb-item'}
+              <div key={e.id}
+                className={location.pathname === `/empresa/${e.id}` ? 'sb-item active' : 'sb-item'}
                 onClick={() => { navigate(`/empresa/${e.id}`); setSidebarOpen(false) }}>💰 {e.nome}</div>
             ))}
             <div className={isActive('/of-projetos')} onClick={() => { navigate('/of-projetos'); setSidebarOpen(false) }}>📷 OF Projetos</div>
@@ -150,7 +234,7 @@ export default function Layout({ children }) {
                 <div className="sb-lbl">Administração</div>
                 <div className={isActive('/admin')} onClick={() => { navigate('/admin'); setSidebarOpen(false) }}>⚙ Painel Admin</div>
                 <div className={isActive('/classificacoes')} onClick={() => { navigate('/classificacoes'); setSidebarOpen(false) }}>🏷 Classificações</div>
-                <div className="sb-item" onClick={() => setInviteOpen(true)}>👥 Convidar usuário</div>
+                <div className="sb-item" onClick={() => { setInviteOpen(true); setSidebarOpen(false) }}>👥 Convidar usuário</div>
               </div>
             </>
           )}
@@ -190,13 +274,15 @@ export default function Layout({ children }) {
       {/* ALERTS PANEL */}
       {alertsOpen && (
         <div className="alerts-panel show">
-          <div className="alerts-hdr"><span>Alertas ({alerts.length})</span><button onClick={() => setAlertsOpen(false)} style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: 16 }}>×</button></div>
-          {alerts.length === 0 ? <div style={{ padding: 20, textAlign: 'center', color: '#64748b', fontSize: 13 }}>Nenhum alerta ativo</div> :
-            alerts.map((a, i) => (
+          <div className="alerts-hdr">
+            <span>Alertas ({alerts.length})</span>
+            <button onClick={() => setAlertsOpen(false)} style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: 16 }}>×</button>
+          </div>
+          {alerts.length === 0
+            ? <div style={{ padding: 20, textAlign: 'center', color: '#64748b', fontSize: 13 }}>Nenhum alerta ativo</div>
+            : alerts.map((a, i) => (
               <div key={i} className="alert-item" onClick={() => { navigate(`/empresa/${a.emp}`); setAlertsOpen(false) }}>
-                <div style={{ fontSize: 16, flexShrink: 0 }}>
-                  {a.level === 'critico' ? '🔴' : '🟡'}
-                </div>
+                <div style={{ fontSize: 16, flexShrink: 0 }}>{a.level === 'critico' ? '🔴' : '🟡'}</div>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 2 }}>{a.text}</div>
                   <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
@@ -205,7 +291,8 @@ export default function Layout({ children }) {
                   </div>
                 </div>
               </div>
-            ))}
+            ))
+          }
         </div>
       )}
 
@@ -213,32 +300,115 @@ export default function Layout({ children }) {
       {userMenuOpen && (
         <div className="user-menu show">
           <div style={{ padding: '8px 12px', fontSize: 11, color: '#64748b', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-            {profile?.email}<br/><span style={{ textTransform: 'uppercase', fontSize: 9, letterSpacing: 1 }}>{profile?.role}</span>
+            {profile?.email}<br/>
+            <span style={{ textTransform: 'uppercase', fontSize: 9, letterSpacing: 1 }}>{profile?.role}</span>
           </div>
-          <div className="user-menu-item" onClick={() => { setUserMenuOpen(false) }}>📷 Alterar foto</div>
+          {/* Alterar foto — abre file input */}
+          <div className="user-menu-item" onClick={() => { setUserMenuOpen(false); avatarInputRef.current?.click() }}>
+            📷 {avatarLoading ? 'Enviando foto...' : 'Alterar foto'}
+          </div>
           <div className="user-menu-item danger" onClick={() => { signOut(); setUserMenuOpen(false) }}>⏎ Sair da conta</div>
         </div>
       )}
 
-      {/* INVITE MODAL */}
+      {/* ── INVITE MODAL (expandido) ── */}
       {inviteOpen && (
         <div className="modal-overlay show" onClick={e => e.target === e.currentTarget && setInviteOpen(false)}>
-          <div className="modal" style={{ width: 420 }}>
-            <div className="modal-title"><span>👥 Convidar Usuario</span><button className="modal-close" onClick={() => setInviteOpen(false)}>×</button></div>
+          <div className="modal" style={{ width: 500, maxHeight: '90vh', overflowY: 'auto' }}>
+            <div className="modal-title">
+              <span>👥 Convidar Usuário</span>
+              <button className="modal-close" onClick={() => setInviteOpen(false)}>×</button>
+            </div>
+
             <form onSubmit={handleInvite}>
+              {/* E-mail */}
               <div className="form-group">
-                <label className="form-label">E-mail</label>
-                <input className="inp" type="email" required placeholder="email@exemplo.com" value={inviteEmail} onChange={e => setInviteEmail(e.target.value)} />
+                <label className="form-label">E-mail do Convidado *</label>
+                <input
+                  className="inp" type="email" required
+                  placeholder="email@exemplo.com"
+                  value={inviteEmail}
+                  onChange={e => setInviteEmail(e.target.value)}
+                />
               </div>
+
+              {/* Perfil */}
               <div className="form-group">
-                <label className="form-label">Permissao</label>
+                <label className="form-label">Perfil de Acesso</label>
                 <select className="inp" value={inviteRole} onChange={e => setInviteRole(e.target.value)}>
                   {Object.entries(ROLES).map(([k, v]) => (
                     <option key={k} value={k}>{v.label}</option>
                   ))}
                 </select>
               </div>
-              <button type="submit" className="btn-primary">Enviar Convite</button>
+
+              {/* Empresas */}
+              <div className="form-group">
+                <label className="form-label">Empresas com Acesso</label>
+                <div style={{ fontSize: 11, color: 'var(--text3)', marginBottom: 8 }}>
+                  Deixe em branco para acesso a todas as empresas.
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, padding: '6px 0' }}>
+                  {empresas.map(e => (
+                    <button key={e.id} type="button"
+                      onClick={() => toggleInviteCompany(e.id)}
+                      style={{
+                        padding: '5px 12px', borderRadius: 99,
+                        border: `2px solid ${inviteCompanies.includes(e.id) ? e.cor : 'var(--border)'}`,
+                        background: inviteCompanies.includes(e.id) ? e.cor + '22' : 'transparent',
+                        color: inviteCompanies.includes(e.id) ? e.cor : 'var(--text3)',
+                        cursor: 'pointer', fontSize: 12, fontWeight: 700, transition: '.15s',
+                      }}>
+                      {e.sigla}
+                    </button>
+                  ))}
+                </div>
+                {inviteCompanies.length === 0
+                  ? <div style={{ fontSize: 11, color: 'var(--green)' }}>✓ Acesso total a todas as empresas</div>
+                  : <div style={{ fontSize: 11, color: 'var(--text3)' }}>Acesso restrito a: {inviteCompanies.join(', ')}</div>
+                }
+              </div>
+
+              {/* Permissões */}
+              <div className="form-group">
+                <label className="form-label">Permissões de Ações</label>
+                <div style={{ fontSize: 11, color: 'var(--text3)', marginBottom: 8 }}>
+                  Deixe em branco para usar as permissões padrão do perfil.
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {ALL_INVITE_PERMISSIONS.map(p => (
+                    <label key={p.key} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', fontSize: 13, color: 'var(--text2)' }}>
+                      <input
+                        type="checkbox"
+                        checked={invitePermissions.includes(p.key)}
+                        onChange={() => toggleInvitePermission(p.key)}
+                        style={{ width: 15, height: 15, cursor: 'pointer' }}
+                      />
+                      {p.label}
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Expiração */}
+              <div className="form-group">
+                <label className="form-label">Acesso expira em (opcional)</label>
+                <input type="date" className="inp" value={inviteExpiry} onChange={e => setInviteExpiry(e.target.value)} />
+              </div>
+
+              {/* Feedback */}
+              {inviteFeedback && (
+                <div className={`notification-bar ${inviteFeedback.type === 'ok' ? 'success' : 'danger'}`} style={{ marginBottom: 12 }}>
+                  {inviteFeedback.type === 'ok' ? '✅ ' : '⚠ '}{inviteFeedback.msg}
+                </div>
+              )}
+
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button type="button" className="btn btn-secondary" onClick={() => setInviteOpen(false)}>Cancelar</button>
+                <button type="submit" className="btn btn-primary" style={{ flex: 1 }} disabled={inviteLoading}>
+                  {inviteLoading ? 'Enviando...' : '📨 Enviar Convite'}
+                </button>
+              </div>
             </form>
           </div>
         </div>

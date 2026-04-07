@@ -66,12 +66,24 @@ export default function Layout({ children }) {
         <div className="flex aic gap12">
           <button className="tb-btn burger-btn" onClick={() => setSidebarOpen(!sidebarOpen)}>☰</button>
           <div className="logo" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
-            <OrionLogo size={34} />
+            <OrionLogo size={32} />
             <div className="logo-text">
-              <div className="orion-logo-text" style={{ fontSize: 17 }}>ORION</div>
+              <div className="orion-logo-text">ORION</div>
               <div className="logo-sub">Gestão Executiva</div>
             </div>
           </div>
+          {(() => {
+            const h = new Date().getHours()
+            const greeting = h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite'
+            const firstName = (profile?.name || 'Maxwell').split(' ')[0]
+            const dateStr = new Date().toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })
+            return (
+              <div className="topbar-greeting">
+                <span className="topbar-greeting-name">{greeting}, {firstName}</span>
+                <span className="topbar-greeting-date">{dateStr}</span>
+              </div>
+            )
+          })()}
           <button className="tb-btn" onClick={() => setSearchOpen(true)}>⌘ Busca rapida</button>
         </div>
         <div className="flex aic gap8">

@@ -402,10 +402,9 @@ Responda em português brasileiro. Seja direto, executivo e pragmático. Máximo
         </div>
       )}
 
-      <div className="mx-fab" onClick={() => setOpen(!open)}>
-        <div className="fi">🤖</div>
-        <div className="fl">MAXXXI</div>
-      </div>
+      <button className="maxxxi-fab" onClick={() => setOpen(!open)} title="MAXXXI — Agente IA">
+        🤖
+      </button>
     </div>
   )
 }

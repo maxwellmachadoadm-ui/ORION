@@ -120,6 +120,19 @@ export function DataProvider({ children }) {
     if (!user) return
     if (isDemoMode) {
       setEmpresas(DEMO_DATA.empresas)
+      // Mesclar empresas customizadas
+      const customEmps = JSON.parse(localStorage.getItem('orion_custom_empresas') || '[]')
+      if (customEmps.length > 0) {
+        setEmpresas(prev => {
+          const base = [...prev]
+          customEmps.forEach(c => {
+            const idx = base.findIndex(e => e.id === c.id)
+            if (idx >= 0) base[idx] = c
+            else base.push(c)
+          })
+          return base
+        })
+      }
       setKpis(DEMO_DATA.kpis)
       setOkrs(DEMO_DATA.okrs)
       setContratos(DEMO_DATA.contratos)
@@ -484,6 +497,82 @@ export function DataProvider({ children }) {
     localStorage.setItem('orion_patrimonio', JSON.stringify(data))
   }
 
+  // ── CRUD DE EMPRESAS ──
+  async function addEmpresa(data) {
+    const nova = {
+      ...data,
+      id: data.id || data.sigla.toLowerCase().replace(/\s+/g, '_') + '_' + Date.now(),
+      score: data.score || 50,
+      status: data.status || 'Novo',
+      status_cor: data.status_cor || data.cor,
+      faturamento: data.faturamento || 0,
+      meta: data.meta || 0,
+      resultado: data.resultado || 0,
+      crescimento: data.crescimento || 0,
+      drive_url: data.drive_url || 'https://drive.google.com',
+      logo_url: data.logo_url || null,
+      rgb: data.rgb || '59,130,246',
+    }
+    if (isDemoMode) {
+      setEmpresas(prev => [...prev, nova])
+      const custom = JSON.parse(localStorage.getItem('orion_custom_empresas') || '[]')
+      custom.push(nova)
+      localStorage.setItem('orion_custom_empresas', JSON.stringify(custom))
+      return nova
+    }
+    const { data: d, error } = await supabase.from('empresas').insert(nova).select().single()
+    if (error) throw error
+    setEmpresas(prev => [...prev, d])
+    return d
+  }
+
+  async function updateEmpresa(id, updates) {
+    if (isDemoMode) {
+      setEmpresas(prev => prev.map(e => e.id === id ? { ...e, ...updates } : e))
+      const custom = JSON.parse(localStorage.getItem('orion_custom_empresas') || '[]')
+      const idx = custom.findIndex(e => e.id === id)
+      if (idx >= 0) { custom[idx] = { ...custom[idx], ...updates }; localStorage.setItem('orion_custom_empresas', JSON.stringify(custom)) }
+      return
+    }
+    const { error } = await supabase.from('empresas').update(updates).eq('id', id)
+    if (error) throw error
+    setEmpresas(prev => prev.map(e => e.id === id ? { ...e, ...updates } : e))
+  }
+
+  async function removeEmpresa(id) {
+    if (isDemoMode) {
+      setEmpresas(prev => prev.filter(e => e.id !== id))
+      const custom = JSON.parse(localStorage.getItem('orion_custom_empresas') || '[]')
+      localStorage.setItem('orion_custom_empresas', JSON.stringify(custom.filter(e => e.id !== id)))
+      return
+    }
+    const { error } = await supabase.from('empresas').delete().eq('id', id)
+    if (error) throw error
+    setEmpresas(prev => prev.filter(e => e.id !== id))
+  }
+
+  async function uploadLogoEmpresa(empresaId, file) {
+    if (isDemoMode) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = async e => {
+          const url = e.target.result
+          await updateEmpresa(empresaId, { logo_url: url })
+          resolve(url)
+        }
+        reader.onerror = reject
+        reader.readAsDataURL(file)
+      })
+    }
+    const ext = file.name.split('.').pop()
+    const path = `logos/${empresaId}.${ext}`
+    const { error: upErr } = await supabase.storage.from('orion-assets').upload(path, file, { upsert: true })
+    if (upErr) throw upErr
+    const { data: { publicUrl } } = supabase.storage.from('orion-assets').getPublicUrl(path)
+    await updateEmpresa(empresaId, { logo_url: publicUrl })
+    return publicUrl
+  }
+
   // ── AGENDA ──
   function addAgendaItem(item) {
     const next = [...agenda, { ...item, id: Date.now().toString() }]
@@ -592,6 +681,8 @@ export function DataProvider({ children }) {
       agenda,
       addAgendaItem,
       removeAgendaItem,
+      // Empresas CRUD
+      addEmpresa, updateEmpresa, removeEmpresa, uploadLogoEmpresa,
     }}>
       {children}
     </DataContext.Provider>

@@ -2,8 +2,13 @@ import { useState, useEffect } from 'react'
 import { useAuth, ROLES } from '../contexts/AuthContext'
 import { useData } from '../contexts/DataContext'
 
-const TABS = ['usuarios', 'auditoria', 'maxxxi']
-const TAB_LABELS = { usuarios: '👥 Usuários', auditoria: '📋 Auditoria', maxxxi: '🤖 Log MAXXXI' }
+const TABS = ['usuarios', 'empresas', 'auditoria', 'maxxxi']
+const TAB_LABELS = {
+  usuarios: '👥 Usuários',
+  empresas: '🏢 Empresas',
+  auditoria: '📋 Auditoria',
+  maxxxi: '🤖 Log MAXXXI'
+}
 
 function RolePill({ role }) {
   const r = ROLES[role] || { label: role, level: 0 }
@@ -20,7 +25,7 @@ function RolePill({ role }) {
 
 export default function Admin() {
   const { isAdmin, getUsers, updateUserRole, updateUserAccess, updateUserPermissions, getAuditLog, profile } = useAuth()
-  const { empresas } = useData()
+  const { empresas, addEmpresa, removeEmpresa, uploadLogoEmpresa } = useData()
   const [tab, setTab] = useState('usuarios')
   const [users, setUsers] = useState([])
   const [auditLog, setAuditLog] = useState([])
@@ -31,6 +36,11 @@ export default function Admin() {
   const [editExpires, setEditExpires] = useState('')
   const [editPermissions, setEditPermissions] = useState([])
   const [searchAudit, setSearchAudit] = useState('')
+  const [newEmpModal, setNewEmpModal] = useState(false)
+  const [deleteConfirm, setDeleteConfirm] = useState(null)
+  const [deleteConfirm2, setDeleteConfirm2] = useState(false)
+  const [newEmp, setNewEmp] = useState({ nome: '', sigla: '', descricao: '', cor: '#3b82f6', rgb: '59,130,246' })
+  const [logoUploading, setLogoUploading] = useState(null)
 
   const ALL_PERMISSIONS = [
     { key: 'view',     label: 'Somente visualizar' },
@@ -75,6 +85,28 @@ export default function Admin() {
     setEditCompanies(prev =>
       prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
     )
+  }
+
+  async function handleAddEmpresa(e) {
+    e.preventDefault()
+    if (!newEmp.nome || !newEmp.sigla) return
+    await addEmpresa(newEmp)
+    setNewEmpModal(false)
+    setNewEmp({ nome: '', sigla: '', descricao: '', cor: '#3b82f6', rgb: '59,130,246' })
+  }
+
+  async function handleDeleteEmpresa() {
+    if (!deleteConfirm || !deleteConfirm2) return
+    await removeEmpresa(deleteConfirm.id)
+    setDeleteConfirm(null)
+    setDeleteConfirm2(false)
+  }
+
+  async function handleLogoUpload(empresaId, file) {
+    if (!file) return
+    setLogoUploading(empresaId)
+    try { await uploadLogoEmpresa(empresaId, file) }
+    finally { setLogoUploading(null) }
   }
 
   const filteredAudit = auditLog.filter(a =>
@@ -171,6 +203,131 @@ export default function Admin() {
               </tbody>
             </table>
           </div>
+        </>
+      )}
+
+      {/* ── EMPRESAS ── */}
+      {tab === 'empresas' && (
+        <>
+          <div className="flex aic jsb mb">
+            <div className="slbl" style={{ margin: 0 }}>Empresas do Ecossistema ({empresas.length})</div>
+            <button className="btn btn-primary btn-sm" onClick={() => setNewEmpModal(true)}>+ Nova Empresa</button>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {empresas.map(emp => (
+              <div key={emp.id} className="card" style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 16px' }}>
+                {/* Logo/Sigla */}
+                <div style={{
+                  width: 40, height: 40, borderRadius: 9, flexShrink: 0,
+                  background: emp.cor ? `${emp.cor}22` : 'rgba(59,130,246,.15)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  overflow: 'hidden', border: `1px solid ${emp.cor || '#3b82f6'}30`,
+                }}>
+                  {emp.logo_url
+                    ? <img src={emp.logo_url} alt={emp.sigla} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    : <span style={{ fontSize: 13, fontWeight: 700, color: emp.cor || '#3b82f6' }}>{emp.sigla}</span>
+                  }
+                </div>
+
+                {/* Info */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)', marginBottom: 1 }}>{emp.nome}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text3)' }}>{emp.descricao}</div>
+                </div>
+
+                {/* Score */}
+                <div className={`hring ${emp.score >= 70 ? 'good' : emp.score >= 40 ? 'warn' : 'bad'}`} style={{ marginRight: 8 }}>
+                  {emp.score}
+                </div>
+
+                {/* Upload logo */}
+                <label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }} title="Upload de logo">
+                  <span className="btn btn-secondary btn-sm">
+                    {logoUploading === emp.id ? '⏳' : '🖼 Logo'}
+                  </span>
+                  <input type="file" accept="image/png,image/jpeg,image/webp"
+                    style={{ display: 'none' }}
+                    onChange={e => e.target.files?.[0] && handleLogoUpload(emp.id, e.target.files[0])}
+                  />
+                </label>
+
+                {/* Delete (não permite deletar empresas base) */}
+                {!['dw','of','fs','cdl','gp'].includes(emp.id) && (
+                  <button className="btn btn-danger btn-sm" onClick={() => { setDeleteConfirm(emp); setDeleteConfirm2(false) }}>
+                    🗑 Remover
+                  </button>
+                )}
+                {['dw','of','fs','cdl','gp'].includes(emp.id) && (
+                  <span style={{ fontSize: 10, color: 'var(--text4)', whiteSpace: 'nowrap' }}>Base</span>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Modal nova empresa */}
+          {newEmpModal && (
+            <div className="modal-overlay show" onClick={e => e.target === e.currentTarget && setNewEmpModal(false)}>
+              <div className="modal" style={{ maxWidth: 440 }}>
+                <div className="modal-title">
+                  <span>🏢 Nova Empresa</span>
+                  <button className="modal-close" onClick={() => setNewEmpModal(false)}>×</button>
+                </div>
+                <form onSubmit={handleAddEmpresa}>
+                  <div className="form-group">
+                    <label className="form-label">Nome da empresa *</label>
+                    <input className="inp" required placeholder="Ex: Consultoria ABC" value={newEmp.nome} onChange={e => setNewEmp(p => ({ ...p, nome: e.target.value }))} />
+                  </div>
+                  <div className="form-row cols-2">
+                    <div className="form-group">
+                      <label className="form-label">Sigla *</label>
+                      <input className="inp" required placeholder="Ex: ABC" maxLength={5} value={newEmp.sigla} onChange={e => setNewEmp(p => ({ ...p, sigla: e.target.value.toUpperCase() }))} />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Cor</label>
+                      <input type="color" className="inp" value={newEmp.cor} style={{ padding: '4px 8px', height: 36 }} onChange={e => setNewEmp(p => ({ ...p, cor: e.target.value }))} />
+                    </div>
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Descrição</label>
+                    <input className="inp" placeholder="Ex: Consultoria especializada em..." value={newEmp.descricao} onChange={e => setNewEmp(p => ({ ...p, descricao: e.target.value }))} />
+                  </div>
+                  <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                    <button type="button" className="btn btn-secondary" onClick={() => setNewEmpModal(false)}>Cancelar</button>
+                    <button type="submit" className="btn btn-primary">Criar Empresa</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* Modal confirmar exclusão */}
+          {deleteConfirm && (
+            <div className="modal-overlay show" onClick={e => e.target === e.currentTarget && setDeleteConfirm(null)}>
+              <div className="modal" style={{ maxWidth: 400 }}>
+                <div className="modal-title">
+                  <span>Confirmar Exclusão</span>
+                  <button className="modal-close" onClick={() => setDeleteConfirm(null)}>×</button>
+                </div>
+                <div className="notification-bar danger" style={{ marginBottom: 16 }}>
+                  Você está prestes a remover permanentemente a empresa <strong>{deleteConfirm.nome}</strong>.
+                </div>
+                <p style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 16, lineHeight: 1.6 }}>
+                  Todos os dados associados (KPIs, OKRs, tarefas, contratos) serão perdidos. Esta ação não pode ser desfeita.
+                </p>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, cursor: 'pointer', fontSize: 13, color: 'var(--text2)' }}>
+                  <input type="checkbox" checked={deleteConfirm2} onChange={e => setDeleteConfirm2(e.target.checked)} />
+                  Confirmo que desejo excluir "{deleteConfirm.nome}" permanentemente
+                </label>
+                <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                  <button className="btn btn-secondary" onClick={() => setDeleteConfirm(null)}>Cancelar</button>
+                  <button className="btn btn-danger" disabled={!deleteConfirm2} onClick={handleDeleteEmpresa}>
+                    🗑 Excluir Definitivamente
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </>
       )}
 

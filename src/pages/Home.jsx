@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../contexts/AuthContext'
 import { useData } from '../contexts/DataContext'
 import { useApp } from '../contexts/AppContext'
 
@@ -20,7 +19,6 @@ const TIPO_CORES = {
 }
 
 export default function Home() {
-  const { profile } = useAuth()
   const { empresas, tarefas, checkin, saveCheckin, generateAlertsV5, generateAlerts, fmt, loaded, agenda, addAgendaItem, removeAgendaItem } = useData()
   const { presentationMode } = useApp()
   const navigate = useNavigate()
@@ -32,12 +30,9 @@ export default function Home() {
 
   if (!loaded) return null
 
-  const h = new Date().getHours()
-  const greeting = h < 12 ? 'BOM DIA' : h < 18 ? 'BOA TARDE' : 'BOA NOITE'
-  const firstName = (profile?.name || 'MAXWELL').split(' ')[0].toUpperCase()
-  const dateStr = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
   const hoje = new Date().toISOString().slice(0, 10)
   const amanha = new Date(Date.now() + 86400000).toISOString().slice(0, 10)
+  const dateStr = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })
 
   const empsAtivas = empresas.filter(e => e.id !== 'gp')
   const fatTotal = empsAtivas.reduce((s, e) => s + (e.faturamento || 0), 0)
@@ -75,16 +70,6 @@ export default function Home() {
           🔒 MODO APRESENTAÇÃO — valores sensíveis ocultos
         </div>
       )}
-
-      <div style={{ marginBottom: 20 }}>
-        <div style={{ fontSize: 12, color: 'var(--blue3)', fontWeight: 600, letterSpacing: 4, textTransform: 'uppercase', marginBottom: 4 }}>
-          {greeting}, {firstName}
-        </div>
-        <h1 style={{ fontFamily: "'Syne',sans-serif", fontSize: 20, fontWeight: 700, color: '#fff', lineHeight: 1.2, letterSpacing: 0.3 }}>
-          Vamos começar a trabalhar
-        </h1>
-        <div style={{ fontSize: 13, color: 'var(--tx3)', marginTop: 4 }}>{dateStr}</div>
-      </div>
 
       {/* KPIs */}
       <div className="g4 mb">

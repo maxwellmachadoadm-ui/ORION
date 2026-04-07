@@ -1,5 +1,6 @@
 -- ORION — Seed Data
 -- Execute DEPOIS do schema.sql
+-- NOTA v2: executar também migration_v2.sql para adicionar logo_url e user_empresa_access
 
 -- Empresas
 insert into public.empresas (id, nome, sigla, descricao, cor, rgb, score, status, status_cor, faturamento, meta, resultado, crescimento, drive_url) values

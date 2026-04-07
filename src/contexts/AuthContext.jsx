@@ -36,8 +36,27 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     // ── MODO DEMO (sem Supabase configurado) ──
     if (isDemoMode) {
-      // NUNCA restaura sessão automaticamente em modo demo.
-      // O usuário SEMPRE precisa fazer login.
+      // Restaura sessão apenas da sessionStorage (expira ao fechar aba/navegador)
+      // com validade máxima de 8 horas.
+      try {
+        const raw = sessionStorage.getItem('orion_demo_session')
+        if (raw) {
+          const { id, ts } = JSON.parse(raw)
+          const EIGHT_HOURS = 8 * 60 * 60 * 1000
+          if (Date.now() - ts < EIGHT_HOURS) {
+            const users = JSON.parse(localStorage.getItem('orion_users') || '[]')
+            const u = users.find(x => x.id === id)
+            if (u && u.role !== 'pendente') {
+              setUser({ id: u.id })
+              setProfile(u)
+              setLoading(false)
+              return
+            }
+          }
+          // Sessão expirada ou inválida — remove
+          sessionStorage.removeItem('orion_demo_session')
+        }
+      } catch (_) {}
       setUser(null)
       setProfile(null)
       setLoading(false)
@@ -107,6 +126,8 @@ export function AuthProvider({ children }) {
       }
       setUser({ id: u.id })
       setProfile(u)
+      // Persiste sessão demo na sessionStorage (expira ao fechar aba, máx 8h)
+      sessionStorage.setItem('orion_demo_session', JSON.stringify({ id: u.id, ts: Date.now() }))
       logAudit('LOGIN', 'Sessão iniciada', u.id, u.name)
       return
     }
@@ -157,6 +178,8 @@ export function AuthProvider({ children }) {
     if (user && profile) logAudit('LOGOUT', 'Sessão encerrada', user?.id, profile?.name)
     setUser(null)
     setProfile(null)
+    // Limpa sessão demo da sessionStorage
+    sessionStorage.removeItem('orion_demo_session')
     if (!isDemoMode) {
       await supabase.auth.signOut()
     }

@@ -148,6 +148,21 @@ export function DataProvider({ children }) {
   const loadAll = useCallback(async () => {
     if (!user) return
     if (isDemoMode) {
+      // ── MIGRAÇÃO: corrige dados antigos de CDL no localStorage ──
+      try {
+        const customEmpsRaw = localStorage.getItem('orion_custom_empresas')
+        if (customEmpsRaw) {
+          const fixed = customEmpsRaw
+            .replace(/CDL Divin[oó]polis/gi, 'CDL ITAPERUNA')
+            .replace(/C[aâ]mara.*?Divin[oó]polis/gi, 'Câmara de Dirigentes Lojistas Itaperuna')
+            .replace(/Divin[oó]polis.*?lojistas/gi, 'Itaperuna — lojistas')
+          if (fixed !== customEmpsRaw) {
+            localStorage.setItem('orion_custom_empresas', fixed)
+            console.info('[ORION] Migração CDL: "CDL Divinópolis" → "CDL ITAPERUNA" aplicada no localStorage.')
+          }
+        }
+      } catch (_) {}
+
       setEmpresas(DEMO_DATA.empresas)
       // Mesclar empresas customizadas
       const customEmps = JSON.parse(localStorage.getItem('orion_custom_empresas') || '[]')
@@ -155,6 +170,11 @@ export function DataProvider({ children }) {
         setEmpresas(prev => {
           const base = [...prev]
           customEmps.forEach(c => {
+            // Garante que a CDL base NUNCA é sobrescrita com nome errado
+            if (c.id === 'cdl') {
+              c.nome = 'CDL ITAPERUNA'
+              c.descricao = c.descricao?.replace(/Divin[oó]polis/gi, 'Itaperuna') || 'Câmara de Dirigentes Lojistas Itaperuna'
+            }
             const idx = base.findIndex(e => e.id === c.id)
             if (idx >= 0) base[idx] = c
             else base.push(c)

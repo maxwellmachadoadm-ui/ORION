@@ -2,6 +2,13 @@ import { useState, useEffect } from 'react'
 import { useAuth, ROLES } from '../contexts/AuthContext'
 import { useData, DEFAULT_MODULOS } from '../contexts/DataContext'
 
+const ALL_INVITE_PERMISSIONS = [
+  { key: 'view',     label: 'Visualizar dados' },
+  { key: 'attach',   label: 'Anexar arquivos' },
+  { key: 'classify', label: 'Classificar despesas' },
+  { key: 'report',   label: 'Emitir relatórios' },
+]
+
 const TABS = ['usuarios', 'empresas', 'auditoria', 'maxxxi']
 const TAB_LABELS = {
   usuarios: '👥 Usuários',
@@ -24,7 +31,7 @@ function RolePill({ role }) {
 }
 
 export default function Admin() {
-  const { isAdmin, getUsers, updateUserRole, updateUserAccess, updateUserPermissions, getAuditLog, profile } = useAuth()
+  const { isAdmin, getUsers, updateUserRole, updateUserAccess, updateUserPermissions, getAuditLog, inviteUser, profile } = useAuth()
   const { empresas, addEmpresa, removeEmpresa, uploadLogoEmpresa, getEmpresaModulos, setEmpresaModulos } = useData()
   const [tab, setTab] = useState('usuarios')
   const [users, setUsers] = useState([])
@@ -41,8 +48,18 @@ export default function Admin() {
   const [deleteConfirm2, setDeleteConfirm2] = useState(false)
   const [newEmp, setNewEmp] = useState({ nome: '', sigla: '', descricao: '', cor: '#3b82f6', rgb: '59,130,246' })
   const [logoUploading, setLogoUploading] = useState(null)
-  const [modulosModal, setModulosModal] = useState(null) // empresa selecionada para configurar módulos
+  const [modulosModal, setModulosModal] = useState(null)
   const [modulosEdit, setModulosEdit] = useState([])
+
+  // ── Estado do modal de convite ──
+  const [inviteOpen, setInviteOpen] = useState(false)
+  const [inviteEmail, setInviteEmail] = useState('')
+  const [inviteRole, setInviteRole] = useState('colaborador')
+  const [inviteCompanies, setInviteCompanies] = useState([])
+  const [invitePermissions, setInvitePermissions] = useState([])
+  const [inviteExpiry, setInviteExpiry] = useState('')
+  const [inviteLoading, setInviteLoading] = useState(false)
+  const [inviteFeedback, setInviteFeedback] = useState(null)
 
   const ALL_PERMISSIONS = [
     { key: 'view',     label: 'Somente visualizar' },
@@ -60,6 +77,32 @@ export default function Admin() {
   async function loadUsers() {
     const u = await getUsers()
     setUsers(u)
+  }
+
+  // ── Funções de convite ──
+  function resetInvite() {
+    setInviteEmail(''); setInviteRole('colaborador')
+    setInviteCompanies([]); setInvitePermissions([])
+    setInviteExpiry(''); setInviteFeedback(null)
+  }
+
+  async function handleInvite(e) {
+    e.preventDefault()
+    if (!inviteEmail) return
+    setInviteLoading(true); setInviteFeedback(null)
+    try {
+      await inviteUser(
+        inviteEmail, inviteRole,
+        inviteCompanies.length > 0 ? inviteCompanies : null,
+        invitePermissions.length > 0 ? invitePermissions : null
+      )
+      setInviteFeedback({ type: 'ok', msg: `Convite enviado para ${inviteEmail}` })
+      await loadUsers()
+      setTimeout(() => { resetInvite(); setInviteOpen(false) }, 2000)
+    } catch (err) {
+      setInviteFeedback({ type: 'err', msg: err.message })
+    }
+    setInviteLoading(false)
   }
 
   function openEditUser(u) {
@@ -165,8 +208,21 @@ export default function Admin() {
             </div>
           </div>
 
+          <div className="module-card" style={{ marginBottom: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 0 }}>
+              <div className="module-card-title" style={{ margin: 0 }}>👥 Lista de Usuários</div>
+              <button
+                className="btn btn-primary"
+                style={{ gap: 6 }}
+                onClick={() => { resetInvite(); setInviteOpen(true) }}
+              >
+                + Convidar Usuário
+              </button>
+            </div>
+          </div>
+
           <div className="module-card">
-            <div className="module-card-title">👥 Lista de Usuários</div>
+            <div className="module-card-title">📋 Usuários Cadastrados</div>
             <table className="exec-table">
               <thead>
                 <tr>
@@ -436,6 +492,120 @@ export default function Admin() {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* ── MODAL CONVIDAR USUÁRIO ── */}
+      {inviteOpen && (
+        <div className="modal-overlay show" onClick={e => e.target === e.currentTarget && (setInviteOpen(false), resetInvite())}>
+          <div className="modal" style={{ width: 500, maxHeight: '90vh', overflowY: 'auto' }}>
+            <div className="modal-title">
+              <span>📨 Convidar Novo Usuário</span>
+              <button className="modal-close" onClick={() => { setInviteOpen(false); resetInvite() }}>×</button>
+            </div>
+
+            <form onSubmit={handleInvite}>
+              {/* E-mail */}
+              <div className="form-group">
+                <label className="form-label">E-mail do Convidado *</label>
+                <input
+                  className="inp" type="email" required
+                  placeholder="email@exemplo.com"
+                  value={inviteEmail}
+                  onChange={e => setInviteEmail(e.target.value)}
+                />
+              </div>
+
+              {/* Perfil de Acesso */}
+              <div className="form-group">
+                <label className="form-label">Perfil de Acesso</label>
+                <select className="inp" value={inviteRole} onChange={e => setInviteRole(e.target.value)}>
+                  {Object.entries(ROLES).map(([k, v]) => (
+                    <option key={k} value={k}>{v.label} — nível {v.level}</option>
+                  ))}
+                </select>
+                <div style={{ fontSize: 11, color: 'var(--text3)', marginTop: 6 }}>
+                  {ROLES[inviteRole]?.permissions?.includes('all')
+                    ? '⚡ Acesso total ao sistema'
+                    : `Permissões padrão: ${ROLES[inviteRole]?.permissions?.join(', ') || 'nenhuma'}`}
+                </div>
+              </div>
+
+              {/* Empresas */}
+              <div className="form-group">
+                <label className="form-label">Empresas com Acesso</label>
+                <div style={{ fontSize: 11, color: 'var(--text3)', marginBottom: 8 }}>
+                  Deixe em branco para acesso a todas as empresas.
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {empresas.map(e => (
+                    <button key={e.id} type="button"
+                      onClick={() => setInviteCompanies(prev => prev.includes(e.id) ? prev.filter(x => x !== e.id) : [...prev, e.id])}
+                      style={{
+                        padding: '5px 14px', borderRadius: 99,
+                        border: `2px solid ${inviteCompanies.includes(e.id) ? e.cor : 'var(--border)'}`,
+                        background: inviteCompanies.includes(e.id) ? e.cor + '22' : 'transparent',
+                        color: inviteCompanies.includes(e.id) ? e.cor : 'var(--text3)',
+                        cursor: 'pointer', fontSize: 12, fontWeight: 700, transition: '.15s',
+                      }}>
+                      {e.sigla} — {e.nome}
+                    </button>
+                  ))}
+                </div>
+                <div style={{ fontSize: 11, marginTop: 6, color: inviteCompanies.length === 0 ? 'var(--green)' : 'var(--text3)' }}>
+                  {inviteCompanies.length === 0 ? '✓ Acesso a todas as empresas' : `Acesso restrito: ${inviteCompanies.join(', ')}`}
+                </div>
+              </div>
+
+              {/* Permissões customizadas */}
+              <div className="form-group">
+                <label className="form-label">Permissões Customizadas</label>
+                <div style={{ fontSize: 11, color: 'var(--text3)', marginBottom: 8 }}>
+                  Deixe em branco para usar as permissões padrão do perfil.
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {ALL_INVITE_PERMISSIONS.map(p => (
+                    <label key={p.key} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', fontSize: 13, color: 'var(--text2)' }}>
+                      <input
+                        type="checkbox"
+                        checked={invitePermissions.includes(p.key)}
+                        onChange={() => setInvitePermissions(prev => prev.includes(p.key) ? prev.filter(x => x !== p.key) : [...prev, p.key])}
+                        style={{ width: 15, height: 15, cursor: 'pointer' }}
+                      />
+                      {p.label}
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Expiração */}
+              <div className="form-group">
+                <label className="form-label">Acesso expira em (opcional)</label>
+                <input type="date" className="inp" value={inviteExpiry} onChange={e => setInviteExpiry(e.target.value)} />
+              </div>
+
+              {/* Feedback */}
+              {inviteFeedback && (
+                <div style={{
+                  padding: '10px 14px', borderRadius: 8, marginBottom: 12, fontSize: 13,
+                  background: inviteFeedback.type === 'ok' ? 'rgba(16,185,129,.12)' : 'rgba(239,68,68,.12)',
+                  border: `1px solid ${inviteFeedback.type === 'ok' ? 'rgba(16,185,129,.3)' : 'rgba(239,68,68,.3)'}`,
+                  color: inviteFeedback.type === 'ok' ? 'var(--green)' : 'var(--red)',
+                }}>
+                  {inviteFeedback.type === 'ok' ? '✅ ' : '⚠ '}{inviteFeedback.msg}
+                </div>
+              )}
+
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button type="button" className="btn btn-secondary" onClick={() => { setInviteOpen(false); resetInvite() }}>
+                  Cancelar
+                </button>
+                <button type="submit" className="btn btn-primary" style={{ flex: 1 }} disabled={inviteLoading}>
+                  {inviteLoading ? '⏳ Enviando...' : '📨 Enviar Convite'}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
 

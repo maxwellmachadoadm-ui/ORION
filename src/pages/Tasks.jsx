@@ -3,6 +3,11 @@ import { useData } from '../contexts/DataContext'
 
 const PRIORITY_COLORS = { alta: '#ef4444', media: '#f59e0b', baixa: '#3b82f6' }
 const PRIORITY_LABELS = { alta: 'Alta', media: 'Media', baixa: 'Baixa' }
+const COLUMNS = [
+  { key: 'todo',  label: '📋 A Fazer',       headerClass: 'todo-header' },
+  { key: 'doing', label: '🔄 Em Andamento',  headerClass: 'doing-header' },
+  { key: 'done',  label: '✅ Concluídas',    headerClass: 'done-header' },
+]
 
 const emptyTask = {
   titulo: '',
@@ -19,6 +24,8 @@ export default function Tasks() {
   const [filterEmpresa, setFilterEmpresa] = useState('all')
   const [showModal, setShowModal] = useState(false)
   const [form, setForm] = useState({ ...emptyTask })
+  const [dragId, setDragId] = useState(null)
+  const [dragOverCol, setDragOverCol] = useState(null)
 
   if (!loaded) return <div className="loading">Carregando...</div>
 
@@ -27,9 +34,11 @@ export default function Tasks() {
   if (filterPriority !== 'all') filtered = filtered.filter(t => t.prioridade === filterPriority)
   if (filterEmpresa !== 'all') filtered = filtered.filter(t => t.empresa_id === filterEmpresa)
 
-  const todo = filtered.filter(t => t.status === 'todo')
-  const doing = filtered.filter(t => t.status === 'doing')
-  const done = filtered.filter(t => t.status === 'done')
+  const grouped = {
+    todo: filtered.filter(t => t.status === 'todo'),
+    doing: filtered.filter(t => t.status === 'doing'),
+    done: filtered.filter(t => t.status === 'done'),
+  }
 
   function getEmpNome(id) {
     const e = empresas.find(x => x.id === id)
@@ -55,9 +64,62 @@ export default function Tasks() {
     setShowModal(false)
   }
 
+  // ── Drag and Drop handlers ──
+  function handleDragStart(e, taskId) {
+    setDragId(taskId)
+    e.dataTransfer.effectAllowed = 'move'
+    e.dataTransfer.setData('text/plain', taskId)
+    // Make card semi-transparent while dragging
+    setTimeout(() => {
+      e.target.style.opacity = '0.4'
+    }, 0)
+  }
+
+  function handleDragEnd(e) {
+    e.target.style.opacity = '1'
+    setDragId(null)
+    setDragOverCol(null)
+  }
+
+  function handleDragOver(e, colKey) {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+    if (dragOverCol !== colKey) setDragOverCol(colKey)
+  }
+
+  function handleDragLeave(e, colKey) {
+    // Only clear if we're actually leaving the column
+    if (!e.currentTarget.contains(e.relatedTarget)) {
+      setDragOverCol(null)
+    }
+  }
+
+  async function handleDrop(e, newStatus) {
+    e.preventDefault()
+    setDragOverCol(null)
+    const taskId = e.dataTransfer.getData('text/plain') || dragId
+    if (!taskId) return
+    const task = tarefas.find(t => t.id === taskId)
+    if (task && task.status !== newStatus) {
+      await updateTask(taskId, { status: newStatus })
+    }
+    setDragId(null)
+  }
+
   function TaskCard({ task }) {
     return (
-      <div className="card task-card" style={{ borderLeft: `4px solid ${PRIORITY_COLORS[task.prioridade] || '#666'}` }}>
+      <div
+        className="card task-card"
+        style={{
+          borderLeft: `4px solid ${PRIORITY_COLORS[task.prioridade] || '#666'}`,
+          cursor: 'grab',
+          opacity: dragId === task.id ? 0.4 : 1,
+          transition: 'opacity .15s, transform .15s',
+        }}
+        draggable
+        onDragStart={e => handleDragStart(e, task.id)}
+        onDragEnd={handleDragEnd}
+      >
         <div className="task-card-header">
           <span className="badge" style={{ background: getEmpCor(task.empresa_id) }}>
             {getEmpNome(task.empresa_id)}
@@ -125,35 +187,35 @@ export default function Tasks() {
         </div>
       </div>
 
-      {/* Kanban Board */}
+      {/* Kanban Board with Drag & Drop */}
       <div className="kanban">
-        <div className="kanban-col">
-          <div className="kanban-col-header todo-header">
-            <h3>📋 A Fazer</h3>
-            <span className="count">{todo.length}</span>
+        {COLUMNS.map(col => (
+          <div
+            key={col.key}
+            className="kanban-col"
+            onDragOver={e => handleDragOver(e, col.key)}
+            onDragLeave={e => handleDragLeave(e, col.key)}
+            onDrop={e => handleDrop(e, col.key)}
+            style={{
+              transition: 'box-shadow .2s, border-color .2s',
+              boxShadow: dragOverCol === col.key ? '0 0 0 2px var(--gold), 0 0 20px rgba(245,158,11,.15)' : 'none',
+              borderRadius: 12,
+            }}
+          >
+            <div className={`kanban-col-header ${col.headerClass}`}>
+              <h3>{col.label}</h3>
+              <span className="count">{grouped[col.key].length}</span>
+            </div>
+            <div className="kanban-col-body" style={{ minHeight: 100 }}>
+              {grouped[col.key].map(t => <TaskCard key={t.id} task={t} />)}
+              {grouped[col.key].length === 0 && dragOverCol === col.key && (
+                <div style={{ padding: 20, textAlign: 'center', color: 'var(--gold)', fontSize: 13, border: '2px dashed var(--gold)', borderRadius: 8, opacity: 0.6 }}>
+                  Soltar aqui
+                </div>
+              )}
+            </div>
           </div>
-          <div className="kanban-col-body">
-            {todo.map(t => <TaskCard key={t.id} task={t} />)}
-          </div>
-        </div>
-        <div className="kanban-col">
-          <div className="kanban-col-header doing-header">
-            <h3>🔄 Em Andamento</h3>
-            <span className="count">{doing.length}</span>
-          </div>
-          <div className="kanban-col-body">
-            {doing.map(t => <TaskCard key={t.id} task={t} />)}
-          </div>
-        </div>
-        <div className="kanban-col">
-          <div className="kanban-col-header done-header">
-            <h3>✅ Concluidas</h3>
-            <span className="count">{done.length}</span>
-          </div>
-          <div className="kanban-col-body">
-            {done.map(t => <TaskCard key={t.id} task={t} />)}
-          </div>
-        </div>
+        ))}
       </div>
 
       {/* Stats Row */}
@@ -164,15 +226,15 @@ export default function Tasks() {
         </div>
         <div className="card kpi-card">
           <span className="lbl">A Fazer</span>
-          <span className="val" style={{ color: '#ef4444' }}>{todo.length}</span>
+          <span className="val" style={{ color: '#ef4444' }}>{grouped.todo.length}</span>
         </div>
         <div className="card kpi-card">
           <span className="lbl">Em Andamento</span>
-          <span className="val" style={{ color: '#f59e0b' }}>{doing.length}</span>
+          <span className="val" style={{ color: '#f59e0b' }}>{grouped.doing.length}</span>
         </div>
         <div className="card kpi-card">
           <span className="lbl">Concluidas</span>
-          <span className="val" style={{ color: '#10b981' }}>{done.length}</span>
+          <span className="val" style={{ color: '#10b981' }}>{grouped.done.length}</span>
         </div>
       </div>
 

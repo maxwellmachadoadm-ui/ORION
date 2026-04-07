@@ -228,9 +228,29 @@ empresa_modulos (empresa_id, modulo, ativo)
 - **Login e fluxo de recovery** — AuthContext verificado: onAuthStateChange registrado antes da flag check, PASSWORD_RECOVERY redireciona para /reset-password, SIGNED_IN seta orion_session_active, signOut remove flag, isDemoMode tratado
 - **Convite: roles corretos** — Admin.jsx e Layout.jsx usam Object.entries(ROLES) para gerar options; roles válidos: admin, gestor, colaborador, contador, assistente, pendente
 
+### Correções v10 (Abril 2026) ✅
+- **Convite robusto** — validação email (trim+lowercase), verificação duplicidade, verificação se já cadastrado, status 'pendente' salvo, logs de erro detalhados
+- **Workspace: empresa ativa oculta** — abas no topo não mostram a empresa que já está aberta, apenas as outras como atalhos
+- **Módulos configuráveis expandidos** — ALL_MODULOS com 16 opções incluindo Gestão de Fundos, Projeções, Projetos, Patrimônio; grid 2 colunas no modal
+- **Drive centralizado por empresa** — 6 pastas padrão (Financeiro/Extratos, Financeiro/NFs, Financeiro/Relatórios, Jurídico/Contratos, Operacional/Documentos, Biblioteca/Estatutos); navegação por pasta, upload por pasta, mover arquivo entre pastas, somente admin deleta
+- **Automações LinkSync** — logAutomacao/getAutomacoesLog; hooks automáticos: arquivo em Extratos → MAXXXI sugere classificação; tarefa concluída → log automação
+- **Drag and Drop Kanban** — HTML5 drag API nativo no Tasks.jsx; arrastar tarefas entre colunas; highlight dourado na coluna destino; card semi-transparente ao arrastar
+- **Projeções FS** — iframe com background var(--bg) ao invés de #fff; Gestão de Fundos idem
+- **CDL ITAPERUNA** — confirmado: zero ocorrências de "CDL Divinópolis" no código de produção
+
+### LocalStorage Keys (adicionais v10)
+- `orion_automacoes_log` — log de automações LinkSync (max 200)
+- `orion_files_[ID]` — arquivos com campo `folder` para drive centralizado
+
+### SQL Scripts novos (executar no Supabase)
+- `supabase/empresa_modulos.sql` — tabela empresa_modulos com RLS
+- `supabase/automacoes_log.sql` — tabela automacoes_log com RLS
+- `supabase/fix_rls_avatar.sql` — políticas RLS para upload de avatar
+
 ### Módulos Principais Pendentes
 - Integração Supabase em produção (currently demo mode)
 - Supabase Storage: executar supabase/create_buckets.sql no painel do Supabase
+- Executar SQL scripts: empresa_modulos.sql, automacoes_log.sql, fix_rls_avatar.sql
 - Notificações push/email em tempo real
 
 ---

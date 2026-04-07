@@ -420,6 +420,7 @@ export default function Workspace() {
 
   const [tab, setTab] = useState('KPIs')
   const [files, setFiles] = useState([])
+  const [currentFolder, setCurrentFolder] = useState(null)
 
   const emp = getEmpresa(id)
 
@@ -446,38 +447,14 @@ export default function Workspace() {
   // Tabs by company — filtradas pelos módulos ativos
   const modulosAtivos = emp ? getEmpresaModulos(emp.id) : DEFAULT_MODULOS
   const baseTabsFiltradas = modulosAtivos.filter(t => BASE_TABS.includes(t))
-  const TABS = id === 'fs'
-    ? [...baseTabsFiltradas, 'Gestão de Fundos', 'Projeções']
-    : id === 'gp'
-    ? [...baseTabsFiltradas, 'Patrimônio']
-    : id === 'of'
-    ? [...baseTabsFiltradas, 'Projetos']
-    : baseTabsFiltradas
-
-  function handleFileUpload(e) {
-    const fileList = e.target.files
-    if (!fileList || fileList.length === 0) return
-    for (let i = 0; i < fileList.length; i++) {
-      const f = fileList[i]
-      const reader = new FileReader()
-      reader.onload = () => {
-        const entry = {
-          id: Date.now().toString() + i,
-          name: f.name,
-          size: f.size,
-          type: f.type,
-          data: reader.result,
-          uploaded: new Date().toISOString(),
-        }
-        setFiles(prev => {
-          const next = [...prev, entry]
-          localStorage.setItem(`orion_files_${id}`, JSON.stringify(next))
-          return next
-        })
-      }
-      reader.readAsDataURL(f)
-    }
+  const extraTabs = []
+  if (id === 'fs') {
+    if (modulosAtivos.includes('Gestão de Fundos')) extraTabs.push('Gestão de Fundos')
+    if (modulosAtivos.includes('Projeções')) extraTabs.push('Projeções')
   }
+  if (id === 'gp' && modulosAtivos.includes('Patrimônio')) extraTabs.push('Patrimônio')
+  if (id === 'of' && modulosAtivos.includes('Projetos')) extraTabs.push('Projetos')
+  const TABS = [...baseTabsFiltradas, ...extraTabs]
 
   function removeFile(fileId) {
     setFiles(prev => {
@@ -648,34 +625,90 @@ export default function Workspace() {
 
       case 'Arquivos': {
         const ctxFiles = (arquivos || []).filter(a => a.empresa_id === id)
-        const driveFolders = [
-          { label: 'Extratos', icon: '📂', path: 'Extratos' },
-          { label: 'Contratos', icon: '📄', path: 'Contratos' },
-          { label: 'Notas Fiscais', icon: '🧾', path: 'Notas Fiscais' },
-          { label: 'Relatórios', icon: '📊', path: 'Relatorios' },
+        const DRIVE_FOLDERS = [
+          { label: 'Financeiro / Extratos',          icon: '🏦', path: 'financeiro/extratos' },
+          { label: 'Financeiro / Notas Fiscais',     icon: '🧾', path: 'financeiro/notas-fiscais' },
+          { label: 'Financeiro / Relatórios',        icon: '📊', path: 'financeiro/relatorios' },
+          { label: 'Jurídico / Contratos',           icon: '📄', path: 'juridico/contratos' },
+          { label: 'Operacional / Documentos',       icon: '📋', path: 'operacional/documentos' },
+          { label: 'Biblioteca / Estatutos e Manuais', icon: '📚', path: 'biblioteca/estatutos' },
         ]
+        const folderFiles = currentFolder
+          ? files.filter(f => f.folder === currentFolder)
+          : []
+        const allFolderFiles = files.filter(f => f.folder)
+
         return (
           <div className="files-section">
-            <div style={{ marginBottom: 20 }}>
-              <div className="section-title-v4">Google Drive — Pastas da Empresa</div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(160px,1fr))', gap: 10 }}>
-                {driveFolders.map(f => (
-                  <a key={f.path} href={emp.drive_url || '#'} target="_blank" rel="noopener noreferrer"
-                    className="drive-folder" title={`Abrir pasta ${f.label} no Drive`}>
-                    <div className="drive-folder-icon">{f.icon}</div>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--tx)' }}>{f.label}</span>
-                  </a>
-                ))}
+            {/* Breadcrumb */}
+            {currentFolder && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, fontSize: 13 }}>
+                <button className="btn btn-sm btn-secondary" onClick={() => setCurrentFolder(null)}>← Voltar</button>
+                <span style={{ color: 'var(--tx3)' }}>📁</span>
+                <span style={{ color: 'var(--text)', fontWeight: 600 }}>{DRIVE_FOLDERS.find(f => f.path === currentFolder)?.label || currentFolder}</span>
+                <span style={{ color: 'var(--tx3)', fontSize: 11 }}>({folderFiles.length} arquivo{folderFiles.length !== 1 ? 's' : ''})</span>
               </div>
-            </div>
-            <div className="file-upload" style={{ marginBottom: 12 }}>
+            )}
+
+            {/* Grid de pastas */}
+            {!currentFolder && (
+              <>
+                <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--tx3)', letterSpacing: '.1em', textTransform: 'uppercase', marginBottom: 12 }}>Pastas da Empresa</div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 10, marginBottom: 20 }}>
+                  {DRIVE_FOLDERS.map(f => {
+                    const count = files.filter(fl => fl.folder === f.path).length
+                    return (
+                      <div key={f.path}
+                        className="card" style={{ padding: '14px 16px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12, transition: '.15s' }}
+                        onClick={() => setCurrentFolder(f.path)}>
+                        <div style={{ fontSize: 24 }}>{f.icon}</div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{f.label}</div>
+                          <div style={{ fontSize: 11, color: 'var(--tx3)' }}>{count} arquivo{count !== 1 ? 's' : ''}</div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </>
+            )}
+
+            {/* Upload */}
+            <div className="file-upload" style={{ marginBottom: 16, display: 'flex', gap: 10, alignItems: 'center' }}>
               <label className="btn btn-primary upload-btn">
-                📎 Enviar Arquivo
-                <input type="file" multiple onChange={handleFileUpload} style={{ display: 'none' }} />
+                📎 Enviar Arquivo{currentFolder ? ` para ${DRIVE_FOLDERS.find(f => f.path === currentFolder)?.label || currentFolder}` : ''}
+                <input type="file" multiple onChange={e => {
+                  const fileList = e.target.files
+                  if (!fileList || fileList.length === 0) return
+                  for (let i = 0; i < fileList.length; i++) {
+                    const f = fileList[i]
+                    const reader = new FileReader()
+                    reader.onload = () => {
+                      const entry = {
+                        id: Date.now().toString() + i,
+                        name: f.name,
+                        size: f.size,
+                        type: f.type,
+                        data: reader.result,
+                        folder: currentFolder || 'operacional/documentos',
+                        uploaded: new Date().toISOString(),
+                        uploaded_by: profile?.name || 'Admin',
+                      }
+                      setFiles(prev => {
+                        const next = [...prev, entry]
+                        localStorage.setItem(`orion_files_${id}`, JSON.stringify(next))
+                        return next
+                      })
+                    }
+                    reader.readAsDataURL(f)
+                  }
+                }} style={{ display: 'none' }} />
               </label>
             </div>
-            {ctxFiles.length > 0 && (
-              <div style={{ marginBottom: 8 }}>
+
+            {/* Arquivo Digital (classificados pelo MAXXXI) */}
+            {ctxFiles.length > 0 && !currentFolder && (
+              <div style={{ marginBottom: 16 }}>
                 <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--tx3)', letterSpacing: '.1em', textTransform: 'uppercase', marginBottom: 8 }}>Arquivo Digital</div>
                 {ctxFiles.map(arq => (
                   <div key={arq.id} className="file-item-v4">
@@ -693,27 +726,69 @@ export default function Workspace() {
                 ))}
               </div>
             )}
-            <div className="file-list">
-              {files.map(f => (
-                <div key={f.id} className="card file-card">
-                  <div className="file-info">
-                    <span className="file-icon">📄</span>
-                    <div>
-                      <strong>{f.name}</strong>
-                      <small>{formatBytes(f.size)} — {new Date(f.uploaded).toLocaleDateString('pt-BR')}</small>
+
+            {/* Arquivos na pasta selecionada */}
+            {currentFolder && (
+              <div className="file-list">
+                {folderFiles.map(f => (
+                  <div key={f.id} className="card file-card">
+                    <div className="file-info">
+                      <span className="file-icon">📄</span>
+                      <div>
+                        <strong>{f.name}</strong>
+                        <small>{formatBytes(f.size)} — {new Date(f.uploaded).toLocaleDateString('pt-BR')} — {f.uploaded_by || '—'}</small>
+                      </div>
+                    </div>
+                    <div className="file-actions">
+                      <a href={f.data} download={f.name} className="btn btn-sm btn-doing">⬇ Baixar</a>
+                      <select className="btn btn-sm btn-secondary" style={{ fontSize: 11, padding: '2px 6px' }}
+                        value={f.folder}
+                        onChange={ev => {
+                          setFiles(prev => {
+                            const next = prev.map(x => x.id === f.id ? { ...x, folder: ev.target.value } : x)
+                            localStorage.setItem(`orion_files_${id}`, JSON.stringify(next))
+                            return next
+                          })
+                        }}>
+                        {DRIVE_FOLDERS.map(df => <option key={df.path} value={df.path}>{df.label}</option>)}
+                      </select>
+                      {canDelete
+                        ? <button className="btn btn-sm btn-del" onClick={() => removeFile(f.id)}>🗑</button>
+                        : <button className="btn btn-sm" style={{ color: 'var(--tx3)', cursor: 'default' }} disabled>🔒</button>
+                      }
                     </div>
                   </div>
-                  <div className="file-actions">
-                    <a href={f.data} download={f.name} className="btn btn-sm btn-doing">⬇ Baixar</a>
-                    {canDelete
-                      ? <button className="btn btn-sm btn-del" onClick={() => removeFile(f.id)}>🗑</button>
-                      : <button className="btn btn-sm" style={{ color: 'var(--tx3)', cursor: 'default' }} disabled>🔒</button>
-                    }
+                ))}
+                {folderFiles.length === 0 && <p className="empty">Nenhum arquivo nesta pasta.</p>}
+              </div>
+            )}
+
+            {/* Arquivos sem pasta (legado) */}
+            {!currentFolder && files.filter(f => !f.folder).length > 0 && (
+              <div className="file-list">
+                <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--tx3)', letterSpacing: '.1em', textTransform: 'uppercase', marginBottom: 8 }}>Arquivos Gerais</div>
+                {files.filter(f => !f.folder).map(f => (
+                  <div key={f.id} className="card file-card">
+                    <div className="file-info">
+                      <span className="file-icon">📄</span>
+                      <div>
+                        <strong>{f.name}</strong>
+                        <small>{formatBytes(f.size)} — {new Date(f.uploaded).toLocaleDateString('pt-BR')}</small>
+                      </div>
+                    </div>
+                    <div className="file-actions">
+                      <a href={f.data} download={f.name} className="btn btn-sm btn-doing">⬇ Baixar</a>
+                      {canDelete
+                        ? <button className="btn btn-sm btn-del" onClick={() => removeFile(f.id)}>🗑</button>
+                        : <button className="btn btn-sm" style={{ color: 'var(--tx3)', cursor: 'default' }} disabled>🔒</button>
+                      }
+                    </div>
                   </div>
-                </div>
-              ))}
-              {files.length === 0 && ctxFiles.length === 0 && <p className="empty">Nenhum arquivo enviado para esta empresa.</p>}
-            </div>
+                ))}
+              </div>
+            )}
+
+            {files.length === 0 && ctxFiles.length === 0 && !currentFolder && <p className="empty">Nenhum arquivo enviado para esta empresa.</p>}
           </div>
         )
       }
@@ -728,7 +803,7 @@ export default function Workspace() {
         return (
           <div style={{ margin: '-24px -28px', height: 'calc(100vh - 240px)' }}>
             <iframe src="/forme-seguro-v2.html" title="Forme Seguro — Gestão de Fundos"
-              style={{ width: '100%', height: '100%', border: 'none', borderRadius: '0 0 var(--r) var(--r)', background: '#f5f4f0' }} />
+              style={{ width: '100%', height: '100%', border: 'none', borderRadius: '0 0 var(--r) var(--r)', background: 'var(--bg)' }} />
           </div>
         )
 
@@ -736,7 +811,7 @@ export default function Workspace() {
         return (
           <div style={{ margin: '-24px -28px', height: 'calc(100vh - 240px)' }}>
             <iframe src="/projecao-forme-seguro.html" title="Forme Seguro — Projeções"
-              style={{ width: '100%', height: '100%', border: 'none', borderRadius: '0 0 var(--r) var(--r)', background: '#fff' }} />
+              style={{ width: '100%', height: '100%', border: 'none', borderRadius: '0 0 var(--r) var(--r)', background: 'var(--bg)' }} />
           </div>
         )
 
@@ -750,9 +825,9 @@ export default function Workspace() {
   return (
     <div className="page workspace">
       <div className="emp-tabs">
-        {empresas.map(e => (
-          <button key={e.id} className={`emp-tab ${e.id === id ? 'active' : ''}`}
-            style={{ borderBottom: e.id === id ? `3px solid ${e.cor}` : 'none' }}
+        {empresas.filter(e => e.id !== id).map(e => (
+          <button key={e.id} className="emp-tab"
+            style={{ opacity: 0.7 }}
             onClick={() => navigate(`/empresa/${e.id}`)}>
             <span className="emp-sigla-sm" style={{ background: e.cor }}>{e.sigla}</span>
             {safeName(e.nome)}

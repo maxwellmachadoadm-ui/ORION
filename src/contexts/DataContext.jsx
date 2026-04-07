@@ -34,7 +34,7 @@ const DEMO_COMPROMISSOS = [
 ]
 
 // ── MÓDULOS PADRÃO ──
-export const DEFAULT_MODULOS = ['KPIs', 'OKRs', 'Tarefas', 'Contratos', 'Riscos', 'Decisões', 'CRM', 'Pipeline', 'Fluxo de Caixa', 'DRE', 'Arquivos', 'Biblioteca']
+export const DEFAULT_MODULOS = ['KPIs', 'OKRs', 'Tarefas', 'Contratos', 'Riscos', 'Decisões', 'CRM', 'Pipeline', 'Fluxo de Caixa', 'DRE', 'Arquivos', 'Biblioteca', 'Gestão de Fundos', 'Projeções', 'Projetos', 'Patrimônio']
 
 // ── LANÇAMENTOS DEMO ──
 const DEMO_LANCAMENTOS_V4 = [
@@ -883,6 +883,46 @@ export function DataProvider({ children }) {
     return alerts
   }
 
+  // ── AUTOMAÇÕES LINKSYNC ──
+  function logAutomacao(empresaId, tipo, descricao) {
+    const entry = { id: Date.now().toString(), empresa_id: empresaId, tipo, descricao, created_at: new Date().toISOString() }
+    try {
+      const log = JSON.parse(localStorage.getItem('orion_automacoes_log') || '[]')
+      log.unshift(entry)
+      if (log.length > 200) log.length = 200
+      localStorage.setItem('orion_automacoes_log', JSON.stringify(log))
+    } catch (_) {}
+    return entry
+  }
+
+  function getAutomacoesLog(empresaId) {
+    try {
+      const log = JSON.parse(localStorage.getItem('orion_automacoes_log') || '[]')
+      return empresaId ? log.filter(l => l.empresa_id === empresaId) : log
+    } catch { return [] }
+  }
+
+  // Hook: quando arquivo é adicionado na pasta Extratos → sugerir classificação
+  const _origAddArquivo = addArquivo
+  function addArquivoWithHook(arquivo) {
+    _origAddArquivo(arquivo)
+    if (arquivo.categoria?.toLowerCase().includes('extrato') || arquivo.nome?.toLowerCase().includes('extrato')) {
+      logAutomacao(arquivo.empresa_id, 'classificacao_sugerida', `MAXXXI: arquivo "${arquivo.nome}" enviado em Extratos — classificação sugerida automaticamente`)
+    }
+  }
+
+  // Hook: quando tarefa é concluída → log automação
+  const _origUpdateTask = updateTask
+  async function updateTaskWithHook(taskId, updates) {
+    await _origUpdateTask(taskId, updates)
+    if (updates.status === 'done') {
+      const task = tarefas.find(t => t.id === taskId)
+      if (task) {
+        logAutomacao(task.empresa_id, 'tarefa_concluida', `Tarefa "${task.titulo}" concluída`)
+      }
+    }
+  }
+
   return (
     <DataContext.Provider value={{
       empresas: empresasVisiveis, // filtradas pelo acesso do usuário
@@ -890,7 +930,7 @@ export function DataProvider({ children }) {
       tarefas, kpis, okrs, contratos, riscos, decisoes, crmLeads,
       checkin, loaded, fmt,
       getEmpresa, getKpis, getOkrs, getTarefas, getContratos, getRiscos, getDecisoes, getCrmLeads,
-      addTask, updateTask, deleteTask, saveCheckin, generateAlerts, reload: loadAll,
+      addTask, updateTask: updateTaskWithHook, deleteTask, saveCheckin, generateAlerts, reload: loadAll,
       setCrmLeads,
       // Financeiro v4
       CLASSIFICATION_BANK, REVENUE_ORIGINS, BANKS,
@@ -898,7 +938,7 @@ export function DataProvider({ children }) {
       addLancamento, approveLancamento, deleteLancamento, updateLancamento,
       getLancamentosByEmpresa, getResumoFinanceiro,
       // Arquivos
-      arquivos, addArquivo, deleteArquivo,
+      arquivos, addArquivo: addArquivoWithHook, deleteArquivo,
       // MAXXXI aprendizado
       maxxxi_learned, learnClassification, suggestClassification,
       // v5 — novos
@@ -921,6 +961,8 @@ export function DataProvider({ children }) {
       compromissos, getCompromissos, addCompromisso, updateCompromisso, deleteCompromisso, marcarPago, calcCompromissoStatus,
       // Módulos configuráveis
       DEFAULT_MODULOS, getEmpresaModulos, setEmpresaModulos,
+      // Automações LinkSync
+      logAutomacao, getAutomacoesLog,
     }}>
       {children}
     </DataContext.Provider>

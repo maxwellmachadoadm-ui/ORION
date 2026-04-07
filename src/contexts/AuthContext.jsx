@@ -262,59 +262,73 @@ export function AuthProvider({ children }) {
   }
 
   async function inviteUser(email, role = 'pendente', companiesAccess = null, permissions = null) {
+    // Validação de email
+    const cleanEmail = (email || '').trim().toLowerCase()
+    if (!cleanEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+      throw new Error('E-mail inválido. Verifique o formato e tente novamente.')
+    }
+
+    // Verificar duplicidade
+    const existingInvites = JSON.parse(localStorage.getItem('orion_invites') || '[]')
+    const alreadyInvited = existingInvites.find(i => i.email === cleanEmail && !i.accepted)
+    if (alreadyInvited) {
+      throw new Error(`Já existe um convite pendente para ${cleanEmail}.`)
+    }
+
     const invite = {
-      id: Date.now(), email, role,
+      id: Date.now(), email: cleanEmail, role,
       companies_access: companiesAccess,
       custom_permissions: permissions,
       accepted: false,
+      status: 'pendente',
       token: Math.random().toString(36).slice(2),
       created_at: new Date().toISOString()
     }
 
-    if (isDemoMode) {
+    // Salvar convite no localStorage (funciona tanto em demo quanto como fallback)
+    const saveToLocal = () => {
       const invites = JSON.parse(localStorage.getItem('orion_invites') || '[]')
       invites.push(invite)
       localStorage.setItem('orion_invites', JSON.stringify(invites))
-      logAudit('CONVITE_ENVIADO', `${email} — papel: ${role}`, user?.id, profile?.name)
+    }
+
+    if (isDemoMode) {
+      saveToLocal()
+      logAudit('CONVITE_ENVIADO', `${cleanEmail} — papel: ${role}`, user?.id, profile?.name)
       return
     }
 
     // Modo Supabase: tenta inserir na tabela 'invites'
-    // Se a tabela não existir ou não tiver permissão (service role não disponível no frontend),
-    // faz fallback para localStorage e continua sem erro
     try {
       const { error } = await supabase.from('invites').insert({
-        email, role,
+        email: cleanEmail, role,
         invited_by: user?.id,
         companies_access: companiesAccess,
         custom_permissions: permissions,
+        status: 'pendente',
       })
-      if (error && (error.code === '42P01' || error.message?.includes('does not exist') || error.message?.includes('permission denied'))) {
-        // Tabela não existe ou sem permissão — salva no localStorage como fallback
-        const invites = JSON.parse(localStorage.getItem('orion_invites') || '[]')
-        invites.push(invite)
-        localStorage.setItem('orion_invites', JSON.stringify(invites))
-      } else if (error) {
-        // Outro erro: salva no localStorage e não bloqueia o admin
-        const invites = JSON.parse(localStorage.getItem('orion_invites') || '[]')
-        invites.push(invite)
-        localStorage.setItem('orion_invites', JSON.stringify(invites))
+      if (error) {
+        console.warn('[ORION] Erro ao salvar convite no Supabase:', error.message, error.code)
+        saveToLocal()
       }
-    } catch (_) {
-      // Qualquer exceção: salva no localStorage
-      const invites = JSON.parse(localStorage.getItem('orion_invites') || '[]')
-      invites.push(invite)
-      localStorage.setItem('orion_invites', JSON.stringify(invites))
+    } catch (err) {
+      console.warn('[ORION] Exceção ao salvar convite:', err)
+      saveToLocal()
     }
 
     // Tenta notificar via API (ignorar erros)
-    await fetch('/api/invite', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, role })
-    }).catch(() => {})
+    try {
+      const resp = await fetch('/api/invite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: cleanEmail, role })
+      })
+      if (!resp.ok) console.warn('[ORION] API invite retornou status:', resp.status)
+    } catch (err) {
+      console.warn('[ORION] Falha ao enviar email de convite:', err.message)
+    }
 
-    logAudit('CONVITE_ENVIADO', `${email} — papel: ${role}`, user?.id, profile?.name)
+    logAudit('CONVITE_ENVIADO', `${cleanEmail} — papel: ${role}`, user?.id, profile?.name)
   }
 
   async function updateUserPermissions(userId, permissions) {

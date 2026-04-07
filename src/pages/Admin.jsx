@@ -2,6 +2,12 @@ import { useState, useEffect } from 'react'
 import { useAuth, ROLES } from '../contexts/AuthContext'
 import { useData, DEFAULT_MODULOS } from '../contexts/DataContext'
 
+const ALL_MODULOS = [
+  'KPIs', 'OKRs', 'Tarefas', 'Contratos', 'Riscos', 'Decisões',
+  'CRM', 'Pipeline', 'Fluxo de Caixa', 'DRE', 'Arquivos',
+  'Biblioteca', 'Gestão de Fundos', 'Projeções', 'Projetos', 'Patrimônio'
+]
+
 const ALL_INVITE_PERMISSIONS = [
   { key: 'view',     label: 'Visualizar dados' },
   { key: 'attach',   label: 'Anexar arquivos' },
@@ -88,19 +94,34 @@ export default function Admin() {
 
   async function handleInvite(e) {
     e.preventDefault()
-    if (!inviteEmail) return
+    const cleanEmail = (inviteEmail || '').trim().toLowerCase()
+    if (!cleanEmail) {
+      setInviteFeedback({ type: 'err', msg: 'Informe o e-mail do convidado.' })
+      return
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+      setInviteFeedback({ type: 'err', msg: 'E-mail inválido. Verifique o formato.' })
+      return
+    }
+    // Verifica se já está cadastrado
+    const existingUser = users.find(u => u.email?.toLowerCase() === cleanEmail)
+    if (existingUser) {
+      setInviteFeedback({ type: 'err', msg: `Este e-mail já está cadastrado como "${existingUser.name || existingUser.email}".` })
+      return
+    }
     setInviteLoading(true); setInviteFeedback(null)
     try {
       await inviteUser(
-        inviteEmail, inviteRole,
+        cleanEmail, inviteRole,
         inviteCompanies.length > 0 ? inviteCompanies : null,
         invitePermissions.length > 0 ? invitePermissions : null
       )
-      setInviteFeedback({ type: 'ok', msg: `Convite enviado para ${inviteEmail}` })
+      setInviteFeedback({ type: 'ok', msg: `✅ Convite enviado para ${cleanEmail}` })
       await loadUsers()
-      setTimeout(() => { resetInvite(); setInviteOpen(false) }, 2000)
+      setTimeout(() => { resetInvite(); setInviteOpen(false) }, 2500)
     } catch (err) {
-      setInviteFeedback({ type: 'err', msg: err.message })
+      console.error('[ORION] Erro convite:', err)
+      setInviteFeedback({ type: 'err', msg: err.message || 'Erro ao enviar convite.' })
     }
     setInviteLoading(false)
   }
@@ -252,8 +273,11 @@ export default function Admin() {
                           {inv.created_at ? new Date(inv.created_at).toLocaleDateString('pt-BR') : '—'}
                         </td>
                         <td>
-                          <span className="badge" style={{ background: inv.accepted ? 'rgba(16,185,129,.2)' : 'rgba(245,158,11,.2)', color: inv.accepted ? 'var(--green)' : 'var(--gold)' }}>
-                            {inv.accepted ? 'Aceito' : 'Pendente'}
+                          <span className="badge" style={{
+                            background: inv.accepted ? 'rgba(16,185,129,.2)' : inv.status === 'expirado' ? 'rgba(239,68,68,.2)' : 'rgba(245,158,11,.2)',
+                            color: inv.accepted ? 'var(--green)' : inv.status === 'expirado' ? 'var(--red)' : 'var(--gold)'
+                          }}>
+                            {inv.accepted ? 'Aceito' : inv.status || 'Pendente'}
                           </span>
                         </td>
                       </tr>
@@ -419,8 +443,8 @@ export default function Admin() {
                 <p style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 16 }}>
                   Selecione os módulos visíveis no Workspace desta empresa.
                 </p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20 }}>
-                  {DEFAULT_MODULOS.map(mod => (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 20 }}>
+                  {ALL_MODULOS.map(mod => (
                     <label key={mod} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', fontSize: 13, color: 'var(--text)' }}>
                       <input
                         type="checkbox"

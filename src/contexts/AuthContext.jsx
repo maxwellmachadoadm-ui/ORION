@@ -45,17 +45,24 @@ export function AuthProvider({ children }) {
     }
 
     // ── MODO SUPABASE ──
-    // Verifica sessão existente. Se houver sessão válida do Supabase,
-    // carrega o perfil. Caso contrário, redireciona para login.
+    // Verifica sessão existente com timeout de 5s.
+    // Se Supabase não responder (projeto pausado, URL errada, rede lenta),
+    // o timeout garante que o loading seja liberado e o usuário vá para o Login.
     let cancelled = false
 
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    const sessionPromise = supabase.auth.getSession()
+    const timeoutPromise = new Promise(resolve =>
+      setTimeout(() => resolve({ data: { session: null }, _timedOut: true }), 5000)
+    )
+
+    Promise.race([sessionPromise, timeoutPromise]).then(async (result) => {
       if (cancelled) return
+      const session = result?.data?.session
       if (session?.user) {
         setUser(session.user)
+        // fetchProfileSilent também tem timeout interno de 3s
         await fetchProfileSilent(session.user.id)
       }
-      // Só marca como "carregado" DEPOIS de tentar buscar o perfil
       if (!cancelled) setLoading(false)
     }).catch(() => {
       if (!cancelled) setLoading(false)
@@ -82,7 +89,9 @@ export function AuthProvider({ children }) {
 
   async function fetchProfileSilent(userId) {
     try {
-      const { data } = await supabase.from('profiles').select('*').eq('id', userId).single()
+      const profilePromise = supabase.from('profiles').select('*').eq('id', userId).single()
+      const timeoutPromise = new Promise(resolve => setTimeout(() => resolve({ data: null }), 3000))
+      const { data } = await Promise.race([profilePromise, timeoutPromise])
       if (data) setProfile(data)
     } catch (_) {}
   }

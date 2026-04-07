@@ -219,6 +219,15 @@ empresa_modulos (empresa_id, modulo, ativo)
 ### LocalStorage Keys (adicionais v8)
 - `orion_invites` — convites registrados pelo admin (demo + fallback Supabase)
 
+### Correções v9 (Abril 2026) ✅
+- **Design System unificado** — index.css com todas as variáveis CSS verificadas (--purple, --gold-dark, etc.)
+- **Dark mode forme-seguro-v2.html** — variáveis CSS reescritas para Design System ORION (--bg:#080c14, --surface:#0d1424, etc.); backgrounds claros substituídos; badges com rgba
+- **Dark mode projecao-forme-seguro.html** — variáveis CSS migradas para dark (--bg:#080c14, --card:#0d1424, --soft:#111827, --border:#1e2a3d); todos os backgrounds claros e cores hardcoded substituídas; `.ok` legível no dark
+- **CDL ITAPERUNA definitivo** — nenhuma ocorrência de "CDL Divinópolis/Divinopolis" nos arquivos do projeto principal (src/, supabase/, public/); DataContext já tem replace automático
+- **safeVal() presente** — exportada em DataContext.jsx, disponível para uso em todas as páginas
+- **Login e fluxo de recovery** — AuthContext verificado: onAuthStateChange registrado antes da flag check, PASSWORD_RECOVERY redireciona para /reset-password, SIGNED_IN seta orion_session_active, signOut remove flag, isDemoMode tratado
+- **Convite: roles corretos** — Admin.jsx e Layout.jsx usam Object.entries(ROLES) para gerar options; roles válidos: admin, gestor, colaborador, contador, assistente, pendente
+
 ### Módulos Principais Pendentes
 - Integração Supabase em produção (currently demo mode)
 - Supabase Storage: executar supabase/create_buckets.sql no painel do Supabase

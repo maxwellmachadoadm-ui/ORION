@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import { useData, CLASSIFICATION_BANK } from '../contexts/DataContext'
 import { useAuth } from '../contexts/AuthContext'
+import Compromissos from './Compromissos'
 
 const MESES_LABEL = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']
 
@@ -143,10 +144,10 @@ export default function Financeiro() {
 
   const maxBarComp = Math.max(...compData.map(m => Math.max(m.receitas, m.despesas)), 1)
 
-  const TABS = ['resumo', 'bancos', 'natureza', 'lancamentos', 'comparativo']
+  const TABS = ['resumo', 'bancos', 'natureza', 'lancamentos', 'comparativo', 'compromissos']
   const TAB_LABELS = {
     resumo: '📊 Resumo', bancos: '🏦 Por Banco', natureza: '🏷 Por Natureza',
-    lancamentos: '📋 Lançamentos', comparativo: '📈 Comparativo'
+    lancamentos: '📋 Lançamentos', comparativo: '📈 Comparativo', compromissos: '📅 Compromissos'
   }
 
   return (
@@ -465,6 +466,11 @@ export default function Financeiro() {
             </table>
           </div>
         </div>
+      )}
+
+      {/* ── COMPROMISSOS ── */}
+      {activeTab === 'compromissos' && (
+        <Compromissos empresaId={filtroEmp === 'all' ? null : filtroEmp} />
       )}
 
       {/* MODAL NOVO LANÇAMENTO */}

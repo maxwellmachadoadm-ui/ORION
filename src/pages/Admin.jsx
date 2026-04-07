@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useAuth, ROLES } from '../contexts/AuthContext'
-import { useData } from '../contexts/DataContext'
+import { useData, DEFAULT_MODULOS } from '../contexts/DataContext'
 
 const TABS = ['usuarios', 'empresas', 'auditoria', 'maxxxi']
 const TAB_LABELS = {
@@ -25,7 +25,7 @@ function RolePill({ role }) {
 
 export default function Admin() {
   const { isAdmin, getUsers, updateUserRole, updateUserAccess, updateUserPermissions, getAuditLog, profile } = useAuth()
-  const { empresas, addEmpresa, removeEmpresa, uploadLogoEmpresa } = useData()
+  const { empresas, addEmpresa, removeEmpresa, uploadLogoEmpresa, getEmpresaModulos, setEmpresaModulos } = useData()
   const [tab, setTab] = useState('usuarios')
   const [users, setUsers] = useState([])
   const [auditLog, setAuditLog] = useState([])
@@ -41,6 +41,8 @@ export default function Admin() {
   const [deleteConfirm2, setDeleteConfirm2] = useState(false)
   const [newEmp, setNewEmp] = useState({ nome: '', sigla: '', descricao: '', cor: '#3b82f6', rgb: '59,130,246' })
   const [logoUploading, setLogoUploading] = useState(null)
+  const [modulosModal, setModulosModal] = useState(null) // empresa selecionada para configurar módulos
+  const [modulosEdit, setModulosEdit] = useState([])
 
   const ALL_PERMISSIONS = [
     { key: 'view',     label: 'Somente visualizar' },
@@ -252,6 +254,12 @@ export default function Admin() {
                   />
                 </label>
 
+                {/* Módulos */}
+                <button className="btn btn-secondary btn-sm" onClick={() => {
+                  setModulosModal(emp)
+                  setModulosEdit(getEmpresaModulos(emp.id))
+                }}>⚙ Módulos</button>
+
                 {/* Delete (não permite deletar empresas base) */}
                 {!['dw','of','fs','cdl','gp'].includes(emp.id) && (
                   <button className="btn btn-danger btn-sm" onClick={() => { setDeleteConfirm(emp); setDeleteConfirm2(false) }}>
@@ -297,6 +305,42 @@ export default function Admin() {
                     <button type="submit" className="btn btn-primary">Criar Empresa</button>
                   </div>
                 </form>
+              </div>
+            </div>
+          )}
+
+          {/* Modal configurar módulos */}
+          {modulosModal && (
+            <div className="modal-overlay show" onClick={e => e.target === e.currentTarget && setModulosModal(null)}>
+              <div className="modal" style={{ maxWidth: 480 }}>
+                <div className="modal-title">
+                  <span>⚙ Módulos — {modulosModal.nome}</span>
+                  <button className="modal-close" onClick={() => setModulosModal(null)}>×</button>
+                </div>
+                <p style={{ fontSize: 12, color: 'var(--text3)', marginBottom: 16 }}>
+                  Selecione os módulos visíveis no Workspace desta empresa.
+                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20 }}>
+                  {DEFAULT_MODULOS.map(mod => (
+                    <label key={mod} style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', fontSize: 13, color: 'var(--text)' }}>
+                      <input
+                        type="checkbox"
+                        checked={modulosEdit.includes(mod)}
+                        onChange={() => setModulosEdit(prev =>
+                          prev.includes(mod) ? prev.filter(m => m !== mod) : [...prev, mod]
+                        )}
+                      />
+                      {mod}
+                    </label>
+                  ))}
+                </div>
+                <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                  <button className="btn btn-secondary" onClick={() => setModulosModal(null)}>Cancelar</button>
+                  <button className="btn btn-primary" onClick={() => {
+                    setEmpresaModulos(modulosModal.id, modulosEdit)
+                    setModulosModal(null)
+                  }}>Salvar Módulos</button>
+                </div>
               </div>
             </div>
           )}

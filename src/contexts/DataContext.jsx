@@ -17,6 +17,25 @@ export const CLASSIFICATION_BANK = {
 export const REVENUE_ORIGINS = ['PIX', 'Boleto', 'Cartão', 'Transferência', 'Dinheiro']
 export const BANKS = ['Nubank', 'C6 Bank', 'Caixa Econômica', 'Itaú', 'Bradesco', 'Santander', 'BTG Pactual', 'Inter', 'Outro']
 
+// ── BIBLIOTECA DEMO ──
+const DEMO_BIBLIOTECA = [
+  { id:'b1', empresa_id:'dw', nome:'Contrato Social DW.pdf', tipo:'application/pdf', tamanho:245000, url:'#', uploaded_by:'admin', uploaded_name:'Maxwell', created_at:'2026-03-01T09:00:00Z', descricao:'Contrato social atualizado 2026' },
+  { id:'b2', empresa_id:'of', nome:'Tabela de Preços 2026.pdf', tipo:'application/pdf', tamanho:180000, url:'#', uploaded_by:'admin', uploaded_name:'Maxwell', created_at:'2026-03-05T09:00:00Z', descricao:'Tabela oficial de preços Q1 2026' },
+  { id:'b3', empresa_id:'cdl', nome:'Ata Assembleia Mar26.pdf', tipo:'application/pdf', tamanho:320000, url:'#', uploaded_by:'admin', uploaded_name:'Maxwell', created_at:'2026-03-15T09:00:00Z', descricao:'Ata da assembleia geral ordinária' },
+]
+
+// ── COMPROMISSOS DEMO ──
+const DEMO_COMPROMISSOS = [
+  { id:'c1', empresa_id:'dw', nome:'Aluguel Escritório Matriz', descricao:'Sala 501, Ed. Corporate', valor:3500, vencimento:'2026-04-01', frequencia:'mensal', tipo:'recorrente', categoria:'ESCRITÓRIO', banco:'Caixa Econômica', status:'a_vencer', pago_em:null, created_by:'admin', created_at:'2026-01-01T09:00:00Z' },
+  { id:'c2', empresa_id:'dw', nome:'DAS Simples Nacional', descricao:'Apuração mensal', valor:4200, vencimento:'2026-04-20', frequencia:'mensal', tipo:'recorrente', categoria:'IMPOSTOS', banco:'Nubank', status:'a_vencer', pago_em:null, created_by:'admin', created_at:'2026-01-01T09:00:00Z' },
+  { id:'c3', empresa_id:'of', nome:'Adobe Creative Cloud', descricao:'Plano equipe 3 usuários', valor:890, vencimento:'2026-04-07', frequencia:'mensal', tipo:'recorrente', categoria:'ESCRITÓRIO', banco:'Nubank', status:'vencendo', pago_em:null, created_by:'admin', created_at:'2026-01-01T09:00:00Z' },
+  { id:'c4', empresa_id:'cdl', nome:'Manutenção predial', descricao:'Contrato manutenção preventiva', valor:2200, vencimento:'2026-03-15', frequencia:'mensal', tipo:'recorrente', categoria:'ESCRITÓRIO', banco:'Caixa Econômica', status:'atrasado', pago_em:null, created_by:'admin', created_at:'2026-01-01T09:00:00Z' },
+  { id:'c5', empresa_id:'dw', nome:'Servidor Cloud ORION', descricao:'Vercel Pro + Supabase', valor:390, vencimento:'2026-04-10', frequencia:'mensal', tipo:'recorrente', categoria:'ESCRITÓRIO', banco:'Nubank', status:'a_vencer', pago_em:null, created_by:'admin', created_at:'2026-01-01T09:00:00Z' },
+]
+
+// ── MÓDULOS PADRÃO ──
+export const DEFAULT_MODULOS = ['KPIs', 'OKRs', 'Tarefas', 'Contratos', 'Riscos', 'Decisões', 'CRM', 'Pipeline', 'Fluxo de Caixa', 'DRE', 'Arquivos', 'Biblioteca']
+
 // ── LANÇAMENTOS DEMO ──
 const DEMO_LANCAMENTOS_V4 = [
   { id:'l01', empresa_id:'dw', tipo:'receita',  categoria:'RECEITAS',   subcategoria:'Honorários / Mensalidades', banco:'Nubank',         origem:'PIX',           valor:38000, mes:'2026-03', descricao:'Mensalidades médicos março',       data:'2026-03-05', status:'aprovado', anexo_nome:null, criado_por:'admin', criado_em:'2026-03-05T09:00:00Z' },
@@ -114,6 +133,16 @@ export function DataProvider({ children }) {
   // ── APRENDIZADO MAXXXI ──
   const [maxxxi_learned, setMaxxxiLearned] = useState(() => {
     try { return JSON.parse(localStorage.getItem('orion_maxxxi_learned') || '{}') } catch { return {} }
+  })
+
+  // ── BIBLIOTECA ──
+  const [biblioteca, setBiblioteca] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('orion_biblioteca') || 'null') || DEMO_BIBLIOTECA } catch { return DEMO_BIBLIOTECA }
+  })
+
+  // ── COMPROMISSOS ──
+  const [compromissos, setCompromissos] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('orion_compromissos') || 'null') || DEMO_COMPROMISSOS } catch { return DEMO_COMPROMISSOS }
   })
 
   const loadAll = useCallback(async () => {
@@ -573,6 +602,134 @@ export function DataProvider({ children }) {
     return publicUrl
   }
 
+  // ── BIBLIOTECA CRUD ──
+  async function addBibliotecaItem(item) {
+    const novo = { ...item, id: Date.now().toString(), created_at: new Date().toISOString() }
+    if (isDemoMode) {
+      const next = [novo, ...biblioteca]
+      setBiblioteca(next)
+      localStorage.setItem('orion_biblioteca', JSON.stringify(next))
+      return novo
+    }
+    const { data, error } = await supabase.from('biblioteca').insert(novo).select().single()
+    if (error) throw error
+    setBiblioteca(prev => [data, ...prev])
+    return data
+  }
+
+  async function deleteBibliotecaItem(id) {
+    if (isDemoMode) {
+      const next = biblioteca.filter(b => b.id !== id)
+      setBiblioteca(next)
+      localStorage.setItem('orion_biblioteca', JSON.stringify(next))
+      return
+    }
+    await supabase.from('biblioteca').delete().eq('id', id)
+    setBiblioteca(prev => prev.filter(b => b.id !== id))
+  }
+
+  function getBiblioteca(empresaId) {
+    return biblioteca.filter(b => !empresaId || b.empresa_id === empresaId)
+  }
+
+  async function uploadBibliotecaFile(empresaId, file, descricao = '') {
+    const nomeArq = file.name
+    const tipo = file.type
+    const tamanho = file.size
+    const uploadedName = profile?.name || 'Admin'
+
+    if (isDemoMode) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = async (ev) => {
+          const url = ev.target.result
+          const item = await addBibliotecaItem({ empresa_id: empresaId, nome: nomeArq, tipo, tamanho, url, uploaded_by: user?.id || 'demo', uploaded_name: uploadedName, descricao })
+          resolve(item)
+        }
+        reader.onerror = reject
+        reader.readAsDataURL(file)
+      })
+    }
+    const path = `biblioteca/${empresaId}/${Date.now()}_${nomeArq}`
+    const { error: upErr } = await supabase.storage.from('orion-assets').upload(path, file, { upsert: false, contentType: tipo })
+    if (upErr) throw upErr
+    const { data: { publicUrl } } = supabase.storage.from('orion-assets').getPublicUrl(path)
+    return addBibliotecaItem({ empresa_id: empresaId, nome: nomeArq, tipo, tamanho, url: publicUrl, uploaded_by: user?.id, uploaded_name: uploadedName, descricao })
+  }
+
+  // ── COMPROMISSOS CRUD ──
+  function getCompromissos(empresaId) {
+    return compromissos.filter(c => !empresaId || empresaId === 'all' || c.empresa_id === empresaId)
+  }
+
+  function addCompromisso(data) {
+    const novo = { ...data, id: Date.now().toString(), created_at: new Date().toISOString() }
+    const next = [novo, ...compromissos]
+    setCompromissos(next)
+    localStorage.setItem('orion_compromissos', JSON.stringify(next))
+    return novo
+  }
+
+  function updateCompromisso(id, updates) {
+    const next = compromissos.map(c => c.id === id ? { ...c, ...updates } : c)
+    setCompromissos(next)
+    localStorage.setItem('orion_compromissos', JSON.stringify(next))
+  }
+
+  function deleteCompromisso(id) {
+    const next = compromissos.filter(c => c.id !== id)
+    setCompromissos(next)
+    localStorage.setItem('orion_compromissos', JSON.stringify(next))
+  }
+
+  function marcarPago(id) {
+    const comp = compromissos.find(c => c.id === id)
+    if (!comp) return
+    let nextVenc = comp.vencimento
+    if (comp.tipo === 'recorrente') {
+      const d = new Date(comp.vencimento)
+      if (comp.frequencia === 'mensal') d.setMonth(d.getMonth() + 1)
+      else if (comp.frequencia === 'anual') d.setFullYear(d.getFullYear() + 1)
+      else if (comp.frequencia === 'semanal') d.setDate(d.getDate() + 7)
+      else if (comp.frequencia === 'diario') d.setDate(d.getDate() + 1)
+      nextVenc = d.toISOString().slice(0, 10)
+    }
+    const next = compromissos.map(c => c.id === id
+      ? { ...c, status: 'pago', pago_em: new Date().toISOString(), vencimento: comp.tipo === 'recorrente' ? nextVenc : c.vencimento }
+      : c
+    )
+    setCompromissos(next)
+    localStorage.setItem('orion_compromissos', JSON.stringify(next))
+  }
+
+  function calcCompromissoStatus(comp) {
+    if (comp.status === 'pago') return 'pago'
+    const hoje = new Date()
+    hoje.setHours(0,0,0,0)
+    const venc = new Date(comp.vencimento)
+    venc.setHours(0,0,0,0)
+    const diff = Math.ceil((venc - hoje) / (1000 * 60 * 60 * 24))
+    if (diff < 0) return 'atrasado'
+    if (diff <= 3) return 'vencendo'
+    return 'a_vencer'
+  }
+
+  // ── MÓDULOS POR EMPRESA ──
+  function getEmpresaModulos(empresaId) {
+    try {
+      const saved = JSON.parse(localStorage.getItem('orion_empresa_modulos') || '{}')
+      return saved[empresaId] || DEFAULT_MODULOS
+    } catch { return DEFAULT_MODULOS }
+  }
+
+  function setEmpresaModulos(empresaId, modulos) {
+    try {
+      const saved = JSON.parse(localStorage.getItem('orion_empresa_modulos') || '{}')
+      saved[empresaId] = modulos
+      localStorage.setItem('orion_empresa_modulos', JSON.stringify(saved))
+    } catch {}
+  }
+
   // ── AGENDA ──
   function addAgendaItem(item) {
     const next = [...agenda, { ...item, id: Date.now().toString() }]
@@ -683,6 +840,12 @@ export function DataProvider({ children }) {
       removeAgendaItem,
       // Empresas CRUD
       addEmpresa, updateEmpresa, removeEmpresa, uploadLogoEmpresa,
+      // Biblioteca
+      biblioteca, getBiblioteca, addBibliotecaItem, deleteBibliotecaItem, uploadBibliotecaFile,
+      // Compromissos
+      compromissos, getCompromissos, addCompromisso, updateCompromisso, deleteCompromisso, marcarPago, calcCompromissoStatus,
+      // Módulos configuráveis
+      DEFAULT_MODULOS, getEmpresaModulos, setEmpresaModulos,
     }}>
       {children}
     </DataContext.Provider>

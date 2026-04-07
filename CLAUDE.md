@@ -142,6 +142,9 @@ decisoes (empresa_id, descricao, data)
 crm_leads (empresa_id, fase, nome, valor)
 profiles (id, email, name, role, companies_access, permissions, expires_at)
 user_empresa_access (user_id, empresa_id, granted_by, granted_at)
+biblioteca (empresa_id, nome, tipo, tamanho, url, descricao, uploaded_by, uploaded_name, created_at)
+compromissos (empresa_id, nome, descricao, valor, vencimento, frequencia, tipo, categoria, banco, status, pago_em, created_by)
+empresa_modulos (empresa_id, modulo, ativo)
 ```
 
 ---
@@ -184,9 +187,20 @@ user_empresa_access (user_id, empresa_id, granted_by, granted_at)
 - CDL ITAPERUNA em todo o sistema
 - iframe Forme Seguro (dark mode) e Projeções
 
+### Novos Módulos (Abril 2026) ✅
+- **Biblioteca** — Upload e gestão de documentos por empresa (drag & drop, PDF/Word/Excel/imagens, 20MB max)
+- **Compromissos Financeiros** — Controle de vencimentos recorrentes com alertas (A Vencer/Vencendo/Atrasado/Pago), marcar pago com auto-avanço de data para recorrentes
+- **Módulos Configuráveis por Empresa** — Admin pode ativar/desativar módulos do Workspace por empresa via painel Admin > Empresas > ⚙ Módulos
+- **Lançamentos com Status** — Suporte a status rascunho/aprovado/cancelado nos lançamentos financeiros
+
+### LocalStorage Keys (adicionais)
+- `orion_biblioteca` — documentos da biblioteca por empresa
+- `orion_compromissos` — compromissos financeiros
+- `orion_empresa_modulos` — módulos ativos por empresa
+
 ### Módulos Principais Pendentes
 - Integração Supabase em produção (currently demo mode)
-- Supabase Storage para logos de empresa
+- Supabase Storage para logos de empresa e biblioteca
 - Notificações push/email em tempo real
 
 ---

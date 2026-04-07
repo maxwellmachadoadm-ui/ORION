@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useData } from '../contexts/DataContext'
 import { useAuth } from '../contexts/AuthContext'
+import Biblioteca from './Biblioteca'
 
-const BASE_TABS = ['KPIs', 'OKRs', 'Tarefas', 'Contratos', 'Riscos', 'Decisões', 'CRM', 'Pipeline', 'Fluxo de Caixa', 'DRE', 'Arquivos']
+const BASE_TABS = ['KPIs', 'OKRs', 'Tarefas', 'Contratos', 'Riscos', 'Decisões', 'CRM', 'Pipeline', 'Fluxo de Caixa', 'DRE', 'Arquivos', 'Biblioteca']
 
 // ── Componente de Projeções FS ──
 function ProjecoesFS({ emp, kpis, fmt }) {
@@ -412,6 +413,7 @@ export default function Workspace() {
     getRiscos, getDecisoes, getCrmLeads, fmt, loaded, updateTask,
     arquivos, addArquivo, deleteArquivo,
     getCashFlow, getDRE, getPipeline, getPatrimonio, savePatrimonio,
+    DEFAULT_MODULOS, getEmpresaModulos,
   } = useData()
   const { canDelete, profile } = useAuth()
 
@@ -440,12 +442,14 @@ export default function Workspace() {
   const empDecisoes = getDecisoes(id)
   const empLeads = getCrmLeads(id)
 
-  // Tabs by company
+  // Tabs by company — filtradas pelos módulos ativos
+  const modulosAtivos = emp ? getEmpresaModulos(emp.id) : DEFAULT_MODULOS
+  const baseTabsFiltradas = modulosAtivos.filter(t => BASE_TABS.includes(t))
   const TABS = id === 'fs'
-    ? [...BASE_TABS, 'Gestão de Fundos', 'Projeções']
+    ? [...baseTabsFiltradas, 'Gestão de Fundos', 'Projeções']
     : id === 'gp'
-    ? [...BASE_TABS, 'Patrimônio']
-    : BASE_TABS
+    ? [...baseTabsFiltradas, 'Patrimônio']
+    : baseTabsFiltradas
 
   function handleFileUpload(e) {
     const fileList = e.target.files
@@ -710,6 +714,9 @@ export default function Workspace() {
           </div>
         )
       }
+
+      case 'Biblioteca':
+        return <Biblioteca empresaId={id} />
 
       case 'Gestão de Fundos':
         return (

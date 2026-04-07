@@ -255,6 +255,16 @@ empresa_modulos (empresa_id, modulo, ativo)
 - **CRM filtrado** — getCrmLeads(empId) filtra por empresa_id (já correto)
 - **Gestão Pessoal enxuta** — GP mostra apenas: Patrimônio, KPIs, OKRs, Tarefas, Fluxo de Caixa, Arquivos (sem CRM, Pipeline, Riscos, Decisões, DRE)
 
+### Correções v13 (Abril 2026) ✅
+- **Convite serverless** — api/invite.js reescrito com supabase.auth.admin.inviteUserByEmail via SUPABASE_SERVICE_ROLE_KEY; Admin.jsx chama /api/invite antes de salvar local
+- **Health Score mínimo 10** — Math.max(10, ...) para nunca retornar score zero
+- **Tarefas drag & drop no Workspace** — kanban com 3 colunas (A Fazer/Em Andamento/Concluído), HTML5 drag API, highlight dourado na coluna destino
+- **CRM drag & drop no Workspace** — leads arrastáveis entre fases (Lead/Proposta/Negociação/Fechado), highlight dourado
+
+### Env Vars Vercel (necessárias para convite funcionar)
+- `SUPABASE_SERVICE_ROLE_KEY` — chave service_role do Supabase (Project Settings → API)
+- `VITE_SUPABASE_URL` — URL do projeto Supabase
+
 ### Módulos Principais Pendentes
 - Integração Supabase em produção (currently demo mode)
 - Supabase Storage: executar supabase/create_buckets.sql no painel do Supabase

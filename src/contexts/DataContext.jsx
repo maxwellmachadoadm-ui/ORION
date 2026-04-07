@@ -99,7 +99,7 @@ export function calculateHealthScore(emp, lancamentos = []) {
     else score -= 10
   }
 
-  const result = Math.max(5, Math.min(100, Math.round(score)))
+  const result = Math.max(10, Math.min(100, Math.round(score)))
   return isNaN(result) ? (emp.score || 50) : result
 }
 

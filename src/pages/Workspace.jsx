@@ -411,7 +411,7 @@ export default function Workspace() {
   const navigate = useNavigate()
   const {
     empresas, getEmpresa, getKpis, getOkrs, getTarefas, getContratos,
-    getRiscos, getDecisoes, getCrmLeads, fmt, loaded, updateTask,
+    getRiscos, getDecisoes, getCrmLeads, crmLeads, setCrmLeads, fmt, loaded, updateTask,
     arquivos, addArquivo, deleteArquivo,
     getCashFlow, getDRE, getPipeline, getPatrimonio, savePatrimonio,
     DEFAULT_MODULOS, getEmpresaModulos,
@@ -513,28 +513,52 @@ export default function Workspace() {
           </div>
         )
 
-      case 'Tarefas':
+      case 'Tarefas': {
+        const taskCols = [
+          { key: 'todo', label: '📋 A Fazer', color: '#ef4444' },
+          { key: 'doing', label: '🔄 Em Andamento', color: '#f59e0b' },
+          { key: 'done', label: '✅ Concluído', color: '#10b981' },
+        ]
         return (
-          <div className="task-list">
-            {empTarefas.map(t => (
-              <div key={t.id} className="card task-card" style={{ borderLeft: `4px solid ${PRIORITY_COLORS[t.prioridade] || '#666'}` }}>
-                <div className="task-card-header">
-                  <span className="badge" style={{ background: STATUS_COLORS[t.status] }}>{STATUS_LABELS[t.status] || t.status}</span>
-                  <span className="badge priority-badge" style={{ background: PRIORITY_COLORS[t.prioridade] || '#666' }}>{t.prioridade}</span>
+          <div className="kanban" style={{ display: 'flex', gap: 12 }}>
+            {taskCols.map(col => {
+              const colTasks = empTarefas.filter(t => t.status === col.key)
+              return (
+                <div key={col.key} className="kanban-col" style={{ flex: 1, minWidth: 0, borderRadius: 12, transition: 'box-shadow .2s' }}
+                  onDragOver={e => { e.preventDefault(); e.currentTarget.style.boxShadow = '0 0 0 2px var(--gold), 0 0 20px rgba(245,158,11,.15)' }}
+                  onDragLeave={e => { e.currentTarget.style.boxShadow = 'none' }}
+                  onDrop={e => { e.preventDefault(); e.currentTarget.style.boxShadow = 'none'; const tid = e.dataTransfer.getData('taskId'); if (tid) updateTask(tid, { status: col.key }) }}>
+                  <div className="kanban-col-header" style={{ borderBottom: `3px solid ${col.color}`, padding: '10px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <h4 style={{ margin: 0, fontSize: 13 }}>{col.label}</h4>
+                    <span className="count">{colTasks.length}</span>
+                  </div>
+                  <div style={{ padding: 8, minHeight: 80 }}>
+                    {colTasks.map(t => (
+                      <div key={t.id} className="card task-card" draggable
+                        onDragStart={e => { e.dataTransfer.setData('taskId', t.id); e.dataTransfer.effectAllowed = 'move'; e.currentTarget.style.opacity = '0.4' }}
+                        onDragEnd={e => { e.currentTarget.style.opacity = '1' }}
+                        style={{ borderLeft: `4px solid ${PRIORITY_COLORS[t.prioridade] || '#666'}`, cursor: 'grab', marginBottom: 8 }}>
+                        <div className="task-card-header">
+                          <span className="badge priority-badge" style={{ background: PRIORITY_COLORS[t.prioridade] || '#666' }}>{t.prioridade}</span>
+                        </div>
+                        <p className="task-title">{t.titulo}</p>
+                        {t.descricao && <p className="task-desc">{t.descricao}</p>}
+                        {t.prazo && <p className="task-date">📅 {t.prazo}</p>}
+                        <div className="task-actions">
+                          {t.status === 'todo' && <button className="btn btn-sm btn-doing" onClick={() => updateTask(t.id, { status: 'doing' })}>▶ Iniciar</button>}
+                          {t.status === 'doing' && <button className="btn btn-sm btn-done" onClick={() => updateTask(t.id, { status: 'done' })}>✅ Concluir</button>}
+                          {t.status === 'done' && <button className="btn btn-sm btn-reopen" onClick={() => updateTask(t.id, { status: 'todo' })}>🔄 Reabrir</button>}
+                        </div>
+                      </div>
+                    ))}
+                    {colTasks.length === 0 && <div style={{ padding: 16, textAlign: 'center', color: 'var(--tx3)', fontSize: 12 }}>Vazio</div>}
+                  </div>
                 </div>
-                <p className="task-title">{t.titulo}</p>
-                {t.descricao && <p className="task-desc">{t.descricao}</p>}
-                {t.prazo && <p className="task-date">📅 {t.prazo}</p>}
-                <div className="task-actions">
-                  {t.status === 'todo' && <button className="btn btn-sm btn-doing" onClick={() => updateTask(t.id, { status: 'doing' })}>▶ Iniciar</button>}
-                  {t.status === 'doing' && <button className="btn btn-sm btn-done" onClick={() => updateTask(t.id, { status: 'done' })}>✅ Concluir</button>}
-                  {t.status === 'done' && <button className="btn btn-sm btn-reopen" onClick={() => updateTask(t.id, { status: 'todo' })}>🔄 Reabrir</button>}
-                </div>
-              </div>
-            ))}
-            {empTarefas.length === 0 && <p className="empty">Nenhuma tarefa cadastrada.</p>}
+              )
+            })}
           </div>
         )
+      }
 
       case 'Contratos':
         return (
@@ -600,17 +624,34 @@ export default function Workspace() {
             {CRM_FASES.map(fase => {
               const leads = empLeads.filter(l => l.fase === fase)
               return (
-                <div key={fase} className="crm-col">
+                <div key={fase} className="crm-col"
+                  onDragOver={e => { e.preventDefault(); e.currentTarget.style.boxShadow = '0 0 0 2px var(--gold), 0 0 20px rgba(245,158,11,.15)' }}
+                  onDragLeave={e => { e.currentTarget.style.boxShadow = 'none' }}
+                  onDrop={e => {
+                    e.preventDefault(); e.currentTarget.style.boxShadow = 'none'
+                    const leadIdx = e.dataTransfer.getData('leadIdx')
+                    if (leadIdx != null && leadIdx !== '') {
+                      const updated = [...crmLeads]
+                      const li = parseInt(leadIdx)
+                      if (updated[li]) { updated[li] = { ...updated[li], fase }; setCrmLeads(updated) }
+                    }
+                  }}>
                   <div className="crm-col-header" style={{ borderBottom: `3px solid ${CRM_COLORS[fase]}` }}>
                     <h4>{fase}</h4>
                     <span className="count">{leads.length}</span>
                   </div>
-                  {leads.map((l, i) => (
-                    <div key={i} className="card crm-card">
-                      <strong>{l.nome}</strong>
-                      <span className="crm-val">{l.valor}</span>
-                    </div>
-                  ))}
+                  {leads.map((l, i) => {
+                    const globalIdx = crmLeads.findIndex(x => x === l)
+                    return (
+                      <div key={i} className="card crm-card" draggable
+                        onDragStart={e => { e.dataTransfer.setData('leadIdx', String(globalIdx)); e.dataTransfer.effectAllowed = 'move'; e.currentTarget.style.opacity = '0.4' }}
+                        onDragEnd={e => { e.currentTarget.style.opacity = '1' }}
+                        style={{ cursor: 'grab' }}>
+                        <strong>{l.nome}</strong>
+                        <span className="crm-val">{l.valor}</span>
+                      </div>
+                    )
+                  })}
                 </div>
               )
             })}

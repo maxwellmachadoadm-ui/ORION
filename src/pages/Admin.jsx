@@ -371,66 +371,59 @@ export default function Admin() {
             <button className="btn btn-primary btn-sm" onClick={() => setNewEmpModal(true)}>+ Nova Empresa</button>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {empresas.map(emp => (
-              <div key={emp.id} className="card" style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '12px 16px' }}>
-                {/* Logo/Sigla */}
-                <div style={{
-                  width: 40, height: 40, borderRadius: 9, flexShrink: 0,
-                  background: emp.cor ? `${emp.cor}22` : 'rgba(59,130,246,.15)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  overflow: 'hidden', border: `1px solid ${emp.cor || '#3b82f6'}30`,
-                }}>
-                  {emp.logo_url
-                    ? <img src={emp.logo_url} alt={emp.sigla} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    : <span style={{ fontSize: 13, fontWeight: 700, color: emp.cor || '#3b82f6' }}>{emp.sigla}</span>
-                  }
-                </div>
-
-                {/* Info */}
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)', marginBottom: 1 }}>{emp.nome}</div>
-                  <div style={{ fontSize: 11, color: 'var(--text3)' }}>{emp.descricao}</div>
-                </div>
-
-                {/* Score */}
-                <div className={`hring ${emp.score >= 70 ? 'good' : emp.score >= 40 ? 'warn' : 'bad'}`} style={{ marginRight: 8 }}>
-                  {emp.score}
-                </div>
-
-                {/* Upload logo */}
-                <label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }} title="Upload de logo">
-                  <span className="btn btn-secondary btn-sm">
-                    {logoUploading === emp.id ? '⏳' : '🖼 Logo'}
-                  </span>
-                  <input type="file" accept="image/png,image/jpeg,image/webp"
-                    style={{ display: 'none' }}
-                    onChange={e => e.target.files?.[0] && handleLogoUpload(emp.id, e.target.files[0])}
-                  />
-                </label>
-
-                {/* Módulos */}
-                {(() => {
-                  const mods = getEmpresaModulos(emp.id)
-                  return (
-                    <button className="btn btn-secondary btn-sm" onClick={() => {
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {empresas.map(emp => {
+              const mods = getEmpresaModulos(emp.id)
+              return (
+                <div key={emp.id} className="card" style={{ padding: '14px 16px' }}>
+                  {/* Linha 1: Info da empresa */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 10 }}>
+                    <div style={{
+                      width: 40, height: 40, borderRadius: 9, flexShrink: 0,
+                      background: emp.cor ? `${emp.cor}22` : 'rgba(59,130,246,.15)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      overflow: 'hidden', border: `1px solid ${emp.cor || '#3b82f6'}30`,
+                    }}>
+                      {emp.logo_url
+                        ? <img src={emp.logo_url} alt={emp.sigla} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        : <span style={{ fontSize: 13, fontWeight: 700, color: emp.cor || '#3b82f6' }}>{emp.sigla}</span>
+                      }
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>{emp.nome}</div>
+                      <div style={{ fontSize: 11, color: 'var(--text3)' }}>{emp.descricao}</div>
+                    </div>
+                    <div className={`hring ${emp.score >= 70 ? 'good' : emp.score >= 40 ? 'warn' : 'bad'}`}>
+                      {emp.score}
+                    </div>
+                  </div>
+                  {/* Linha 2: Ações */}
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                    <button className="btn btn-primary btn-sm" style={{ background: 'linear-gradient(135deg, var(--gold), var(--gold-dark))', color: '#0d1424', fontWeight: 700 }} onClick={() => {
                       setModulosModal(emp)
                       setModulosEdit(mods)
-                    }}>⚙ Módulos ({mods.length})</button>
-                  )
-                })()}
-
-                {/* Delete (não permite deletar empresas base) */}
-                {!['dw','of','fs','cdl','gp'].includes(emp.id) && (
-                  <button className="btn btn-danger btn-sm" onClick={() => { setDeleteConfirm(emp); setDeleteConfirm2(false) }}>
-                    🗑 Remover
-                  </button>
-                )}
-                {['dw','of','fs','cdl','gp'].includes(emp.id) && (
-                  <span style={{ fontSize: 10, color: 'var(--text4)', whiteSpace: 'nowrap' }}>Base</span>
-                )}
-              </div>
-            ))}
+                    }}>⚙ Configurar Módulos ({mods.length})</button>
+                    <label style={{ cursor: 'pointer' }} title="Upload de logo">
+                      <span className="btn btn-secondary btn-sm">
+                        {logoUploading === emp.id ? '⏳' : '🖼 Logo'}
+                      </span>
+                      <input type="file" accept="image/png,image/jpeg,image/webp"
+                        style={{ display: 'none' }}
+                        onChange={e => e.target.files?.[0] && handleLogoUpload(emp.id, e.target.files[0])}
+                      />
+                    </label>
+                    {!['dw','of','fs','cdl','gp'].includes(emp.id) && (
+                      <button className="btn btn-danger btn-sm" onClick={() => { setDeleteConfirm(emp); setDeleteConfirm2(false) }}>
+                        🗑 Remover
+                      </button>
+                    )}
+                    {['dw','of','fs','cdl','gp'].includes(emp.id) && (
+                      <span style={{ fontSize: 10, color: 'var(--text4)' }}>Empresa base</span>
+                    )}
+                  </div>
+                </div>
+              )
+            })}
           </div>
 
           {/* Modal nova empresa */}

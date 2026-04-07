@@ -197,18 +197,16 @@ export default function Layout({ children }) {
             <div className={isActive('/crm')} onClick={() => { navigate('/crm'); setSidebarOpen(false) }}>🎯 CRM</div>
             <div className={isActive('/financeiro')} onClick={() => { navigate('/financeiro'); setSidebarOpen(false) }}>💳 Financeiro</div>
             <div className={isActive('/arquivo')} onClick={() => { navigate('/arquivo'); setSidebarOpen(false) }}>📁 Arquivo Digital</div>
-            <div className={isActive('/biblioteca')} onClick={() => { navigate('/biblioteca'); setSidebarOpen(false) }}>📚 Biblioteca</div>
             <div className={isActive('/compromissos')} onClick={() => { navigate('/compromissos'); setSidebarOpen(false) }}>📅 Compromissos</div>
             <div className={isActive('/ceo')} onClick={() => { navigate('/ceo'); setSidebarOpen(false) }}>📈 Visão CEO</div>
           </div>
           <div className="sb-div"></div>
           <div className="sb-section">
-            <div className="sb-lbl">Portfolio</div>
+            <div className="sb-lbl">Portfólio</div>
             {empresas.filter(e => e.id !== 'gp').map(e => (
               <div key={e.id}
                 className={location.pathname === `/empresa/${e.id}` ? 'sb-item active' : 'sb-item'}
                 onClick={() => { navigate(`/empresa/${e.id}`); setSidebarOpen(false) }}>
-                {/* Logo or color dot */}
                 {e.logo_url
                   ? <img src={e.logo_url} alt={e.sigla}
                       style={{ width: 16, height: 16, borderRadius: 3, objectFit: 'cover', flexShrink: 0 }} />
@@ -222,12 +220,16 @@ export default function Layout({ children }) {
           </div>
           <div className="sb-div"></div>
           <div className="sb-section">
+            <div className="sb-lbl">Pessoal</div>
             {empresas.filter(e => e.id === 'gp').map(e => (
               <div key={e.id}
                 className={location.pathname === `/empresa/${e.id}` ? 'sb-item active' : 'sb-item'}
-                onClick={() => { navigate(`/empresa/${e.id}`); setSidebarOpen(false) }}>💰 {e.nome}</div>
+                onClick={() => { navigate(`/empresa/${e.id}`); setSidebarOpen(false) }}>
+                <div className="sb-dot" style={{ background: e.cor }}></div>
+                <span style={{ flex: 1, fontSize: 13 }}>💰 {e.nome}</span>
+                {e.score > 0 && <span className={`sb-score ${e.score >= 75 ? 'good' : e.score >= 55 ? 'warn' : 'bad'}`}>{e.score}</span>}
+              </div>
             ))}
-            <div className={isActive('/of-projetos')} onClick={() => { navigate('/of-projetos'); setSidebarOpen(false) }}>📷 OF Projetos</div>
           </div>
           {isAdmin && (
             <>
@@ -235,7 +237,6 @@ export default function Layout({ children }) {
               <div className="sb-section">
                 <div className="sb-lbl">Administração</div>
                 <div className={isActive('/admin')} onClick={() => { navigate('/admin'); setSidebarOpen(false) }}>⚙ Painel Admin</div>
-                <div className={isActive('/classificacoes')} onClick={() => { navigate('/classificacoes'); setSidebarOpen(false) }}>🏷 Classificações</div>
                 <div className="sb-item" onClick={() => { setInviteOpen(true); setSidebarOpen(false) }}>👥 Convidar usuário</div>
               </div>
             </>

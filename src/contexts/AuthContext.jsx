@@ -35,28 +35,9 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     // ── MODO DEMO (sem Supabase configurado) ──
+    // Em modo demo, NUNCA restaura sessão automaticamente.
+    // O usuário sempre precisa fazer login manualmente.
     if (isDemoMode) {
-      // Restaura sessão apenas da sessionStorage (expira ao fechar aba/navegador)
-      // com validade máxima de 8 horas.
-      try {
-        const raw = sessionStorage.getItem('orion_demo_session')
-        if (raw) {
-          const { id, ts } = JSON.parse(raw)
-          const EIGHT_HOURS = 8 * 60 * 60 * 1000
-          if (Date.now() - ts < EIGHT_HOURS) {
-            const users = JSON.parse(localStorage.getItem('orion_users') || '[]')
-            const u = users.find(x => x.id === id)
-            if (u && u.role !== 'pendente') {
-              setUser({ id: u.id })
-              setProfile(u)
-              setLoading(false)
-              return
-            }
-          }
-          // Sessão expirada ou inválida — remove
-          sessionStorage.removeItem('orion_demo_session')
-        }
-      } catch (_) {}
       setUser(null)
       setProfile(null)
       setLoading(false)

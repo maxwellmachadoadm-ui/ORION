@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useData } from '../contexts/DataContext'
 import { useAuth } from '../contexts/AuthContext'
 import Biblioteca from './Biblioteca'
+import OriginalFotografia from './OriginalFotografia'
 
 const BASE_TABS = ['KPIs', 'OKRs', 'Tarefas', 'Contratos', 'Riscos', 'Decisões', 'CRM', 'Pipeline', 'Fluxo de Caixa', 'DRE', 'Arquivos', 'Biblioteca']
 
@@ -449,6 +450,8 @@ export default function Workspace() {
     ? [...baseTabsFiltradas, 'Gestão de Fundos', 'Projeções']
     : id === 'gp'
     ? [...baseTabsFiltradas, 'Patrimônio']
+    : id === 'of'
+    ? [...baseTabsFiltradas, 'Projetos']
     : baseTabsFiltradas
 
   function handleFileUpload(e) {
@@ -718,6 +721,9 @@ export default function Workspace() {
       case 'Biblioteca':
         return <Biblioteca empresaId={id} />
 
+      case 'Projetos':
+        return <OriginalFotografia />
+
       case 'Gestão de Fundos':
         return (
           <div style={{ margin: '-24px -28px', height: 'calc(100vh - 240px)' }}>
@@ -767,8 +773,10 @@ export default function Workspace() {
           <div className="ws-stat"><span className="lbl">Resultado</span><span className="val">{fmt(emp.resultado)}</span></div>
           <div className="ws-stat">
             <span className="lbl">Crescimento</span>
-            <span className="val" style={{ color: emp.crescimento >= 0 ? '#10b981' : '#ef4444' }}>
-              {emp.crescimento > 0 ? '+' : ''}{emp.crescimento}%
+            <span className="val" style={{ color: (emp.crescimento || 0) >= 0 ? '#10b981' : '#ef4444' }}>
+              {emp.crescimento != null && isFinite(emp.crescimento)
+                ? `${emp.crescimento > 0 ? '+' : ''}${emp.crescimento}%`
+                : '—'}
             </span>
           </div>
           <div className="ws-stat">

@@ -198,6 +198,15 @@ empresa_modulos (empresa_id, modulo, ativo)
 - `orion_compromissos` — compromissos financeiros
 - `orion_empresa_modulos` — módulos ativos por empresa
 
+### Correções v7 (Abril 2026) ✅
+- **Login sempre pede senha** — demo mode não restaura sessionStorage; usuário sempre faz login
+- **CDL ITAPERUNA** — corrigido e validado em todo o sistema (demoData, DataContext, Home, Maxxxi)
+- **NaN% corrigido** — crescimento com proteção `isFinite` no Workspace; calculateHealthScore sempre retorna 0-100
+- **Health Score dinâmico** — calculateHealthScore com pesos: meta 40%, margem 30%, crescimento 30%
+- **Biblioteca dentro de cada empresa** — aba Biblioteca no Workspace (módulo configurável)
+- **OF Projetos dentro da empresa OF** — aba "Projetos" aparece apenas quando empresa.id === 'of'
+- **Sidebar reorganizada** — seções: Navegação / Portfólio / Pessoal / Administração (sem Biblioteca e OF Projetos avulsos)
+
 ### Módulos Principais Pendentes
 - Integração Supabase em produção (currently demo mode)
 - Supabase Storage para logos de empresa e biblioteca

@@ -439,17 +439,34 @@ export default function ExtratosIA() {
       // ── PDF ──
       else if (ext === 'pdf') {
         const buf = await readFileAsArrayBuffer(file)
+
+        // Caminho 1: tentar extrair texto com pdfjs
         const text = await extractPdfText(buf)
-        if (!text || text.length < 10) { alert('Não foi possível extrair texto do PDF.'); setUploading(false); return }
-        // Tentar parsear como texto estruturado primeiro
-        const novas = parsearTexto(text, nome)
-        if (novas.length > 0) {
-          await finalizarUpload(novas, nome)
-        } else {
-          // Enviar texto bruto para IA
+        if (text && text.length > 30) {
+          const novas = parsearTexto(text, nome)
+          if (novas.length > 0) {
+            await finalizarUpload(novas, nome)
+            setUploading(false)
+            if (fileRef.current) fileRef.current.value = ''
+            return
+          }
+          // Texto extraído mas sem transações estruturadas → enviar para IA
           const iaNovas = await classifyTextWithAI(text)
-          if (iaNovas.length === 0) { alert('MAXXXI não conseguiu identificar transações no PDF.'); setUploading(false); return }
+          if (iaNovas.length > 0) {
+            await finalizarUpload(iaNovas, nome)
+            setUploading(false)
+            if (fileRef.current) fileRef.current.value = ''
+            return
+          }
+        }
+
+        // Caminho 2: pdfjs falhou ou texto insuficiente → enviar como imagem para Claude Vision
+        const base64 = await readFileAsBase64(file)
+        const iaNovas = await classifyImageWithAI(base64, 'application/pdf')
+        if (iaNovas.length > 0) {
           await finalizarUpload(iaNovas, nome)
+        } else {
+          alert('MAXXXI não conseguiu extrair transações deste PDF. Tente exportar como CSV no seu banco.')
         }
       }
       // ── Word (.docx) ──
@@ -509,19 +526,30 @@ export default function ExtratosIA() {
   }
   async function extractPdfText(arrayBuffer) {
     try {
-      const pdfjsLib = await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.mjs')
-      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'
-      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
+      const pdfjsLib = await import('pdfjs-dist')
+      // Worker inline — evita problemas de CORS
+      pdfjsLib.GlobalWorkerOptions.workerSrc = ''
+      const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(arrayBuffer) })
+      const pdf = await loadingTask.promise
       let text = ''
-      for (let i = 1; i <= pdf.numPages; i++) {
+      for (let i = 1; i <= Math.min(pdf.numPages, 30); i++) {
         const page = await pdf.getPage(i)
         const content = await page.getTextContent()
-        text += content.items.map(item => item.str).join(' ') + '\n'
+        // Preservar quebras de linha baseadas na posição Y dos items
+        let lastY = null
+        const lineItems = []
+        for (const item of content.items) {
+          if (lastY !== null && Math.abs(item.transform[5] - lastY) > 2) {
+            lineItems.push('\n')
+          }
+          lineItems.push(item.str)
+          lastY = item.transform[5]
+        }
+        text += lineItems.join(' ').replace(/ \n /g, '\n') + '\n'
       }
-      return text
+      return text.trim()
     } catch (err) {
-      console.warn('[MAXXXI] pdfjs falhou, enviando para IA:', err.message)
-      // Fallback: converter para base64 e enviar como imagem
+      console.warn('[MAXXXI] pdfjs falhou:', err.message)
       return ''
     }
   }

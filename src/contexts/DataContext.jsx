@@ -252,10 +252,22 @@ export function DataProvider({ children }) {
     setRiscos(r.data || [])
     setDecisoes(d.data || [])
     setCrmLeads(crm.data || [])
+    // Load lançamentos do Supabase (com fallback localStorage)
+    try {
+      const { data: lancs } = await supabase.from('lancamentos').select('*').order('created_at', { ascending: false })
+      if (lancs && lancs.length > 0) setLancamentos(lancs)
+    } catch (_) {}
+    // Load compromissos do Supabase
+    try {
+      const { data: comps } = await supabase.from('compromissos').select('*').order('vencimento')
+      if (comps && comps.length > 0) setCompromissos(comps)
+    } catch (_) {}
     // Load today's checkin
-    const { data: ci } = await supabase.from('checkins')
-      .select('*').eq('user_id', user.id).eq('data', new Date().toISOString().slice(0, 10)).single()
-    if (ci) setCheckin({ prioridade: ci.prioridade || '', decisao: ci.decisao || '', resultado: ci.resultado || '' })
+    try {
+      const { data: ci } = await supabase.from('checkins')
+        .select('*').eq('user_id', user.id).eq('data', new Date().toISOString().slice(0, 10)).single()
+      if (ci) setCheckin({ prioridade: ci.prioridade || '', decisao: ci.decisao || '', resultado: ci.resultado || '' })
+    } catch (_) {}
     setLoaded(true)
   }, [user])
 
@@ -327,32 +339,56 @@ export function DataProvider({ children }) {
     })
   }
 
-  // ── LANÇAMENTOS CRUD ──
-  function addLancamento(lancamento) {
+  // ── LANÇAMENTOS CRUD (dual: Supabase + localStorage) ──
+  async function addLancamento(lancamento) {
     const novo = { ...lancamento, id: Date.now().toString(), criado_em: new Date().toISOString() }
+    if (!isDemoMode) {
+      try {
+        const { data, error } = await supabase.from('lancamentos').insert({
+          empresa_id: lancamento.empresa_id, user_id: user?.id,
+          tipo: lancamento.tipo, descricao: lancamento.descricao, valor: lancamento.valor,
+          categoria: lancamento.categoria, subcategoria: lancamento.subcategoria,
+          banco: lancamento.banco, origem: lancamento.origem, mes: lancamento.mes,
+          data: lancamento.data, status: lancamento.status || 'rascunho', anexo_nome: lancamento.anexo_nome,
+        }).select().single()
+        if (!error && data) {
+          setLancamentos(prev => [data, ...prev])
+          return data
+        }
+      } catch (e) { console.warn('[ORION] Supabase lancamento fallback localStorage:', e.message) }
+    }
     const next = [novo, ...lancamentos]
     setLancamentos(next)
     localStorage.setItem('orion_lancamentos_v4', JSON.stringify(next))
+    return novo
   }
 
-  function approveLancamento(id) {
+  async function approveLancamento(id) {
+    if (!isDemoMode) {
+      try { await supabase.from('lancamentos').update({ status: 'aprovado', updated_at: new Date().toISOString() }).eq('id', id) } catch (_) {}
+    }
     const next = lancamentos.map(l => l.id === id ? { ...l, status: 'aprovado' } : l)
     setLancamentos(next)
     localStorage.setItem('orion_lancamentos_v4', JSON.stringify(next))
-    // Remove da fila de pendentes
     const pendNext = pendingClassifications.filter(p => p.lancamento_id !== id)
     setPendingClassifications(pendNext)
     localStorage.setItem('orion_pending_class', JSON.stringify(pendNext))
   }
 
-  function deleteLancamento(id) {
+  async function deleteLancamento(id) {
     if (!isAdmin) return
+    if (!isDemoMode) {
+      try { await supabase.from('lancamentos').delete().eq('id', id) } catch (_) {}
+    }
     const next = lancamentos.filter(l => l.id !== id)
     setLancamentos(next)
     localStorage.setItem('orion_lancamentos_v4', JSON.stringify(next))
   }
 
-  function updateLancamento(id, updates) {
+  async function updateLancamento(id, updates) {
+    if (!isDemoMode) {
+      try { await supabase.from('lancamentos').update({ ...updates, updated_at: new Date().toISOString() }).eq('id', id) } catch (_) {}
+    }
     const next = lancamentos.map(l => l.id === id ? { ...l, ...updates } : l)
     setLancamentos(next)
     localStorage.setItem('orion_lancamentos_v4', JSON.stringify(next))
@@ -737,21 +773,38 @@ export function DataProvider({ children }) {
     return compromissos.filter(c => !empresaId || empresaId === 'all' || c.empresa_id === empresaId)
   }
 
-  function addCompromisso(data) {
+  async function addCompromisso(data) {
     const novo = { ...data, id: Date.now().toString(), created_at: new Date().toISOString() }
+    if (!isDemoMode) {
+      try {
+        const { data: row, error } = await supabase.from('compromissos').insert({
+          empresa_id: data.empresa_id, user_id: user?.id, nome: data.nome,
+          descricao: data.descricao, valor: data.valor, vencimento: data.vencimento,
+          frequencia: data.frequencia, tipo: data.tipo, categoria: data.categoria,
+          banco: data.banco, status: data.status || 'a_vencer',
+        }).select().single()
+        if (!error && row) { setCompromissos(prev => [row, ...prev]); return row }
+      } catch (e) { console.warn('[ORION] Compromisso fallback:', e.message) }
+    }
     const next = [novo, ...compromissos]
     setCompromissos(next)
     localStorage.setItem('orion_compromissos', JSON.stringify(next))
     return novo
   }
 
-  function updateCompromisso(id, updates) {
+  async function updateCompromisso(id, updates) {
+    if (!isDemoMode) {
+      try { await supabase.from('compromissos').update(updates).eq('id', id) } catch (_) {}
+    }
     const next = compromissos.map(c => c.id === id ? { ...c, ...updates } : c)
     setCompromissos(next)
     localStorage.setItem('orion_compromissos', JSON.stringify(next))
   }
 
-  function deleteCompromisso(id) {
+  async function deleteCompromisso(id) {
+    if (!isDemoMode) {
+      try { await supabase.from('compromissos').delete().eq('id', id) } catch (_) {}
+    }
     const next = compromissos.filter(c => c.id !== id)
     setCompromissos(next)
     localStorage.setItem('orion_compromissos', JSON.stringify(next))

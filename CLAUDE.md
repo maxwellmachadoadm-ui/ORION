@@ -265,10 +265,23 @@ empresa_modulos (empresa_id, modulo, ativo)
 - `SUPABASE_SERVICE_ROLE_KEY` — chave service_role do Supabase (Project Settings → API)
 - `VITE_SUPABASE_URL` — URL do projeto Supabase
 
+### ORION v14 (Abril 2026) ✅
+- **Persistência Supabase** — lançamentos, compromissos com dual mode (Supabase + localStorage fallback)
+- **loadAll Supabase** — carrega lançamentos e compromissos do banco quando disponível
+- **SQL persistencia.sql** — tabelas lancamentos, tarefas, leads, compromissos, invites com RLS
+- **Ícone PWA dourado** — orion-icon.svg com "O" em gradiente gold→amber
+- **Theme color dourado** — #f59e0b no manifest e index.html
+- **Service Worker** — cache de assets estáticos para offline parcial
+
+### SQL Scripts para executar no Supabase
+- `supabase/persistencia.sql` — tabelas de dados de negócio (lancamentos, tarefas, leads, compromissos, invites)
+- `supabase/extratos.sql` — tabelas de extratos IA (extratos, transacoes, regras_classificacao)
+- `supabase/empresa_modulos.sql` — módulos configuráveis por empresa
+- `supabase/automacoes_log.sql` — log de automações LinkSync
+- `supabase/fix_rls_avatar.sql` — políticas RLS para avatar
+- `supabase/create_buckets.sql` — buckets de storage (avatars, logos, biblioteca)
+
 ### Módulos Principais Pendentes
-- Integração Supabase em produção (currently demo mode)
-- Supabase Storage: executar supabase/create_buckets.sql no painel do Supabase
-- Executar SQL scripts: empresa_modulos.sql, automacoes_log.sql, fix_rls_avatar.sql
 - Notificações push/email em tempo real
 
 ---

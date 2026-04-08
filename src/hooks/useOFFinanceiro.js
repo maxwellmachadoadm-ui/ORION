@@ -244,10 +244,42 @@ export default function useOFFinanceiro() {
   function marcarParcPago(id, dataPg) { setParcelas(prev => prev.map(p => p.id === id ? { ...p, status: 'pago', data_pagamento: dataPg || hoje } : p)) }
   function estornarRateio(lancamentoId) { setRateios(prev => prev.filter(r => r.lancamento_id !== lancamentoId)) }
 
+  // ── Sazonalidade: receita por mês (últimos 12) + projeção 3 meses ──
+  const calcularSazonalidade = useCallback(() => {
+    const meses = []
+    for (let i = 11; i >= 0; i--) {
+      const d = new Date(); d.setMonth(d.getMonth() - i)
+      const comp = d.toISOString().slice(0, 7)
+      const label = d.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' })
+      const rec = lancamentos.filter(l => l.tipo === 'receita' && l.competencia === comp && l.status === 'pago').reduce((s, l) => s + (l.valor_realizado || 0), 0)
+      meses.push({ comp, label, receita: rec })
+    }
+    // Projeção: média móvel dos últimos 3 meses com tendência
+    const ultimos3 = meses.slice(-3).map(m => m.receita)
+    const media3 = ultimos3.reduce((s, v) => s + v, 0) / 3
+    const tendencia = ultimos3.length >= 2 ? (ultimos3[2] - ultimos3[0]) / 2 : 0
+    const projecao = []
+    for (let i = 1; i <= 3; i++) {
+      const d = new Date(); d.setMonth(d.getMonth() + i)
+      const comp = d.toISOString().slice(0, 7)
+      const label = d.toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' })
+      const valor = Math.max(0, Math.round(media3 + tendencia * i))
+      projecao.push({ comp, label, receita: valor, projetado: true })
+    }
+    // Identificar picos e vales
+    const allRec = meses.map(m => m.receita).filter(v => v > 0)
+    const maxRec = Math.max(...allRec, 1)
+    const minRec = Math.min(...allRec.filter(v => v > 0), maxRec)
+    const picoMes = meses.find(m => m.receita === maxRec)
+    const valeMes = allRec.length > 1 ? meses.find(m => m.receita === minRec && m.receita > 0) : null
+    return { meses, projecao, media3, tendencia, pico: picoMes, vale: valeMes, maxRec }
+  }, [lancamentos])
+
   return {
     projetos, lancamentos, parcelas, rateios, fmt, pct, hoje, mesAtual,
     calcularDREProjeto, calcularDREConsolidada, calcularInadimplencia,
     calcularBreakEven, calcularOrcadoRealizado, calcularFluxoCaixa, calcularAlertas,
+    calcularSazonalidade,
     aplicarRateio, estornarRateio,
     addProjeto, updateProjeto, addLancamento, updateLancamento, deleteLancamento,
     addParcela, marcarParcPago,

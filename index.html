@@ -1203,6 +1203,7 @@ function criarLancamento(dados){
 }
 function calcularDRE(empresaId, mes){
   const lancs = getLancamentos(empresaId);
+  const e = EMPS[empresaId];
   const filtered = lancs.filter(l => l.data && l.data.startsWith(mes));
   let receita=0, despesa=0;
   const despPorCat = {};
@@ -1216,6 +1217,12 @@ function calcularDRE(empresaId, mes){
       despPorCat[cat] = (despPorCat[cat]||0) + v;
     }
   });
+  // Fallback: sem lançamentos reais → usar dados do EMPS (demoData)
+  const temLancamentos = filtered.length > 0 && (receita > 0 || despesa > 0);
+  if(!temLancamentos && e){
+    receita = FMT.num(e.fat);
+    despesa = Math.max(0, FMT.num(e.fat) - FMT.num(e.result));
+  }
   const resultado = receita - despesa;
   const margem = receita > 0 ? (resultado / receita * 100) : 0;
   return { receita, despesa, resultado, margem: isFinite(margem)?margem:0, despPorCat, total: filtered.length };
@@ -1517,19 +1524,20 @@ function ceoCalcEmpresa(empresaId){
   if(!e) return null;
   const lancs = getLancamentos(empresaId);
   const per = getCeoPeriodo();
-  const filtered = lancs.filter(l=>l.data>=per.inicio&&l.data<=per.fim);
+  const filtered = lancs.filter(l=>l.data&&l.data>=per.inicio&&l.data<=per.fim);
   let receita = filtered.filter(l=>l.type==='income').reduce((s,l)=>s+FMT.num(l.valor),0);
   let despesa = filtered.filter(l=>l.type==='expense'&&l.impacta_resultado!==false).reduce((s,l)=>s+FMT.num(l.valor),0);
-  // Fallback to EMPS data when no lancamentos
-  if(receita===0 && despesa===0 && e.fat > 0){
+  // Fallback: sem lançamentos reais → usar dados do EMPS (demoData)
+  const temLancamentos = filtered.length > 0 && (receita > 0 || despesa > 0);
+  if(!temLancamentos){
     receita = FMT.num(e.fat);
-    despesa = receita - FMT.num(e.result);
+    despesa = Math.max(0, FMT.num(e.fat) - FMT.num(e.result));
   }
   const resultado = receita - despesa;
   const margem = receita>0 ? parseFloat((resultado/receita*100).toFixed(1)) : 0;
   const tarefasAbertas = e.tarefas ? e.tarefas.filter(t=>!t.k).length : 0;
   const inadimplencia = e.id==='of'?8.7:e.id==='dw'?3.2:e.id==='cdl'?2.1:0;
-  return { empresaId, sigla:e.sigla, nome:e.nome, cor:e.cor, receita, despesa, resultado, margem, score:e.score, cresc:e.cresc, tarefasAbertas, inadimplencia, kpis:e.kpis, crm:e.crm||[] };
+  return { empresaId, sigla:e.sigla, nome:e.nome, cor:e.cor, receita, despesa, resultado, margem, score:FMT.score(e.score), cresc:e.cresc, tarefasAbertas, inadimplencia, kpis:e.kpis, crm:e.crm||[] };
 }
 
 function ceoIdentificarMelhor(kpis){ return [...kpis].sort((a,b)=>b.resultado-a.resultado)[0] }

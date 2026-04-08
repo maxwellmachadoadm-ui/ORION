@@ -4,6 +4,7 @@ import { useData, safeName } from '../contexts/DataContext'
 import { useAuth } from '../contexts/AuthContext'
 import Biblioteca from './Biblioteca'
 import OriginalFotografia from './OriginalFotografia'
+import ExtratosIA from './ExtratosIA'
 
 const BASE_TABS = ['KPIs', 'OKRs', 'Tarefas', 'Contratos', 'Riscos', 'Decisões', 'Pipeline', 'Fluxo de Caixa', 'DRE', 'Arquivos', 'Biblioteca']
 
@@ -445,7 +446,7 @@ export default function Workspace() {
   const modulosAtivos = emp ? getEmpresaModulos(emp.id) : DEFAULT_MODULOS
 
   // GP tem abas específicas enxutas
-  const GP_TABS = ['Patrimônio', 'KPIs', 'OKRs', 'Tarefas', 'Fluxo de Caixa', 'Arquivos']
+  const GP_TABS = ['Patrimônio', 'Extratos IA', 'KPIs', 'OKRs', 'Tarefas', 'Fluxo de Caixa', 'Arquivos']
 
   let TABS
   if (id === 'gp') {
@@ -614,6 +615,9 @@ export default function Workspace() {
             </div>
           </div>
         )
+
+      case 'Extratos IA':
+        return <ExtratosIA />
 
       case 'Fluxo de Caixa':
         return getCashFlow ? <FluxoCaixaTab emp={emp} getCashFlow={getCashFlow} fmt={fmt} /> : <p className="empty">Módulo não disponível.</p>

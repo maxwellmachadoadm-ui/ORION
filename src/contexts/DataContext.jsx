@@ -34,7 +34,7 @@ const DEMO_COMPROMISSOS = [
 ]
 
 // ── MÓDULOS PADRÃO ──
-export const DEFAULT_MODULOS = ['KPIs', 'OKRs', 'Tarefas', 'Contratos', 'Riscos', 'Decisões', 'Pipeline', 'Fluxo de Caixa', 'DRE', 'Arquivos', 'Biblioteca', 'Gestão de Fundos', 'Projeções', 'Projetos', 'Patrimônio']
+export const DEFAULT_MODULOS = ['KPIs', 'OKRs', 'Tarefas', 'Contratos', 'Riscos', 'Decisões', 'Pipeline', 'Fluxo de Caixa', 'DRE', 'Arquivos', 'Biblioteca', 'Gestão de Fundos', 'Projeções', 'Projetos', 'Patrimônio', 'Extratos IA']
 
 // ── LANÇAMENTOS DEMO ──
 const DEMO_LANCAMENTOS_V4 = [

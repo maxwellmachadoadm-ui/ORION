@@ -18,6 +18,7 @@ const ALL_MODULOS = [
   { key: 'Projeções',        icon: '🔮' },
   { key: 'Projetos',         icon: '🏗️' },
   { key: 'Patrimônio',       icon: '🏠' },
+  { key: 'Extratos IA',      icon: '🤖' },
 ]
 
 const ALL_INVITE_PERMISSIONS = [

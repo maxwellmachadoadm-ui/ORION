@@ -250,45 +250,65 @@ a{color:inherit;text-decoration:none}
 .ceo-v{font-family:'Syne',sans-serif;font-size:15px;font-weight:800}
 .ceo-mg{font-size:12px;color:var(--tx3);text-align:right;min-width:50px}
 
-/* MAXXXI CHAT */
-.mx-panel{position:fixed;bottom:24px;right:24px;z-index:500}
-.mx-fab{
-  width:52px;height:52px;border-radius:14px;
-  background:linear-gradient(135deg,var(--blue2),var(--purple));
-  border:1px solid rgba(139,92,246,0.4);
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
-  cursor:pointer;box-shadow:0 8px 24px rgba(59,130,246,0.3);transition:all .2s;
+/* MAXXXI DRAWER */
+.mx-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);backdrop-filter:blur(3px);z-index:800;opacity:0;pointer-events:none;transition:opacity .25s}
+.mx-backdrop.show{opacity:1;pointer-events:auto}
+.mx-drawer{
+  position:fixed;top:0;right:-420px;bottom:0;width:400px;max-width:92vw;
+  background:var(--s1);border-left:1px solid rgba(99,102,241,0.3);
+  z-index:850;display:flex;flex-direction:column;
+  box-shadow:-8px 0 32px rgba(0,0,0,.5);transition:right .3s cubic-bezier(.4,0,.2,1);
 }
-.mx-fab:hover{transform:scale(1.05);box-shadow:0 12px 32px rgba(59,130,246,0.4)}
-.mx-fab .fi{font-size:20px}
-.mx-fab .fl{font-size:7px;font-weight:800;color:rgba(255,255,255,.8);letter-spacing:1.5px}
-.mx-chat{
-  position:absolute;bottom:64px;right:0;width:360px;height:480px;
-  background:var(--s1);border:1px solid rgba(99,102,241,0.35);border-radius:16px;
-  display:flex;flex-direction:column;overflow:hidden;
-  box-shadow:0 24px 48px rgba(0,0,0,.7);
-}
+.mx-drawer.open{right:0}
 .mx-hdr{
-  padding:13px 16px;border-bottom:1px solid var(--br);
-  background:linear-gradient(135deg,rgba(29,78,216,.2),var(--s1));
-  display:flex;justify-content:space-between;align-items:center;
+  padding:16px 18px;border-bottom:1px solid var(--br);
+  background:linear-gradient(135deg,rgba(29,78,216,.15),var(--s1));
+  display:flex;justify-content:space-between;align-items:center;flex-shrink:0;
 }
-.mx-hname{font-size:13px;font-weight:700;color:var(--blue3);letter-spacing:1px}
+.mx-hname{font-size:14px;font-weight:700;color:var(--blue3);letter-spacing:1px}
 .mx-hsub{font-size:10px;color:var(--tx3);letter-spacing:2px}
-.mx-msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
+.mx-close{background:none;border:1px solid var(--br);border-radius:var(--r2);color:var(--tx3);font-size:18px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.15s}
+.mx-close:hover{border-color:var(--br2);color:var(--tx)}
+.mx-alerts-section{flex-shrink:0;max-height:200px;overflow-y:auto;border-bottom:1px solid var(--br)}
+.mx-alert-item{padding:10px 18px;border-bottom:1px solid var(--br);font-size:13px;line-height:1.4;display:flex;gap:8px;align-items:flex-start}
+.mx-alert-item.critical{background:rgba(239,68,68,0.05)}
+.mx-alert-item.warning{background:rgba(245,158,11,0.04)}
+.mx-alert-time{font-size:10px;color:var(--tx3);margin-top:2px;white-space:nowrap;flex-shrink:0}
+.mx-section-hdr{padding:10px 18px;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--tx3);background:rgba(255,255,255,0.02);display:flex;align-items:center;justify-content:space-between}
+.mx-msgs{flex:1;overflow-y:auto;padding:14px 18px;display:flex;flex-direction:column;gap:10px}
 .msg-ai{align-self:flex-start;max-width:88%}
 .msg-u{align-self:flex-end;max-width:88%}
 .msg-from{font-size:9px;letter-spacing:2px;color:var(--blue3);text-transform:uppercase;margin-bottom:3px}
 .msg-bubble-ai{padding:10px 13px;border-radius:10px;font-size:13px;line-height:1.55;background:rgba(255,255,255,0.06);color:var(--tx)}
 .msg-bubble-u{padding:10px 13px;border-radius:10px;font-size:13px;line-height:1.55;background:linear-gradient(135deg,var(--blue2),var(--purple));color:#fff}
-.mx-quick{padding:0 14px 8px;display:flex;flex-wrap:wrap;gap:6px}
+.mx-quick{padding:8px 18px;display:flex;flex-wrap:wrap;gap:6px;border-top:1px solid var(--br);flex-shrink:0}
 .qbtn{font-size:11px;padding:5px 10px;border-radius:99px;border:1px solid var(--br2);background:transparent;color:var(--tx2);cursor:pointer;transition:.15s}
 .qbtn:hover{background:rgba(59,130,246,0.1);color:var(--tx)}
-.mx-input{padding:12px;border-top:1px solid var(--br);display:flex;gap:8px}
-.mx-input input{flex:1;background:rgba(255,255,255,0.06);border:1px solid var(--br);border-radius:var(--r2);padding:8px 12px;color:var(--tx);outline:none}
+.mx-input{padding:12px 18px;border-top:1px solid var(--br);display:flex;gap:8px;flex-shrink:0}
+.mx-input input{flex:1;background:rgba(255,255,255,0.06);border:1px solid var(--br);border-radius:var(--r2);padding:9px 12px;color:var(--tx);outline:none}
 .mx-input input:focus{border-color:var(--br2)}
 .mx-input input::placeholder{color:var(--tx3)}
-.mx-send{padding:8px 14px;background:linear-gradient(135deg,var(--blue2),var(--purple));border:none;border-radius:var(--r2);color:#fff;font-weight:700;font-size:14px}
+.mx-send{padding:8px 16px;background:linear-gradient(135deg,var(--blue2),var(--purple));border:none;border-radius:var(--r2);color:#fff;font-weight:700;font-size:14px}
+/* MAXXXI TOPBAR BUTTON */
+.mx-tb-btn{
+  display:flex;align-items:center;gap:7px;padding:7px 12px;
+  border-radius:var(--r2);border:1px solid rgba(99,102,241,0.3);
+  background:linear-gradient(135deg,rgba(29,78,216,.08),rgba(139,92,246,.08));
+  color:var(--blue3);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;
+  position:relative;
+}
+.mx-tb-btn:hover{border-color:rgba(99,102,241,0.5);background:linear-gradient(135deg,rgba(29,78,216,.15),rgba(139,92,246,.15))}
+.mx-badge{
+  position:absolute;top:-5px;right:-5px;min-width:18px;height:18px;
+  border-radius:99px;background:var(--red);color:#fff;
+  font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;
+  padding:0 4px;border:2px solid var(--s1);
+}
+.mx-badge:empty{display:none}
+/* EMPRESA SECTIONS */
+.emp-section-title{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--tx3);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.emp-section-title::after{content:'';flex:1;height:1px;background:var(--br)}
+.emp-pessoal{margin-top:8px}
 
 /* FILE UPLOAD */
 .file-zone{
@@ -436,7 +456,7 @@ a{color:inherit;text-decoration:none}
   .emp-grid{grid-template-columns:1fr}
   .kpi-grid{grid-template-columns:1fr 1fr}
   .ws-header{flex-direction:column;gap:14px;align-items:flex-start}
-  .mx-chat{width:calc(100vw - 32px);right:-12px}
+  .mx-drawer{width:100vw;max-width:100vw}
   .topbar{padding:0 12px}
   .cmd-box{width:calc(100vw - 24px)}
 }
@@ -518,6 +538,10 @@ a{color:inherit;text-decoration:none}
     <button class="tb-btn" onclick="openCmdPalette()">⌘ Busca rápida</button>
   </div>
   <div class="flex aic gap8">
+    <button class="mx-tb-btn" onclick="toggleMXDrawer()">
+      🤖 MAXXXI
+      <span class="mx-badge" id="mx-badge"></span>
+    </button>
     <div style="position:relative">
       <button class="notif" onclick="toggleAlertsDd()">🔔<span class="notif-dot" id="notif-dot"></span></button>
       <div class="dropdown alerts-dd hidden" id="alerts-dd">
@@ -585,13 +609,14 @@ a{color:inherit;text-decoration:none}
   <div class="sb-section">
     <div class="sb-item" id="sb-gp" onclick="openEmp('gp')">💰 Gestão Pessoal</div>
   </div>
-  <div class="sb-maxxxi">
-    <div class="maxxxi-pill" onclick="toggleMX()">
+  <div class="sb-maxxxi" style="cursor:pointer" onclick="toggleMXDrawer()">
+    <div class="maxxxi-pill">
       <span style="font-size:20px">🤖</span>
       <div>
         <div class="maxxxi-name">MAXXXI</div>
         <div class="maxxxi-status"><div class="pulse"></div> Online</div>
       </div>
+      <span class="mx-badge" id="mx-badge-sb" style="position:static;border-color:var(--s1)"></span>
     </div>
   </div>
 </nav>
@@ -611,13 +636,17 @@ a{color:inherit;text-decoration:none}
   <div class="g4 mb">
     <div class="card"><div style="display:flex;justify-content:space-between;align-items:flex-start"><div><div class="lbl">Faturamento do Ecossistema</div><div class="val txt-blue" id="kpi-fat">R$ 126,5k</div><div class="delta-up">▲ +8,2% vs mês anterior</div></div><div class="spark" id="spark-fat"></div></div></div>
     <div class="card"><div style="display:flex;justify-content:space-between;align-items:flex-start"><div><div class="lbl">Resultado Líquido</div><div class="val txt-green">R$ 46,7k</div><div class="delta-up">▲ +12,1% vs mês anterior</div></div><div class="spark" id="spark-res"></div></div></div>
-    <div class="card"><div style="display:flex;justify-content:space-between;align-items:flex-start"><div><div class="lbl">Health Score Médio</div><div class="val" style="color:#a78bfa">71</div><div class="delta-neu" id="kpi-emp-count">4 empresas ativas</div></div><div class="prog-ring" id="health-ring"></div></div></div>
+    <div class="card"><div style="display:flex;justify-content:space-between;align-items:flex-start"><div><div class="lbl">Health Score Médio</div><div class="val" style="color:#a78bfa" id="kpi-health">71</div><div class="delta-neu" id="kpi-emp-count">5 empresas ativas</div></div><div class="prog-ring" id="health-ring"></div></div></div>
     <div class="card"><div style="display:flex;justify-content:space-between;align-items:flex-start"><div><div class="lbl">Alertas Ativos</div><div class="val txt-red" id="kpi-alerts">4</div><div class="delta-neu">2 críticos · 2 atenção</div></div><div class="spark" id="spark-alerts"></div></div></div>
   </div>
 
-  <!-- EMPRESAS -->
-  <div class="slbl">Selecione uma empresa</div>
-  <div class="emp-grid" id="emp-grid"></div>
+  <!-- PORTFÓLIO -->
+  <div class="emp-section-title">Portfólio de Empresas</div>
+  <div class="emp-grid" id="emp-grid-portfolio"></div>
+
+  <!-- PESSOAL -->
+  <div class="emp-section-title emp-pessoal">Gestão Pessoal</div>
+  <div class="emp-grid" id="emp-grid-pessoal" style="grid-template-columns:1fr 1fr"></div>
 
   <!-- AGENDA + LIVE -->
   <div class="g2 mb">
@@ -663,10 +692,13 @@ a{color:inherit;text-decoration:none}
     </div>
   </div>
 
-  <!-- ALERTAS -->
+  <!-- ALERTAS MAXXXI -->
   <div>
-    <div class="slbl">Central de Alertas</div>
+    <div class="slbl">🤖 MAXXXI — Alertas Ativos</div>
     <div id="home-alerts"></div>
+    <div style="margin-top:8px;text-align:center">
+      <button class="tb-btn" style="font-size:12px" onclick="toggleMXDrawer()">Abrir MAXXXI para detalhes →</button>
+    </div>
   </div>
 </div>
 
@@ -705,36 +737,39 @@ a{color:inherit;text-decoration:none}
 </main>
 </div>
 
-<!-- MAXXXI -->
-<div class="mx-panel" id="mx-panel">
-  <div class="mx-chat hidden" id="mx-chat">
-    <div class="mx-hdr">
-      <div>
-        <div class="mx-hname">🤖 MAXXXI</div>
-        <div class="mx-hsub">INTELIGÊNCIA EXECUTIVA ORION</div>
-      </div>
-      <button onclick="toggleMX()" style="background:none;border:none;color:var(--tx3);font-size:20px;line-height:1">×</button>
+<!-- MAXXXI DRAWER -->
+<div class="mx-backdrop" id="mx-backdrop" onclick="closeMXDrawer()"></div>
+<div class="mx-drawer" id="mx-drawer">
+  <div class="mx-hdr">
+    <div>
+      <div class="mx-hname">🤖 MAXXXI</div>
+      <div class="mx-hsub">INTELIGÊNCIA EXECUTIVA ORION</div>
     </div>
-    <div class="mx-msgs" id="mx-msgs">
-      <div class="msg-ai">
-        <div class="msg-from">MAXXXI</div>
-        <div class="msg-bubble-ai">Olá, Maxwell. Sou o MAXXXI — seu agente executivo. Posso analisar empresas, responder sobre a plataforma, gerar briefings e muito mais. O que precisa?</div>
-      </div>
+    <button class="mx-close" onclick="closeMXDrawer()">×</button>
+  </div>
+  <div class="mx-alerts-section" id="mx-alerts-section">
+    <div class="mx-section-hdr">
+      <span>Alertas não lidos</span>
+      <span id="mx-alerts-count" style="color:var(--red);font-size:11px;font-weight:800"></span>
     </div>
-    <div class="mx-quick">
-      <button class="qbtn" onclick="qSend('Como uso a plataforma?')">Como usar?</button>
-      <button class="qbtn" onclick="qSend('Qual empresa precisa de mais atenção agora?')">Prioridades</button>
-      <button class="qbtn" onclick="qSend('Faça um briefing executivo do ecossistema')">Briefing CEO</button>
-      <button class="qbtn" onclick="qSend('Como funciona o módulo CRM?')">CRM</button>
-    </div>
-    <div class="mx-input">
-      <input type="text" id="mx-in" placeholder="Consulte o MAXXXI..." onkeydown="if(event.key==='Enter')sendMX()"/>
-      <button class="mx-send" onclick="sendMX()">→</button>
+    <div id="mx-alerts-list"></div>
+  </div>
+  <div class="mx-section-hdr">Chat com MAXXXI</div>
+  <div class="mx-msgs" id="mx-msgs">
+    <div class="msg-ai">
+      <div class="msg-from">MAXXXI</div>
+      <div class="msg-bubble-ai">Olá, Maxwell. Sou o MAXXXI — seu agente executivo. Posso analisar empresas, responder sobre a plataforma, gerar briefings e muito mais. O que precisa?</div>
     </div>
   </div>
-  <div class="mx-fab" onclick="toggleMX()">
-    <div class="fi">🤖</div>
-    <div class="fl">MAXXXI</div>
+  <div class="mx-quick">
+    <button class="qbtn" onclick="qSend('Como uso a plataforma?')">Como usar?</button>
+    <button class="qbtn" onclick="qSend('Qual empresa precisa de mais atenção agora?')">Prioridades</button>
+    <button class="qbtn" onclick="qSend('Faça um briefing executivo do ecossistema')">Briefing CEO</button>
+    <button class="qbtn" onclick="qSend('Como funciona o módulo CRM?')">CRM</button>
+  </div>
+  <div class="mx-input">
+    <input type="text" id="mx-in" placeholder="Consulte o MAXXXI..." onkeydown="if(event.key==='Enter')sendMX()"/>
+    <button class="mx-send" onclick="sendMX()">→</button>
   </div>
 </div>
 
@@ -1008,7 +1043,13 @@ function initPlatform(){
   renderSparklines();
   renderAlertsDd();
   renderHomeAlerts();
+  updateMXBadge();
   loadCI();
+  // restore empresaAtiva from localStorage
+  const savedEmp=localStorage.getItem('orion_empresa_ativa');
+  if(savedEmp&&EMPS[savedEmp]){
+    openEmp(savedEmp);
+  }
 }
 
 // ── AGENDA ──────────────────────────────────────────────────────────────────
@@ -1031,9 +1072,14 @@ function renderAgenda(){
 
 // ── EMP GRID ──────────────────────────────────────────────────────────────
 function renderEmpGrid(){
-  const g=document.getElementById('emp-grid');
-  if(!g)return;
-  g.innerHTML=Object.values(EMPS).map(e=>{
+  const gPortfolio=document.getElementById('emp-grid-portfolio');
+  const gPessoal=document.getElementById('emp-grid-pessoal');
+  if(!gPortfolio||!gPessoal)return;
+  const allEmps=Object.values(EMPS);
+  const portfolio=allEmps.filter(e=>e.id!=='gp'&&!e.id.startsWith('custom_'));
+  const pessoal=allEmps.filter(e=>e.id==='gp');
+  const custom=allEmps.filter(e=>e.id.startsWith('custom_'));
+  const renderCards=(emps)=>emps.map(e=>{
     const pct=e.meta>0?Math.min(e.fat/e.meta*100,100).toFixed(0):0;
     const crescC=e.cresc>=0?'var(--green)':'var(--red)';
     const crescS=e.cresc>=0?'▲':'▼';
@@ -1075,6 +1121,8 @@ function renderEmpGrid(){
       </div>
     </div>`;
   }).join('');
+  gPortfolio.innerHTML=renderCards([...portfolio,...custom]);
+  gPessoal.innerHTML=renderCards(pessoal);
 }
 
 // ── CEO ──────────────────────────────────────────────────────────────────
@@ -1124,6 +1172,7 @@ function goHome(){
   document.getElementById('nav-home').classList.add('active');
   document.getElementById('drive-lbl').textContent='ORION Drive';
   curEmp=null;
+  localStorage.removeItem('orion_empresa_ativa');
   showPage('home');
 }
 function goCEO(){
@@ -1134,7 +1183,9 @@ function goCEO(){
 
 function openEmp(id){
   curEmp=id;
+  localStorage.setItem('orion_empresa_ativa',id);
   const e=EMPS[id];
+  if(!e)return;
   clearSb();
   const sbEl=document.getElementById('sb-'+id)||document.getElementById('sb-gp');
   if(sbEl)sbEl.classList.add('active');
@@ -1386,11 +1437,66 @@ function startLive(){
   },1200);
 }
 
-// ── MAXXXI ──────────────────────────────────────────────────────────────
-function toggleMX(){
+// ── MAXXXI DRAWER ──────────────────────────────────────────────────────
+function toggleMXDrawer(){
   mxOpen=!mxOpen;
-  document.getElementById('mx-chat').classList.toggle('hidden',!mxOpen);
+  document.getElementById('mx-drawer').classList.toggle('open',mxOpen);
+  document.getElementById('mx-backdrop').classList.toggle('show',mxOpen);
+  if(mxOpen){
+    renderMXAlerts();
+    checkDailyBriefing();
+  }
 }
+function closeMXDrawer(){
+  mxOpen=false;
+  document.getElementById('mx-drawer').classList.remove('open');
+  document.getElementById('mx-backdrop').classList.remove('show');
+}
+function renderMXAlerts(){
+  const alerts=getAlerts();
+  const unread=alerts.filter(a=>!a.read);
+  const list=document.getElementById('mx-alerts-list');
+  const cnt=document.getElementById('mx-alerts-count');
+  if(cnt)cnt.textContent=unread.length>0?unread.length+' pendentes':'';
+  if(!list)return;
+  if(unread.length===0){
+    list.innerHTML='<div style="padding:12px 18px;font-size:12px;color:var(--tx3)">Nenhum alerta pendente</div>';
+    return;
+  }
+  list.innerHTML=unread.map(a=>`
+    <div class="mx-alert-item ${a.level==='red'?'critical':'warning'}" onclick="markAlertRead(${a.id});renderMXAlerts();updateMXBadge()">
+      <span>${a.level==='red'?'🔴':'🟡'}</span>
+      <div style="flex:1">
+        <div style="font-size:13px;line-height:1.4">${a.text}</div>
+        <div class="mx-alert-time">${a.time}</div>
+      </div>
+    </div>`).join('');
+}
+function updateMXBadge(){
+  const alerts=getAlerts();
+  const unread=alerts.filter(a=>!a.read).length;
+  ['mx-badge','mx-badge-sb'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.textContent=unread>0?unread:'';
+  });
+}
+function checkDailyBriefing(){
+  const today=new Date().toDateString();
+  const lastBriefing=localStorage.getItem('orion_mx_briefing');
+  if(lastBriefing===today)return;
+  localStorage.setItem('orion_mx_briefing',today);
+  const u=JSON.parse(LS('session')||'{}');
+  const name=u.name?u.name.split(' ')[0]:'';
+  const alerts=getAlerts().filter(a=>!a.read);
+  const briefing=`Bom dia, ${name}! Briefing de hoje:<br><br>` +
+    `📊 <b>Ecossistema:</b> R$ 126,5k faturamento (+8,2%)<br>` +
+    `⚠️ <b>${alerts.length} alertas</b> pendentes${alerts.length>0?' — '+alerts[0].text:''}<br>` +
+    `🎯 <b>Prioridade:</b> Original Fotografia em turnaround (inadimplência 8,7%)<br><br>` +
+    `O que deseja analisar?`;
+  addMXMsg('ai',briefing);
+  mxHistory.push({role:'assistant',content:briefing});
+}
+function toggleMX(){toggleMXDrawer()}
 function qSend(txt){document.getElementById('mx-in').value=txt;sendMX()}
 
 async function sendMX(){
@@ -1658,6 +1764,7 @@ function filterCmd(){
 document.addEventListener('keydown',e=>{
   if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();openCmdPalette()}
   if(e.key==='Escape'){
+    closeMXDrawer();
     closeCmdPalette();
     closeAllDd();
     document.querySelectorAll('.overlay').forEach(o=>o.classList.add('hidden'));

@@ -519,6 +519,24 @@ a{color:inherit;text-decoration:none}
   .topbar{padding:0 12px}
   .cmd-box{width:calc(100vw - 24px)}
 }
+/* PRINT */
+@media print{
+  body{background:#fff!important;color:#000!important;font-size:12px}
+  .sidebar,.topbar,.mx-drawer,.mx-backdrop,.mx-tb-btn,.tb-btn,.btn-sm,.btn-blue,.btn-ghost,.btn-red,.hamburger,.sb-maxxxi,.notif,.user-btn,.cmd-overlay,.overlay,.mx-quick,.mx-input{display:none!important}
+  .app{display:block!important;height:auto!important}
+  .main{display:block!important}
+  .content{padding:0!important;overflow:visible!important}
+  .card,.kpi-card,.vceo-kpi{border:1px solid #ccc!important;background:#fff!important;break-inside:avoid}
+  .vceo-table{font-size:11px}
+  .vceo-table th,.vceo-table td{border:1px solid #ccc!important;padding:6px 8px}
+  .val,.val-sm,.kpi-val,.ceo-v,.vceo-kpi .kpi-val{color:#000!important}
+  .lbl,.kpi-lbl,.slbl,.vceo-sub{color:#666!important}
+  #page-home,#page-ws{display:none!important}
+  #page-ceo{display:block!important}
+  .vceo-controls{display:none!important}
+  .pbar,.pfill{print-color-adjust:exact;-webkit-print-color-adjust:exact}
+  a{text-decoration:none!important}
+}
 </style>
 </head>
 <body>
@@ -778,6 +796,7 @@ a{color:inherit;text-decoration:none}
         <button onclick="setCeoPeriodo('ano')">Ano</button>
       </div>
       <button class="tb-btn" onclick="renderCEO()" style="font-size:12px">🔄 Atualizar</button>
+      <button class="tb-btn" onclick="exportCeoPDF()" style="font-size:12px">📄 Exportar PDF</button>
       <span style="font-size:11px;color:var(--tx3)" id="vceo-updated"></span>
     </div>
   </div>
@@ -919,6 +938,14 @@ a{color:inherit;text-decoration:none}
     <input class="inp" id="emp-sigla" placeholder="Sigla (ex: DW)" maxlength="4"/>
     <input class="inp" id="emp-desc" placeholder="Descrição"/>
     <div style="margin-bottom:12px">
+      <div class="lbl">Logo da empresa</div>
+      <div style="display:flex;align-items:center;gap:12px;margin-top:6px">
+        <div id="emp-logo-preview" style="width:48px;height:48px;border-radius:10px;background:var(--s2);border:1px dashed var(--br);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--tx3);overflow:hidden;flex-shrink:0">Logo</div>
+        <button class="btn-sm btn-ghost" type="button" onclick="document.getElementById('emp-logo-inp').click()">📷 Upload</button>
+        <input type="file" id="emp-logo-inp" accept="image/*" style="display:none" onchange="previewEmpLogo(event)"/>
+      </div>
+    </div>
+    <div style="margin-bottom:12px">
       <div class="lbl">Cor da empresa</div>
       <div style="display:flex;gap:8px;margin-top:6px" id="color-picks">
         <div onclick="pickColor('#3b82f6')" style="width:28px;height:28px;border-radius:8px;background:#3b82f6;cursor:pointer;border:2px solid transparent" data-c="#3b82f6"></div>
@@ -973,6 +1000,31 @@ a{color:inherit;text-decoration:none}
     <div class="modal-actions">
       <button class="btn-sm btn-ghost" onclick="closeModal('modal-evento')">Cancelar</button>
       <button class="btn-sm btn-blue" onclick="saveNewEvento()">Adicionar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CHECKIN DIÁRIO -->
+<div class="overlay hidden" id="modal-checkin" onclick="if(event.target===this)closeModal('modal-checkin')">
+  <div class="modal" style="position:relative;width:460px">
+    <button class="modal-close" onclick="closeModal('modal-checkin')">&times;</button>
+    <h2>☀️ Check-in do Dia</h2>
+    <div style="font-size:13px;color:var(--tx3);margin-bottom:16px">Como está o dia hoje, Maxwell?</div>
+    <div class="lbl">Humor</div>
+    <div style="display:flex;gap:8px;margin-bottom:14px" id="ci-humor-picks">
+      <button class="btn-sm btn-ghost ci-humor" onclick="pickHumor(1)" data-v="1">😫 1</button>
+      <button class="btn-sm btn-ghost ci-humor" onclick="pickHumor(2)" data-v="2">😐 2</button>
+      <button class="btn-sm btn-ghost ci-humor" onclick="pickHumor(3)" data-v="3">🙂 3</button>
+      <button class="btn-sm btn-ghost ci-humor" onclick="pickHumor(4)" data-v="4">😊 4</button>
+      <button class="btn-sm btn-ghost ci-humor" onclick="pickHumor(5)" data-v="5">🔥 5</button>
+    </div>
+    <div class="lbl">Prioridade do dia</div>
+    <input class="inp" id="ci-modal-prio" placeholder="O que é mais importante hoje?"/>
+    <div class="lbl">Observação</div>
+    <textarea class="inp" id="ci-modal-obs" rows="3" placeholder="Algo relevante..." style="resize:vertical"></textarea>
+    <div class="modal-actions">
+      <button class="btn-sm btn-ghost" onclick="closeModal('modal-checkin')">Pular</button>
+      <button class="btn-sm btn-blue" onclick="saveCheckinModal()">Salvar Check-in</button>
     </div>
   </div>
 </div>
@@ -1806,6 +1858,7 @@ async function initPlatform(){
   renderHomeAlerts();
   updateMXBadge();
   loadCI();
+  checkDailyCheckin();
   // restore empresaAtiva from localStorage
   const savedEmp=localStorage.getItem('orion_empresa_ativa');
   if(savedEmp&&EMPS[savedEmp]){
@@ -1852,7 +1905,7 @@ function renderEmpGrid(){
       <div class="emp-top"></div>
       <div class="emp-header">
         <div class="flex aic gap12">
-          <div class="emp-sig">${e.sigla}</div>
+          <div class="emp-sig">${empLogoHTML(e.id,36)||e.sigla}</div>
           <div>
             <div class="emp-name">${e.nome}</div>
             <div class="emp-desc">${e.desc}</div>
@@ -2172,6 +2225,11 @@ function exportCeoCSV(){
   showToast('CSV exportado!');
 }
 
+function exportCeoPDF(){
+  goCEO();
+  setTimeout(()=>{window.print()},300);
+}
+
 // ── NAVEGAÇÃO ──────────────────────────────────────────────────────────────
 function showPage(pg){
   ['home','ceo','ws'].forEach(p=>{
@@ -2210,6 +2268,43 @@ function openEmp(id){
   showPage('ws');
   renderWS();
 }
+// ── LOGO EMPRESA ──────────────────────────────────────────────────────────
+window._empLogoData='';
+function previewEmpLogo(ev){
+  const f=ev.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=e=>{
+    window._empLogoData=e.target.result;
+    document.getElementById('emp-logo-preview').innerHTML='<img src="'+e.target.result+'" style="width:100%;height:100%;object-fit:cover;border-radius:10px"/>';
+  };
+  r.readAsDataURL(f);
+}
+function getEmpLogo(empId){
+  const e=EMPS[empId];
+  if(e&&e.logo) return e.logo;
+  return localStorage.getItem('orion_logo_'+empId)||'';
+}
+function uploadEmpLogoToSupabase(empId, dataUrl){
+  if(!sb||!dataUrl||!dataUrl.startsWith('data:')) return;
+  try{
+    const byteStr=atob(dataUrl.split(',')[1]);
+    const mime=dataUrl.match(/data:([^;]+)/)[1];
+    const arr=new Uint8Array(byteStr.length);
+    for(let i=0;i<byteStr.length;i++) arr[i]=byteStr.charCodeAt(i);
+    const blob=new Blob([arr],{type:mime});
+    const ext=mime.split('/')[1]||'png';
+    sb.storage.from('logos').upload(empId+'.'+ext, blob, {upsert:true}).then(({error})=>{
+      if(error) console.warn('Logo upload failed:', error.message);
+    });
+  }catch(e){console.warn('Logo upload error:', e)}
+}
+function empLogoHTML(empId, size){
+  const logo=getEmpLogo(empId);
+  const e=EMPS[empId];
+  if(logo) return '<img src="'+logo+'" style="width:'+size+'px;height:'+size+'px;object-fit:cover;border-radius:'+(size>40?'12':'9')+'px"/>';
+  return '';
+}
+
 function addEmpresa(){
   openModal('modal-emp');
   const el=document.getElementById('emp-modulos-picks');
@@ -2238,7 +2333,7 @@ function renderWS(){
   const cresc=e.cresc;
   wh.innerHTML=`
     <div style="display:flex;align-items:center;gap:14px">
-      <div class="ws-sig" style="--emp-rgb:${e.rgb};background:rgba(var(--emp-rgb),.12);color:${e.cor}">${e.sigla}</div>
+      <div class="ws-sig" style="--emp-rgb:${e.rgb};background:rgba(var(--emp-rgb),.12);color:${e.cor}">${empLogoHTML(e.id,46)||e.sigla}</div>
       <div>
         <div class="ws-n">${e.nome}</div>
         <div class="ws-d">${e.desc}</div>
@@ -2622,6 +2717,31 @@ function loadCI(){
   }catch(e){}
 }
 
+// ── CHECKIN MODAL ──────────────────────────────────────────────────────────
+let ciHumor=3;
+function pickHumor(v){
+  ciHumor=v;
+  document.querySelectorAll('.ci-humor').forEach(b=>b.style.background=parseInt(b.dataset.v)===v?'var(--blue2)':'transparent');
+  document.querySelectorAll('.ci-humor').forEach(b=>b.style.color=parseInt(b.dataset.v)===v?'#fff':'var(--tx2)');
+}
+function saveCheckinModal(){
+  const prio=document.getElementById('ci-modal-prio').value.trim();
+  const obs=document.getElementById('ci-modal-obs').value.trim();
+  const data={humor:ciHumor,prioridade:prio,observacao:obs,data:new Date().toISOString().slice(0,10)};
+  localStorage.setItem('orion_ci_'+new Date().toDateString(),JSON.stringify([prio,obs,'humor:'+ciHumor]));
+  localStorage.setItem('orion_ci_done_'+new Date().toDateString(),'1');
+  sbPush('checkins',{data:data.data,prioridade:prio,decisao:obs,resultado:'humor:'+ciHumor});
+  closeModal('modal-checkin');
+  showToast('Check-in salvo!');
+  // Atualizar campos do checkin inline na home
+  const ci1=document.getElementById('ci1');if(ci1)ci1.value=prio;
+  const ci2=document.getElementById('ci2');if(ci2)ci2.value=obs;
+}
+function checkDailyCheckin(){
+  const done=localStorage.getItem('orion_ci_done_'+new Date().toDateString());
+  if(!done) setTimeout(()=>openModal('modal-checkin'),1500);
+}
+
 // ── LIVE FEED ──────────────────────────────────────────────────────────────
 function startLive(){
   const feed=document.getElementById('live-feed');
@@ -2881,7 +3001,29 @@ const ALERTS_DATA=[
   {id:3,text:'Forme Seguro — Meta mensal: apenas 30% atingida (R$ 15k / R$ 50k)',level:'amber',read:false,time:'Ontem 17:00'},
   {id:4,text:'Doctor Wealth — 3 tarefas de alta prioridade pendentes',level:'amber',read:false,time:'Ontem 14:22'},
 ];
-function getAlerts(){return JSON.parse(localStorage.getItem('orion_alerts')||'null')||ALERTS_DATA}
+function generateAutoAlerts(){
+  const auto=[];
+  let aid=100;
+  const now=new Date();
+  const timeStr=now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+  Object.values(EMPS).forEach(e=>{
+    if(e.id==='gp'||e.id.startsWith('custom_')) return;
+    const inadimp=e.id==='of'?8.7:e.id==='dw'?3.2:e.id==='cdl'?2.1:0;
+    if(inadimp>5) auto.push({id:aid++,text:`${e.nome} — Inadimplência em ${inadimp}% (limite: 5%)`,level:'red',read:false,time:'Hoje '+timeStr});
+    if(e.result<0) auto.push({id:aid++,text:`${e.nome} — Resultado negativo: ${FMT.brlK(e.result)}`,level:'red',read:false,time:'Hoje '+timeStr});
+    if(e.meta>0&&e.fat/e.meta>=0.9) auto.push({id:aid++,text:`${e.nome} — Meta ${(e.fat/e.meta*100).toFixed(0)}% atingida!`,level:'green',read:false,time:'Hoje '+timeStr});
+    if(e.score<50) auto.push({id:aid++,text:`${e.nome} — Health Score ${e.score} (abaixo de 50)`,level:'amber',read:false,time:'Hoje '+timeStr});
+    const pendentes=(e.tarefas||[]).filter(t=>!t.k&&t.p==='alta').length;
+    if(pendentes>=3) auto.push({id:aid++,text:`${e.nome} — ${pendentes} tarefas de alta prioridade pendentes`,level:'amber',read:false,time:'Hoje '+timeStr});
+  });
+  return auto;
+}
+function getAlerts(){
+  const stored=JSON.parse(localStorage.getItem('orion_alerts')||'null');
+  if(stored) return stored;
+  const auto=generateAutoAlerts();
+  return auto.length>0?auto:ALERTS_DATA;
+}
 function saveAlerts(a){
   localStorage.setItem('orion_alerts',JSON.stringify(a));
   a.forEach(al=>sbUpdate('alertas',al.id,{lido:al.read}));
@@ -3009,9 +3151,12 @@ function saveNewEmpresa(){
     kpis:[{i:'📊',l:'Definir KPI 1',v:'—'},{i:'📈',l:'Definir KPI 2',v:'—'},{i:'💰',l:'Definir KPI 3',v:'—'},{i:'🎯',l:'Definir KPI 4',v:'—'}],
     okrs:[{o:'Definir primeiro objetivo',p:0}],
     tarefas:[{t:'Configurar empresa na plataforma',p:'alta',k:false}],
-    contratos:[],riscos:[],decisoes:[],crm:[]
+    contratos:[],riscos:[],decisoes:[],crm:[],
+    logo: window._empLogoData||''
   };
   EMPS[id]=emp;
+  if(emp.logo) localStorage.setItem('orion_logo_'+id, emp.logo);
+  uploadEmpLogoToSupabase(id, emp.logo);
   // save custom emps list
   const custom=JSON.parse(localStorage.getItem('orion_custom_emps')||'[]');
   custom.push(emp);

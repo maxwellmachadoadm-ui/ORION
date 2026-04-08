@@ -1,46 +1,54 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" fill="none">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="192" y2="192" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#0d1f3c"/>
-      <stop offset="100%" stop-color="#1d4ed8"/>
+      <stop offset="0%" stop-color="#080c14"/>
+      <stop offset="50%" stop-color="#0d1f3c"/>
+      <stop offset="100%" stop-color="#1a1a2e"/>
     </linearGradient>
-    <radialGradient id="glow-rigel" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9"/>
-      <stop offset="60%" stop-color="#dbeafe" stop-opacity="0.5"/>
-      <stop offset="100%" stop-color="#3b82f6" stop-opacity="0"/>
+    <linearGradient id="gold-border" x1="0" y1="0" x2="192" y2="192" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="50%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+    <radialGradient id="glow-center" cx="50%" cy="52%" r="45%">
+      <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>
     </radialGradient>
   </defs>
   <!-- Background -->
-  <rect width="192" height="192" rx="38" fill="url(#bg)"/>
-  <rect width="192" height="192" rx="38" stroke="rgba(59,130,246,0.3)" stroke-width="2" fill="none"/>
-
-  <!-- Constellation lines -->
-  <line x1="42"  y1="54"  x2="138" y2="54"   stroke="#3b82f6" stroke-width="2.5"  stroke-opacity="0.55"/>
-  <line x1="42"  y1="54"  x2="60"  y2="102"  stroke="#3b82f6" stroke-width="2"    stroke-opacity="0.45"/>
-  <line x1="138" y1="54"  x2="132" y2="102"  stroke="#3b82f6" stroke-width="2"    stroke-opacity="0.45"/>
-  <line x1="60"  y1="102" x2="96"  y2="96"   stroke="#60a5fa" stroke-width="3"    stroke-opacity="0.75"/>
-  <line x1="96"  y1="96"  x2="132" y2="102"  stroke="#60a5fa" stroke-width="3"    stroke-opacity="0.75"/>
-  <line x1="60"  y1="102" x2="60"  y2="156"  stroke="#3b82f6" stroke-width="2"    stroke-opacity="0.4"/>
-  <line x1="132" y1="102" x2="144" y2="156"  stroke="#3b82f6" stroke-width="2"    stroke-opacity="0.4"/>
-
-  <!-- Stars -->
-  <circle cx="42"  cy="54"  r="9"   fill="#93c5fd"/>
-  <circle cx="138" cy="54"  r="7.5" fill="#60a5fa"/>
-  <circle cx="60"  cy="102" r="6.5" fill="#93c5fd"/>
-  <circle cx="96"  cy="96"  r="8"   fill="#e0f2fe"/>
-  <circle cx="132" cy="102" r="6.5" fill="#93c5fd"/>
-  <!-- Rigel (brilhante) -->
-  <circle cx="144" cy="156" r="14"  fill="url(#glow-rigel)" fill-opacity="0.35"/>
-  <circle cx="144" cy="156" r="10"  fill="#dbeafe"/>
-  <circle cx="144" cy="156" r="5"   fill="#ffffff"/>
+  <rect width="192" height="192" rx="42" fill="url(#bg)"/>
+  <rect x="2" y="2" width="188" height="188" rx="40" stroke="url(#gold-border)" stroke-width="3" fill="none" stroke-opacity="0.6"/>
+  <!-- Glow -->
+  <circle cx="96" cy="100" r="72" fill="url(#glow-center)"/>
+  <!-- Constellation lines — gold -->
+  <line x1="42" y1="54" x2="138" y2="54" stroke="#f59e0b" stroke-width="2.5" stroke-opacity="0.5"/>
+  <line x1="42" y1="54" x2="60" y2="102" stroke="#f59e0b" stroke-width="2" stroke-opacity="0.4"/>
+  <line x1="138" y1="54" x2="132" y2="102" stroke="#f59e0b" stroke-width="2" stroke-opacity="0.4"/>
+  <line x1="60" y1="102" x2="96" y2="96" stroke="#fbbf24" stroke-width="3" stroke-opacity="0.7"/>
+  <line x1="96" y1="96" x2="132" y2="102" stroke="#fbbf24" stroke-width="3" stroke-opacity="0.7"/>
+  <line x1="60" y1="102" x2="60" y2="156" stroke="#f59e0b" stroke-width="2" stroke-opacity="0.35"/>
+  <line x1="132" y1="102" x2="144" y2="156" stroke="#f59e0b" stroke-width="2" stroke-opacity="0.35"/>
+  <!-- Stars — gold/amber -->
+  <circle cx="42" cy="54" r="8" fill="#fbbf24"/>
+  <circle cx="42" cy="54" r="4" fill="#fde68a"/>
+  <circle cx="138" cy="54" r="7" fill="#f59e0b"/>
+  <circle cx="138" cy="54" r="3.5" fill="#fde68a"/>
+  <circle cx="60" cy="102" r="6" fill="#fbbf24"/>
+  <circle cx="96" cy="96" r="8" fill="#fde68a"/>
+  <circle cx="96" cy="96" r="4" fill="#ffffff"/>
+  <circle cx="132" cy="102" r="6" fill="#fbbf24"/>
+  <!-- Rigel — brightest gold -->
+  <circle cx="144" cy="156" r="14" fill="#f59e0b" fill-opacity="0.25"/>
+  <circle cx="144" cy="156" r="9" fill="#fbbf24"/>
+  <circle cx="144" cy="156" r="4.5" fill="#ffffff"/>
   <!-- Saiph -->
-  <circle cx="60"  cy="156" r="7"   fill="#60a5fa"/>
-
+  <circle cx="60" cy="156" r="7" fill="#f59e0b"/>
+  <circle cx="60" cy="156" r="3.5" fill="#fbbf24"/>
   <!-- Background stars -->
-  <circle cx="18"  cy="24"  r="1.8" fill="white" fill-opacity="0.28"/>
-  <circle cx="168" cy="30"  r="1.8" fill="white" fill-opacity="0.22"/>
-  <circle cx="174" cy="120" r="1.5" fill="white" fill-opacity="0.18"/>
-  <circle cx="24"  cy="168" r="1.5" fill="white" fill-opacity="0.18"/>
-  <circle cx="108" cy="18"  r="1.2" fill="white" fill-opacity="0.15"/>
-  <circle cx="180" cy="72"  r="1.2" fill="white" fill-opacity="0.15"/>
+  <circle cx="18" cy="24" r="1.5" fill="#f59e0b" fill-opacity="0.3"/>
+  <circle cx="168" cy="30" r="1.5" fill="#f59e0b" fill-opacity="0.25"/>
+  <circle cx="174" cy="120" r="1.2" fill="#f59e0b" fill-opacity="0.2"/>
+  <circle cx="24" cy="168" r="1.2" fill="#f59e0b" fill-opacity="0.2"/>
+  <circle cx="108" cy="18" r="1" fill="#fbbf24" fill-opacity="0.15"/>
+  <circle cx="180" cy="72" r="1" fill="#fbbf24" fill-opacity="0.15"/>
 </svg>

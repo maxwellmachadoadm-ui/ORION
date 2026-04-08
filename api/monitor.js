@@ -14,6 +14,9 @@ export default async function handler(req, res) {
     return res.status(200).json({ alertas: [], mensagens: [], note: 'Supabase não configurado' })
   }
 
+  // Proteger contra erros não tratados
+  try {
+
   const supabase = createClient(supabaseUrl, serviceKey)
   const hoje = new Date()
   const hojeStr = hoje.toISOString().split('T')[0]
@@ -83,4 +86,9 @@ export default async function handler(req, res) {
   }
 
   return res.status(200).json({ alertas, mensagens })
+
+  } catch (err) {
+    console.error('[ORION Monitor] Erro geral:', err.message)
+    return res.status(200).json({ alertas: [], mensagens: [], error: err.message })
+  }
 }

@@ -72,15 +72,9 @@ const REGRAS_HEURISTICAS = [
 ]
 
 export default function ExtratosIA() {
-  const [transacoes, setTransacoes] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('orion_extratos_gp') || '[]') } catch { return [] }
-  })
-  const [learned, setLearned] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('orion_extratos_learned') || '{}') } catch { return {} }
-  })
-  const [historico, setHistorico] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('orion_extratos_hist') || '[]') } catch { return [] }
-  })
+  const [transacoes, setTransacoes] = useState([])
+  const [learned, setLearned] = useState({})
+  const [historico, setHistorico] = useState([])
   const [uploading, setUploading] = useState(false)
   const [classifying, setClassifying] = useState(false)
   const [editIdx, setEditIdx] = useState(null)
@@ -91,13 +85,92 @@ export default function ExtratosIA() {
   const [tab, setTab] = useState('validacao')
   const [selectedAll, setSelectedAll] = useState(false)
   const [selected, setSelected] = useState({})
+  const [loadedFromDB, setLoadedFromDB] = useState(false)
   const fileRef = useRef(null)
   const dropRef = useRef(null)
 
-  // Persistir
-  useEffect(() => { localStorage.setItem('orion_extratos_gp', JSON.stringify(transacoes)) }, [transacoes])
-  useEffect(() => { localStorage.setItem('orion_extratos_learned', JSON.stringify(learned)) }, [learned])
-  useEffect(() => { localStorage.setItem('orion_extratos_hist', JSON.stringify(historico)) }, [historico])
+  // ── Carregar dados: Supabase primeiro, localStorage fallback ──
+  useEffect(() => {
+    async function loadFromSupabase() {
+      try {
+        const { supabase, isDemoMode } = await import('../lib/supabase')
+        if (isDemoMode || !supabase) throw new Error('demo')
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) throw new Error('no user')
+
+        const [tRes, rRes, hRes] = await Promise.all([
+          supabase.from('extratos_gp').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
+          supabase.from('extratos_regras').select('*').eq('user_id', user.id),
+          supabase.from('extratos_historico').select('*').eq('user_id', user.id).order('created_at', { ascending: false }),
+        ])
+        if (tRes.data) setTransacoes(tRes.data)
+        if (rRes.data) {
+          const obj = {}; rRes.data.forEach(r => { obj[r.pattern] = { categoria: r.categoria, subcategoria: r.subcategoria, count: r.count } })
+          setLearned(obj)
+        }
+        if (hRes.data) setHistorico(hRes.data)
+        setLoadedFromDB(true)
+      } catch (_) {
+        // Fallback localStorage
+        try { setTransacoes(JSON.parse(localStorage.getItem('orion_extratos_gp') || '[]')) } catch { setTransacoes([]) }
+        try { setLearned(JSON.parse(localStorage.getItem('orion_extratos_learned') || '{}')) } catch { setLearned({}) }
+        try { setHistorico(JSON.parse(localStorage.getItem('orion_extratos_hist') || '[]')) } catch { setHistorico([]) }
+      }
+    }
+    loadFromSupabase()
+  }, [])
+
+  // ── Persistir: Supabase + localStorage ──
+  useEffect(() => {
+    localStorage.setItem('orion_extratos_gp', JSON.stringify(transacoes))
+    localStorage.setItem('orion_extratos_learned', JSON.stringify(learned))
+    localStorage.setItem('orion_extratos_hist', JSON.stringify(historico))
+  }, [transacoes, learned, historico])
+
+  // ── Sync para Supabase em background ──
+  async function syncToSupabase(newTransacoes, newLearned, newHistorico) {
+    try {
+      const { supabase, isDemoMode } = await import('../lib/supabase')
+      if (isDemoMode || !supabase) return
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      // Transações novas (sem id uuid = ainda não salvas)
+      if (newTransacoes) {
+        for (const t of newTransacoes) {
+          if (t._synced) continue
+          await supabase.from('extratos_gp').upsert({
+            id: t.id?.length === 36 ? t.id : undefined, // só se for uuid
+            user_id: user.id, data: t.data, descricao: t.descricao, valor: t.valor,
+            categoria: t.categoria, subcategoria: t.subcategoria,
+            confianca: t.confianca, status: t.status, origem: t.origem,
+          })
+        }
+      }
+
+      // Regras aprendidas
+      if (newLearned) {
+        for (const [pattern, data] of Object.entries(newLearned)) {
+          await supabase.from('extratos_regras').upsert({
+            user_id: user.id, pattern,
+            categoria: data.categoria, subcategoria: data.subcategoria,
+            count: data.count || 1,
+          }, { onConflict: 'user_id,pattern' })
+        }
+      }
+
+      // Histórico
+      if (newHistorico) {
+        for (const h of newHistorico) {
+          if (h._synced) continue
+          await supabase.from('extratos_historico').upsert({
+            id: h.id?.length === 36 ? h.id : undefined,
+            user_id: user.id, arquivo: h.arquivo, banco: h.banco, qtd: h.qtd,
+          })
+        }
+      }
+    } catch (e) { console.warn('[MAXXXI] Sync Supabase:', e.message) }
+  }
 
   // ── Classificar localmente (heurísticas + aprendizado) ──
   function localClassify(descricao, valor) {
@@ -404,12 +477,15 @@ export default function ExtratosIA() {
       }
     }
 
-    setHistorico(prev => [{
+    const newHist = {
       id: Date.now().toString(), arquivo: nomeArquivo,
       banco: detectarBanco(nomeArquivo), qtd: novas.length, data: new Date().toISOString(),
-    }, ...prev])
+    }
+    setHistorico(prev => [newHist, ...prev])
     setTransacoes(prev => [...novas, ...prev])
     setTab('validacao')
+    // Sync para Supabase em background
+    syncToSupabase(novas, null, [newHist])
   }
 
   // ── Upload de arquivo (multi-formato) ──
@@ -582,21 +658,27 @@ export default function ExtratosIA() {
       const next = [...prev]
       next[idx] = { ...next[idx], status: 'validado' }
       const key = next[idx].descricao.toLowerCase().trim()
-      setLearned(p => ({ ...p, [key]: { categoria: next[idx].categoria, subcategoria: next[idx].subcategoria, count: (p[key]?.count || 0) + 1 } }))
+      const newLearned = { ...learned, [key]: { categoria: next[idx].categoria, subcategoria: next[idx].subcategoria, count: (learned[key]?.count || 0) + 1 } }
+      setLearned(newLearned)
+      syncToSupabase([next[idx]], newLearned, null)
       return next
     })
   }
 
   // ── Validar selecionados ou todos ──
   function validarBatch(onlySelected) {
+    const newLearned = { ...learned }
     setTransacoes(prev => {
-      return prev.map((t, i) => {
+      const next = prev.map((t, i) => {
         if (t.status !== 'pendente') return t
         if (onlySelected && !selected[i]) return t
         const key = t.descricao.toLowerCase().trim()
-        setLearned(p => ({ ...p, [key]: { categoria: t.categoria, subcategoria: t.subcategoria, count: (p[key]?.count || 0) + 1 } }))
+        newLearned[key] = { categoria: t.categoria, subcategoria: t.subcategoria, count: (newLearned[key]?.count || 0) + 1 }
         return { ...t, status: 'validado' }
       })
+      setLearned(newLearned)
+      syncToSupabase(next.filter(t => t.status === 'validado'), newLearned, null)
+      return next
     })
     setSelected({})
     setSelectedAll(false)
@@ -609,7 +691,9 @@ export default function ExtratosIA() {
       const next = [...prev]
       next[idx] = { ...next[idx], categoria: editCat, subcategoria: editSub || CATEGORIAS_GP[editCat]?.sub[0] || '', status: 'corrigido' }
       const key = next[idx].descricao.toLowerCase().trim()
-      setLearned(p => ({ ...p, [key]: { categoria: editCat, subcategoria: editSub || '', count: (p[key]?.count || 0) + 1 } }))
+      const newLearned = { ...learned, [key]: { categoria: editCat, subcategoria: editSub || '', count: (learned[key]?.count || 0) + 1 } }
+      setLearned(newLearned)
+      syncToSupabase([next[idx]], newLearned, null)
       return next
     })
     setEditIdx(null); setEditCat(''); setEditSub('')

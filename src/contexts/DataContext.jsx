@@ -244,6 +244,19 @@ export function DataProvider({ children }) {
       const { data: comps } = await supabase.from('compromissos').select('*').order('vencimento')
       if (comps && comps.length > 0) setCompromissos(comps)
     } catch (_) {}
+    // Load patrimônio do Supabase
+    try {
+      const { data: pat } = await supabase.from('patrimonio').select('*').eq('user_id', user.id).single()
+      if (pat) {
+        const patData = { ...pat, historico: typeof pat.historico === 'string' ? JSON.parse(pat.historico) : (pat.historico || []) }
+        localStorage.setItem('orion_patrimonio', JSON.stringify(patData))
+      }
+    } catch (_) {}
+    // Load arquivos do Supabase
+    try {
+      const { data: arqs } = await supabase.from('arquivos').select('*').order('created_at', { ascending: false })
+      if (arqs && arqs.length > 0) setArquivos(arqs)
+    } catch (_) {}
     // Load today's checkin
     try {
       const { data: ci } = await supabase.from('checkins')
@@ -413,18 +426,24 @@ export function DataProvider({ children }) {
   }
 
   // ── ARQUIVOS CRUD ──
-  function addArquivo(arquivo) {
+  async function addArquivo(arquivo) {
     const novo = { ...arquivo, id: Date.now().toString(), data_upload: new Date().toISOString() }
     const next = [novo, ...arquivos]
     setArquivos(next)
     localStorage.setItem('orion_arquivos', JSON.stringify(next))
+    if (!isDemoMode && supabase && user) {
+      try { await supabase.from('arquivos').insert({ ...novo, user_id: user.id }) } catch (_) {}
+    }
   }
 
-  function deleteArquivo(id) {
+  async function deleteArquivo(id) {
     if (!isAdmin) return
     const next = arquivos.filter(a => a.id !== id)
     setArquivos(next)
     localStorage.setItem('orion_arquivos', JSON.stringify(next))
+    if (!isDemoMode && supabase) {
+      try { await supabase.from('arquivos').delete().eq('id', id) } catch (_) {}
+    }
   }
 
   // ── APRENDIZADO MAXXXI ──
@@ -588,25 +607,27 @@ export function DataProvider({ children }) {
     const saved = localStorage.getItem('orion_patrimonio')
     if (saved) return JSON.parse(saved)
     return {
-      imoveis: 650000,
-      investimentos: 380000,
-      participacoes: 200000,
-      veiculos: 85000,
-      previdencia: 120000,
-      dividas: 45000,
+      imoveis: 650000, investimentos: 380000, participacoes: 200000,
+      veiculos: 85000, previdencia: 120000, dividas: 45000,
       historico: [
-        { mes: 'Out/25', total: 1320000 },
-        { mes: 'Nov/25', total: 1350000 },
-        { mes: 'Dez/25', total: 1370000 },
-        { mes: 'Jan/26', total: 1390000 },
-        { mes: 'Fev/26', total: 1410000 },
-        { mes: 'Mar/26', total: 1430000 },
+        { mes: 'Out/25', total: 1320000 }, { mes: 'Nov/25', total: 1350000 },
+        { mes: 'Dez/25', total: 1370000 }, { mes: 'Jan/26', total: 1390000 },
+        { mes: 'Fev/26', total: 1410000 }, { mes: 'Mar/26', total: 1430000 },
       ]
     }
   }
 
-  function savePatrimonio(data) {
+  async function savePatrimonio(data) {
     localStorage.setItem('orion_patrimonio', JSON.stringify(data))
+    // Sync Supabase
+    if (!isDemoMode && supabase && user) {
+      try {
+        await supabase.from('patrimonio').upsert({
+          user_id: user.id, ...data, historico: JSON.stringify(data.historico || []),
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'user_id' })
+      } catch (_) {}
+    }
   }
 
   // ── CRUD DE EMPRESAS ──

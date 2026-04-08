@@ -1,4 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
+// Imports dinâmicos — carregam só quando necessário (code splitting)
+const loadXLSX = () => import('xlsx')
+const loadMammoth = () => import('mammoth')
 
 // ── Categorias padrão para despesas pessoais ──
 const CATEGORIAS_GP = {
@@ -200,55 +203,268 @@ export default function ExtratosIA() {
     return novas
   }
 
-  // ── Upload de arquivo ──
+  // ── Parsear Excel (.xlsx, .xls) ──
+  async function parsearExcel(arrayBuffer, nomeArquivo) {
+    const XLSX = await loadXLSX()
+    const wb = XLSX.read(arrayBuffer, { type: 'array' })
+    const ws = wb.Sheets[wb.SheetNames[0]]
+    const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' })
+    if (rows.length < 2) return []
+
+    // Detectar colunas por header
+    const header = rows[0].map(h => String(h).toLowerCase().trim())
+    let colData = header.findIndex(h => /^data|date/i.test(h))
+    let colDesc = header.findIndex(h => /descri|histor|lanc|memo|detalhe/i.test(h))
+    let colValor = header.findIndex(h => /valor|value|amount|quantia/i.test(h))
+    // Fallback: assume primeira=data, segunda=descricao, terceira=valor
+    if (colData < 0) colData = 0
+    if (colDesc < 0) colDesc = 1
+    if (colValor < 0) colValor = rows[0].length - 1
+
+    const novas = []
+    for (let i = 1; i < rows.length; i++) {
+      const row = rows[i]
+      if (!row || row.length < 2) continue
+      let data = String(row[colData] || '').trim()
+      const descricao = String(row[colDesc] || '').trim()
+      let valor = 0
+      const rawVal = String(row[colValor] || '0')
+      valor = parseFloat(rawVal.replace(/[R$\s.]/g, '').replace(',', '.')) || 0
+
+      if (!descricao || descricao.length < 2) continue
+      if (/^data$|^descri|^valor$|^hist/i.test(descricao)) continue
+
+      // Converter data Excel serial number
+      if (typeof row[colData] === 'number' && row[colData] > 30000) {
+        const d = XLSX.SSF.parse_date_code(row[colData])
+        data = `${String(d.d).padStart(2,'0')}/${String(d.m).padStart(2,'0')}/${d.y}`
+      }
+      if (!data) data = new Date().toLocaleDateString('pt-BR')
+
+      const classificacao = localClassify(descricao, valor)
+      novas.push({
+        id: Date.now().toString() + Math.random().toString(36).slice(2, 6),
+        data, descricao, valor,
+        categoria: classificacao.categoria, subcategoria: classificacao.subcategoria,
+        confianca: classificacao.confianca,
+        status: classificacao.confianca === 'alta' ? 'validado' : 'pendente',
+        origem: nomeArquivo, created_at: new Date().toISOString(),
+      })
+    }
+    return novas
+  }
+
+  // ── Parsear Word (.docx) via mammoth ──
+  async function parsearWord(arrayBuffer, nomeArquivo) {
+    const mammothLib = await loadMammoth()
+    const result = await mammothLib.extractRawText({ arrayBuffer })
+    return result.value || ''
+  }
+
+  // ── Classificar texto bruto via API (para PDF/Word) ──
+  async function classifyTextWithAI(textoBruto) {
+    setClassifying(true)
+    try {
+      const regras = Object.entries(learned).map(([pattern, data]) => ({
+        pattern, categoria: data.categoria, subcategoria: data.subcategoria, confirmacoes: data.count || 1
+      }))
+      const res = await fetch('/api/classificar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ texto_bruto: textoBruto, regras })
+      })
+      if (res.ok) {
+        const { classificacoes } = await res.json()
+        return (classificacoes || []).map(c => ({
+          id: Date.now().toString() + Math.random().toString(36).slice(2, 6),
+          data: c.data || new Date().toLocaleDateString('pt-BR'),
+          descricao: c.descricao || '',
+          valor: c.valor || 0,
+          categoria: c.categoria || 'Outros',
+          subcategoria: c.subcategoria || '',
+          confianca: 'ia',
+          status: 'pendente',
+          origem: 'ia-texto',
+          created_at: new Date().toISOString(),
+        }))
+      }
+    } catch (err) {
+      console.warn('[MAXXXI] Erro ao classificar texto:', err.message)
+    } finally { setClassifying(false) }
+    return []
+  }
+
+  // ── Classificar imagem via API (OCR + classificação) ──
+  async function classifyImageWithAI(base64, mimeType) {
+    setClassifying(true)
+    try {
+      const regras = Object.entries(learned).map(([pattern, data]) => ({
+        pattern, categoria: data.categoria, subcategoria: data.subcategoria, confirmacoes: data.count || 1
+      }))
+      const res = await fetch('/api/classificar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imagem_base64: base64, mime_type: mimeType, regras })
+      })
+      if (res.ok) {
+        const { classificacoes } = await res.json()
+        return (classificacoes || []).map(c => ({
+          id: Date.now().toString() + Math.random().toString(36).slice(2, 6),
+          data: c.data || new Date().toLocaleDateString('pt-BR'),
+          descricao: c.descricao || '',
+          valor: c.valor || 0,
+          categoria: c.categoria || 'Outros',
+          subcategoria: c.subcategoria || '',
+          confianca: 'ia',
+          status: 'pendente',
+          origem: 'ia-imagem',
+          created_at: new Date().toISOString(),
+        }))
+      }
+    } catch (err) {
+      console.warn('[MAXXXI] Erro ao classificar imagem:', err.message)
+    } finally { setClassifying(false) }
+    return []
+  }
+
+  // ── Finalizar upload: classificar baixa confiança + salvar ──
+  async function finalizarUpload(novas, nomeArquivo) {
+    // Classificar transações de baixa confiança via IA
+    const baixaConfianca = novas.filter(t => t.confianca === 'baixa')
+    if (baixaConfianca.length > 0) {
+      const aiResults = await classifyWithAI(baixaConfianca)
+      if (aiResults.length > 0) {
+        for (const ai of aiResults) {
+          const idx = novas.findIndex(t => t.id === ai.id)
+          if (idx >= 0 && ai.categoria) {
+            novas[idx].categoria = ai.categoria
+            novas[idx].subcategoria = ai.subcategoria || ''
+            novas[idx].confianca = 'ia'
+          }
+        }
+      }
+    }
+
+    setHistorico(prev => [{
+      id: Date.now().toString(), arquivo: nomeArquivo,
+      banco: detectarBanco(nomeArquivo), qtd: novas.length, data: new Date().toISOString(),
+    }, ...prev])
+    setTransacoes(prev => [...novas, ...prev])
+    setTab('validacao')
+  }
+
+  // ── Upload de arquivo (multi-formato) ──
   async function handleUpload(e) {
     const file = e.target?.files?.[0] || e
     if (!file) return
     setUploading(true)
 
-    const reader = new FileReader()
-    reader.onload = async () => {
-      const text = reader.result
-      const novas = parsearTexto(text, file.name)
+    const ext = (file.name || '').split('.').pop().toLowerCase()
+    const nome = file.name || 'extrato'
 
-      if (novas.length === 0) {
-        alert('Nenhuma transação encontrada. Formato aceito: CSV com colunas Data;Descrição;Valor')
-        setUploading(false)
-        return
+    try {
+      // ── CSV / TXT ──
+      if (ext === 'csv' || ext === 'txt' || ext === 'ofx') {
+        const text = await readFileAsText(file)
+        const novas = parsearTexto(text, nome)
+        if (novas.length === 0) { alert('Nenhuma transação encontrada no arquivo.'); setUploading(false); return }
+        await finalizarUpload(novas, nome)
       }
-
-      // Classificar transações de baixa confiança via IA
-      const baixaConfianca = novas.filter(t => t.confianca === 'baixa')
-      if (baixaConfianca.length > 0) {
-        const aiResults = await classifyWithAI(baixaConfianca)
-        if (aiResults.length > 0) {
-          for (const ai of aiResults) {
-            const idx = novas.findIndex(t => t.id === ai.id)
-            if (idx >= 0 && ai.categoria) {
-              novas[idx].categoria = ai.categoria
-              novas[idx].subcategoria = ai.subcategoria || ''
-              novas[idx].confianca = 'ia'
-            }
-          }
+      // ── Excel ──
+      else if (ext === 'xlsx' || ext === 'xls') {
+        const buf = await readFileAsArrayBuffer(file)
+        const novas = parsearExcel(buf, nome)
+        if (novas.length === 0) { alert('Nenhuma transação encontrada na planilha.'); setUploading(false); return }
+        await finalizarUpload(novas, nome)
+      }
+      // ── PDF ──
+      else if (ext === 'pdf') {
+        const buf = await readFileAsArrayBuffer(file)
+        const text = await extractPdfText(buf)
+        if (!text || text.length < 10) { alert('Não foi possível extrair texto do PDF.'); setUploading(false); return }
+        // Tentar parsear como texto estruturado primeiro
+        const novas = parsearTexto(text, nome)
+        if (novas.length > 0) {
+          await finalizarUpload(novas, nome)
+        } else {
+          // Enviar texto bruto para IA
+          const iaNovas = await classifyTextWithAI(text)
+          if (iaNovas.length === 0) { alert('MAXXXI não conseguiu identificar transações no PDF.'); setUploading(false); return }
+          await finalizarUpload(iaNovas, nome)
         }
       }
-
-      // Salvar histórico do extrato
-      setHistorico(prev => [{
-        id: Date.now().toString(),
-        arquivo: file.name,
-        banco: detectarBanco(file.name),
-        qtd: novas.length,
-        data: new Date().toISOString(),
-      }, ...prev])
-
-      setTransacoes(prev => [...novas, ...prev])
-      setUploading(false)
-      setTab('validacao')
-      if (fileRef.current) fileRef.current.value = ''
+      // ── Word (.docx) ──
+      else if (ext === 'docx') {
+        const buf = await readFileAsArrayBuffer(file)
+        const text = await parsearWord(buf, nome)
+        if (!text || text.length < 10) { alert('Não foi possível extrair texto do documento.'); setUploading(false); return }
+        const novas = parsearTexto(text, nome)
+        if (novas.length > 0) {
+          await finalizarUpload(novas, nome)
+        } else {
+          const iaNovas = await classifyTextWithAI(text)
+          if (iaNovas.length === 0) { alert('MAXXXI não conseguiu identificar transações no documento.'); setUploading(false); return }
+          await finalizarUpload(iaNovas, nome)
+        }
+      }
+      // ── Imagem (JPG/PNG) ──
+      else if (['jpg', 'jpeg', 'png', 'webp'].includes(ext)) {
+        const base64 = await readFileAsBase64(file)
+        const mimeType = file.type || `image/${ext === 'jpg' ? 'jpeg' : ext}`
+        const iaNovas = await classifyImageWithAI(base64, mimeType)
+        if (iaNovas.length === 0) { alert('MAXXXI não conseguiu identificar transações na imagem.'); setUploading(false); return }
+        await finalizarUpload(iaNovas, nome)
+      }
+      else {
+        alert(`Formato .${ext} não suportado. Use CSV, Excel, PDF, Word ou imagem.`)
+      }
+    } catch (err) {
+      console.error('[MAXXXI] Erro no upload:', err)
+      alert('Erro ao processar arquivo: ' + err.message)
     }
-    reader.onerror = () => { alert('Erro ao ler arquivo'); setUploading(false) }
-    reader.readAsText(file, 'UTF-8')
+    setUploading(false)
+    if (fileRef.current) fileRef.current.value = ''
+  }
+
+  // ── Helpers de leitura ──
+  function readFileAsText(file) {
+    return new Promise((resolve, reject) => {
+      const r = new FileReader(); r.onload = () => resolve(r.result); r.onerror = reject; r.readAsText(file, 'UTF-8')
+    })
+  }
+  function readFileAsArrayBuffer(file) {
+    return new Promise((resolve, reject) => {
+      const r = new FileReader(); r.onload = () => resolve(r.result); r.onerror = reject; r.readAsArrayBuffer(file)
+    })
+  }
+  function readFileAsBase64(file) {
+    return new Promise((resolve, reject) => {
+      const r = new FileReader()
+      r.onload = () => {
+        const result = r.result
+        // Remover prefixo data:image/...;base64,
+        resolve(result.split(',')[1] || result)
+      }
+      r.onerror = reject; r.readAsDataURL(file)
+    })
+  }
+  async function extractPdfText(arrayBuffer) {
+    try {
+      const pdfjsLib = await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.mjs')
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
+      let text = ''
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i)
+        const content = await page.getTextContent()
+        text += content.items.map(item => item.str).join(' ') + '\n'
+      }
+      return text
+    } catch (err) {
+      console.warn('[MAXXXI] pdfjs falhou, enviando para IA:', err.message)
+      // Fallback: converter para base64 e enviar como imagem
+      return ''
+    }
   }
 
   function detectarBanco(nome) {
@@ -398,13 +614,13 @@ export default function ExtratosIA() {
             </div>
             <div style={{ fontSize: 13, color: 'var(--tx3)', marginBottom: 16 }}>ou clique para selecionar</div>
             <div style={{ fontSize: 11, color: 'var(--tx3)' }}>
-              Formatos aceitos: <strong>CSV</strong>, <strong>TXT</strong> · Colunas: <strong>Data;Descrição;Valor</strong>
+              Formatos: <strong>CSV</strong> · <strong>Excel</strong> · <strong>PDF</strong> · <strong>Imagem</strong> · <strong>Word</strong>
             </div>
-            <input ref={fileRef} type="file" accept=".csv,.txt,.ofx" onChange={handleUpload} style={{ display: 'none' }} />
+            <input ref={fileRef} type="file" accept=".csv,.txt,.xlsx,.xls,.pdf,.jpg,.jpeg,.png,.docx" onChange={handleUpload} style={{ display: 'none' }} />
           </div>
           <div style={{ fontSize: 12, color: 'var(--tx3)', marginTop: 16, lineHeight: 1.8 }}>
             💡 <strong>Como funciona:</strong><br />
-            1. Importe o CSV do seu banco<br />
+            1. Importe o extrato do seu banco (CSV, Excel, PDF, foto ou Word)<br />
             2. MAXXXI classifica automaticamente cada transação (heurísticas + IA)<br />
             3. Revise e valide na aba <strong>Validação</strong><br />
             4. O que você validar vira regra — na próxima vez, já classifica sozinho

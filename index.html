@@ -797,6 +797,7 @@ a{color:inherit;text-decoration:none}
       </div>
       <button class="tb-btn" onclick="renderCEO()" style="font-size:12px">🔄 Atualizar</button>
       <button class="tb-btn" onclick="exportCeoPDF()" style="font-size:12px">📄 Exportar PDF</button>
+      <button class="tb-btn" onclick="gerarRelatorioExecutivo()" style="font-size:12px">📊 Relatório</button>
       <span style="font-size:11px;color:var(--tx3)" id="vceo-updated"></span>
     </div>
   </div>
@@ -2314,12 +2315,16 @@ function openDrive(){window.open(curEmp?EMPS[curEmp]?.drive:'https://drive.googl
 
 // ── WORKSPACE ──────────────────────────────────────────────────────────────
 const WS_TABS_ALL=['KPIs','OKRs','Tarefas','Financeiro','Pipeline','Contratos','Riscos','Decisões','CRM','Notas','Arquivos'];
-const GP_TABS_DEFAULT=['KPIs','Financeiro','Notas','Arquivos'];
+const GP_TABS_DEFAULT=['KPIs','Patrimônio','Investimentos','Financeiro','Notas','Arquivos'];
+const FS_TABS_DEFAULT=['KPIs','OKRs','Tarefas','Financeiro','Fundos','Projeções','Rentabilidade','Pipeline','Contratos','CRM','Notas','Arquivos'];
+const DW_TABS_DEFAULT=['KPIs','OKRs','Tarefas','Financeiro','Pacientes','Pipeline','Contratos','Riscos','Decisões','CRM','Notas','Arquivos'];
 
 function getEmpModulos(empresaId){
   const stored=localStorage.getItem('orion_modulos_'+empresaId);
   if(stored) return JSON.parse(stored);
   if(empresaId==='gp') return GP_TABS_DEFAULT;
+  if(empresaId==='fs') return FS_TABS_DEFAULT;
+  if(empresaId==='dw') return DW_TABS_DEFAULT;
   return WS_TABS_ALL;
 }
 function saveEmpModulos(empresaId, modulos){
@@ -2534,6 +2539,13 @@ function renderTab(){
         ${files.map(f=>`<div class="file-item"><span>📄</span><span style="flex:1;font-size:13px">${f.name}</span><span style="font-size:12px;color:var(--tx3)">${f.size}</span></div>`).join('')}
       </div>`;
   }
+  // ── EMPRESA-SPECIFIC TABS ──
+  else if(curTab==='Projeções'){ renderProjecoes(e,c,co) }
+  else if(curTab==='Rentabilidade'){ renderRentabilidade(e,c,co) }
+  else if(curTab==='Fundos'){ renderFundos(e,c,co) }
+  else if(curTab==='Patrimônio'){ renderPatrimonio(e,c,co) }
+  else if(curTab==='Investimentos'){ renderInvestimentos(e,c,co) }
+  else if(curTab==='Pacientes'){ renderPacientes(e,c,co) }
 }
 
 function handleFiles(ev){
@@ -2544,6 +2556,281 @@ function handleFiles(ev){
   }
   localStorage.setItem('orion_'+key,JSON.stringify(existing));
   renderTab();
+}
+
+// ── PROJEÇÕES (Forme Seguro) ──────────────────────────────────────────────
+function renderProjecoes(e,c,co){
+  const proj=JSON.parse(localStorage.getItem('orion_proj_'+curEmp)||'null')||{metas:Array(12).fill(0),realizados:Array(12).fill(0),turmas:3,crescimento:50};
+  const meses=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const baseMensal=FMT.num(e.fat);
+  const maxV=Math.max(...proj.metas,...proj.realizados,baseMensal,1);
+  c.innerHTML=`
+    <div class="flex aic jsb mb"><div class="slbl" style="margin:0">Projeções — ${e.nome}</div>
+    <button class="btn-sm btn-blue" onclick="editProjecoes()">✏️ Editar Metas</button></div>
+    <div class="card mb">
+      <div class="slbl">Receita Mensal — Meta vs Realizado</div>
+      <div style="display:flex;align-items:flex-end;gap:3px;height:120px;margin-bottom:8px">${meses.map((m,i)=>{
+        const meta=proj.metas[i]||baseMensal*(1+i*0.04);
+        const real=proj.realizados[i]||(i<=new Date().getMonth()?baseMensal*(0.9+Math.random()*0.2):0);
+        return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">
+          <div style="display:flex;gap:1px;align-items:flex-end;height:100px;width:100%">
+            <div style="flex:1;background:rgba(59,130,246,.3);border-radius:2px 2px 0 0;height:${Math.max(2,meta/maxV*100)}%"></div>
+            <div style="flex:1;background:${co};border-radius:2px 2px 0 0;height:${Math.max(2,real/maxV*100)}%"></div>
+          </div>
+          <span style="font-size:8px;color:var(--tx3)">${m}</span>
+        </div>`;
+      }).join('')}</div>
+      <div style="display:flex;gap:12px;font-size:10px;color:var(--tx3)"><span><span style="display:inline-block;width:8px;height:8px;background:rgba(59,130,246,.3);border-radius:2px;margin-right:3px"></span>Meta</span><span><span style="display:inline-block;width:8px;height:8px;background:${co};border-radius:2px;margin-right:3px"></span>Realizado</span></div>
+    </div>
+    <div class="g3">
+      <div class="card"><div class="lbl">Novos Fundos Previstos</div><div class="val-sm" style="color:${co}">${proj.turmas} turmas</div></div>
+      <div class="card"><div class="lbl">Crescimento Estimado</div><div class="val-sm txt-green">${proj.crescimento}%</div></div>
+      <div class="card"><div class="lbl">Receita Projetada Anual</div><div class="val-sm txt-blue">${FMT.brlK(baseMensal*12*(1+proj.crescimento/100))}</div></div>
+    </div>`;
+}
+function editProjecoes(){
+  const turmas=prompt('Novos fundos previstos:','3');
+  const crescimento=prompt('Crescimento estimado (%):','50');
+  if(turmas===null)return;
+  const proj=JSON.parse(localStorage.getItem('orion_proj_'+curEmp)||'{}');
+  proj.turmas=parseInt(turmas)||3;
+  proj.crescimento=parseFloat(crescimento)||50;
+  localStorage.setItem('orion_proj_'+curEmp,JSON.stringify(proj));
+  renderTab();
+}
+
+// ── RENTABILIDADE (Forme Seguro) ──────────────────────────────────────────
+function renderRentabilidade(e,c,co){
+  const rent=JSON.parse(localStorage.getItem('orion_rent_'+curEmp)||'null')||{custoFixo:5000,custoVar:2000};
+  const receita=FMT.num(e.fat);
+  const custoTotal=rent.custoFixo+rent.custoVar;
+  const resultado=receita-custoTotal;
+  const margem=receita>0?(resultado/receita*100):0;
+  const margemContrib=receita>0?((receita-rent.custoVar)/receita*100):0;
+  const breakeven=margemContrib>0?(rent.custoFixo/(margemContrib/100)):0;
+  c.innerHTML=`
+    <div class="flex aic jsb mb"><div class="slbl" style="margin:0">Rentabilidade — ${e.nome}</div>
+    <button class="btn-sm btn-ghost" onclick="editRentabilidade()">✏️ Editar Custos</button></div>
+    <div class="card mb">
+      <div class="slbl">DRE Simplificado</div>
+      <table class="fc-table">
+        <tr style="font-weight:700"><td>(+) Receita</td><td style="text-align:right;color:var(--green)">${FMT.brl(receita)}</td></tr>
+        <tr><td>(−) Custos Fixos</td><td style="text-align:right;color:var(--red)">${FMT.brl(rent.custoFixo)}</td></tr>
+        <tr><td>(−) Custos Variáveis</td><td style="text-align:right;color:var(--red)">${FMT.brl(rent.custoVar)}</td></tr>
+        <tr style="font-weight:900;border-top:2px solid var(--br)"><td>(=) Resultado</td><td style="text-align:right;color:${resultado>=0?'var(--green)':'var(--red)'}">${FMT.brl(resultado)}</td></tr>
+        <tr><td>Margem Líquida</td><td style="text-align:right">${FMT.pctVal(margem)}</td></tr>
+      </table>
+    </div>
+    <div class="g3">
+      <div class="card"><div class="lbl">Margem de Contribuição</div><div class="val-sm" style="color:${co}">${FMT.pctVal(margemContrib)}</div></div>
+      <div class="card"><div class="lbl">Break-even Mensal</div><div class="val-sm txt-amber">${FMT.brl(breakeven)}</div></div>
+      <div class="card"><div class="lbl">Resultado Mensal</div><div class="val-sm" style="color:${resultado>=0?'var(--green)':'var(--red)'}">${FMT.brl(resultado)}</div></div>
+    </div>`;
+}
+function editRentabilidade(){
+  const cf=prompt('Custo Fixo Mensal (R$):','5000');
+  const cv=prompt('Custo Variável Mensal (R$):','2000');
+  if(cf===null)return;
+  localStorage.setItem('orion_rent_'+curEmp,JSON.stringify({custoFixo:parseFloat(cf)||0,custoVar:parseFloat(cv)||0}));
+  renderTab();
+}
+
+// ── FUNDOS (Forme Seguro) ──────────────────────────────────────────────────
+function getFundos(empId){ return JSON.parse(localStorage.getItem('orion_fundos_'+empId)||'[]') }
+function saveFundos(empId,f){ localStorage.setItem('orion_fundos_'+empId,JSON.stringify(f)) }
+function renderFundos(e,c,co){
+  const fundos=getFundos(curEmp);
+  const total=fundos.reduce((s,f)=>s+FMT.num(f.total),0);
+  const arrecadado=fundos.reduce((s,f)=>s+FMT.num(f.arrecadado),0);
+  c.innerHTML=`<div class="flex aic jsb mb">
+    <div><div class="slbl" style="margin:0">Fundos / Turmas — ${e.nome}</div>
+    <div style="font-size:12px;color:var(--tx3)">Total: ${FMT.brl(total)} · Arrecadado: ${FMT.brl(arrecadado)}</div></div>
+    <button class="btn-sm btn-blue" onclick="addFundo()">+ Novo Fundo</button>
+  </div>`+
+  (fundos.length>0?fundos.map((f,i)=>{
+    const pct=f.total>0?(f.arrecadado/f.total*100):0;
+    const statusC=pct>=70?'var(--green)':pct>=40?'var(--amber)':'var(--red)';
+    const statusL=pct>=70?'Saudável':pct>=40?'Atenção':'Crítico';
+    return `<div class="card" style="margin-bottom:10px">
+      <div class="flex aic jsb mb-sm">
+        <div><div style="font-size:14px;font-weight:700">${f.nome}</div><div style="font-size:11px;color:var(--tx3)">Evento: ${f.dataEvento||'—'}</div></div>
+        <div style="text-align:right"><span class="stag" style="color:${statusC};background:${statusC}18">${statusL}</span></div>
+        <button class="task-del" onclick="deleteFundo(${i})">🗑</button>
+      </div>
+      <div class="flex aic jsb" style="font-size:12px;color:var(--tx3);margin-bottom:4px"><span>${FMT.brl(f.arrecadado)}</span><span>${FMT.brl(f.total)} (${pct.toFixed(0)}%)</span></div>
+      <div class="pbar"><div class="pfill" style="width:${Math.min(pct,100)}%;background:${co}"></div></div>
+    </div>`;
+  }).join(''):'<div style="padding:20px;text-align:center;color:var(--tx3)">Nenhum fundo cadastrado.</div>');
+}
+function addFundo(){
+  const nome=prompt('Nome da turma/fundo:');if(!nome)return;
+  const total=parseFloat(prompt('Valor total (R$):','100000'))||0;
+  const arrecadado=parseFloat(prompt('Já arrecadado (R$):','0'))||0;
+  const dataEvento=prompt('Data do evento:','Dez/2026')||'';
+  const fundos=getFundos(curEmp);
+  fundos.push({nome,total,arrecadado,dataEvento,id:crypto.randomUUID()});
+  saveFundos(curEmp,fundos);renderTab();
+}
+function deleteFundo(i){const f=getFundos(curEmp);f.splice(i,1);saveFundos(curEmp,f);renderTab()}
+
+// ── PATRIMÔNIO (Gestão Pessoal) ──────────────────────────────────────────
+function getPatrimonio(){ return JSON.parse(localStorage.getItem('orion_pat_gp')||'[]') }
+function savePatrimonio(p){ localStorage.setItem('orion_pat_gp',JSON.stringify(p)) }
+function renderPatrimonio(e,c,co){
+  const bens=getPatrimonio();
+  const total=bens.reduce((s,b)=>s+FMT.num(b.valor),0);
+  c.innerHTML=`<div class="flex aic jsb mb">
+    <div><div class="slbl" style="margin:0">Patrimônio</div>
+    <div style="font-size:12px;color:var(--tx3)">Total: <b style="color:${co}">${FMT.brl(total)}</b></div></div>
+    <button class="btn-sm btn-blue" onclick="addBem()">+ Novo Bem</button>
+  </div>`+
+  (bens.length>0?bens.map((b,i)=>`<div class="contract-item">
+    <div style="flex:1"><div style="font-size:14px;font-weight:600">${b.tipo==='imovel'?'🏠':b.tipo==='veiculo'?'🚗':'📦'} ${b.descricao}</div>
+    <div style="font-size:11px;color:var(--tx3)">${b.tipo} · Adq: ${b.dataAquisicao||'—'}</div></div>
+    <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:${co}">${FMT.brl(b.valor)}</div>
+    <button class="task-del" onclick="deleteBem(${i})">🗑</button>
+  </div>`).join(''):'<div style="padding:20px;text-align:center;color:var(--tx3)">Nenhum bem cadastrado.</div>');
+}
+function addBem(){
+  const tipo=prompt('Tipo (imovel/veiculo/outro):','imovel');if(!tipo)return;
+  const descricao=prompt('Descrição:');if(!descricao)return;
+  const valor=parseFloat(prompt('Valor estimado (R$):','0'))||0;
+  const dataAquisicao=prompt('Data aquisição:','')||'';
+  const bens=getPatrimonio();bens.push({tipo,descricao,valor,dataAquisicao,id:crypto.randomUUID()});
+  savePatrimonio(bens);renderTab();
+}
+function deleteBem(i){const b=getPatrimonio();b.splice(i,1);savePatrimonio(b);renderTab()}
+
+// ── INVESTIMENTOS (Gestão Pessoal) ──────────────────────────────────────
+function getInvestimentos(){ return JSON.parse(localStorage.getItem('orion_inv_gp')||'[]') }
+function saveInvestimentos(inv){ localStorage.setItem('orion_inv_gp',JSON.stringify(inv)) }
+function renderInvestimentos(e,c,co){
+  const invs=getInvestimentos();
+  const totalAplicado=invs.reduce((s,i)=>s+FMT.num(i.aplicado),0);
+  const totalAtual=invs.reduce((s,i)=>s+FMT.num(i.atual),0);
+  const rendTotal=totalAplicado>0?((totalAtual-totalAplicado)/totalAplicado*100):0;
+  const tipoIcons={'renda_fixa':'🏦','acoes':'📈','fii':'🏢','crypto':'₿','outro':'💰'};
+  c.innerHTML=`<div class="flex aic jsb mb">
+    <div><div class="slbl" style="margin:0">Investimentos</div>
+    <div style="font-size:12px;color:var(--tx3)">Aplicado: ${FMT.brl(totalAplicado)} · Atual: <b style="color:${co}">${FMT.brl(totalAtual)}</b> · Rend: <span style="color:${rendTotal>=0?'var(--green)':'var(--red)'}"> ${FMT.pctVal(rendTotal)}</span></div></div>
+    <button class="btn-sm btn-blue" onclick="addInvestimento()">+ Novo</button>
+  </div>`+
+  (invs.length>0?invs.map((inv,i)=>{
+    const rend=inv.aplicado>0?((inv.atual-inv.aplicado)/inv.aplicado*100):0;
+    return `<div class="contract-item">
+      <div style="flex:1"><div style="font-size:14px;font-weight:600">${tipoIcons[inv.tipo]||'💰'} ${inv.descricao}</div>
+      <div style="font-size:11px;color:var(--tx3)">${inv.tipo} · Rend: <span style="color:${rend>=0?'var(--green)':'var(--red)'}"> ${FMT.pctVal(rend)}</span></div></div>
+      <div style="text-align:right"><div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:${co}">${FMT.brl(inv.atual)}</div>
+      <div style="font-size:10px;color:var(--tx3)">Aplicado: ${FMT.brl(inv.aplicado)}</div></div>
+      <button class="task-del" onclick="deleteInvestimento(${i})">🗑</button>
+    </div>`;
+  }).join(''):'<div style="padding:20px;text-align:center;color:var(--tx3)">Nenhum investimento cadastrado.</div>');
+}
+function addInvestimento(){
+  const tipo=prompt('Tipo (renda_fixa/acoes/fii/crypto/outro):','renda_fixa');if(!tipo)return;
+  const descricao=prompt('Descrição:');if(!descricao)return;
+  const aplicado=parseFloat(prompt('Valor aplicado (R$):','0'))||0;
+  const atual=parseFloat(prompt('Valor atual (R$):',String(aplicado)))||aplicado;
+  const invs=getInvestimentos();invs.push({tipo,descricao,aplicado,atual,id:crypto.randomUUID()});
+  saveInvestimentos(invs);renderTab();
+}
+function deleteInvestimento(i){const v=getInvestimentos();v.splice(i,1);saveInvestimentos(v);renderTab()}
+
+// ── PACIENTES (Doctor Wealth) ──────────────────────────────────────────────
+function getPacientes(){ return JSON.parse(localStorage.getItem('orion_pacientes_dw')||'[]') }
+function savePacientes(p){ localStorage.setItem('orion_pacientes_dw',JSON.stringify(p)) }
+function renderPacientes(e,c,co){
+  const pacs=getPacientes();
+  const totalRec=pacs.reduce((s,p)=>s+FMT.num(p.recorrente),0);
+  const inadimCount=pacs.filter(p=>p.inadimplente).length;
+  c.innerHTML=`<div class="flex aic jsb mb">
+    <div><div class="slbl" style="margin:0">Pacientes / Clientes — ${e.nome}</div>
+    <div style="font-size:12px;color:var(--tx3)">${pacs.length} ativos · Rec: ${FMT.brl(totalRec)}/mês · ${inadimCount} inadimplente(s)</div></div>
+    <button class="btn-sm btn-blue" onclick="addPaciente()">+ Novo Paciente</button>
+  </div>`+
+  (pacs.length>0?pacs.map((p,i)=>`<div class="task-item" style="border-left-color:${p.inadimplente?'var(--red)':'var(--green)'}">
+    <span style="font-size:16px">👤</span>
+    <div style="flex:1"><div style="font-size:14px;font-weight:600">${p.nome}</div>
+    <div style="font-size:11px;color:var(--tx3)">${p.proxima||'Sem agendamento'}</div></div>
+    <div style="text-align:right"><div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:${co}">${FMT.brl(p.recorrente)}/mês</div>
+    ${p.inadimplente?'<span class="stag" style="color:var(--red);background:rgba(239,68,68,.15)">Inadimplente</span>':''}</div>
+    <button class="task-del" onclick="deletePaciente(${i})">🗑</button>
+  </div>`).join(''):'<div style="padding:20px;text-align:center;color:var(--tx3)">Nenhum paciente cadastrado.</div>');
+}
+function addPaciente(){
+  const nome=prompt('Nome do paciente/cliente:');if(!nome)return;
+  const recorrente=parseFloat(prompt('Receita recorrente (R$/mês):','890'))||0;
+  const inadimplente=confirm('Está inadimplente?');
+  const proxima=prompt('Próxima consulta/reunião:','')||'';
+  const pacs=getPacientes();pacs.push({nome,recorrente,inadimplente,proxima,id:crypto.randomUUID()});
+  savePacientes(pacs);renderTab();
+}
+function deletePaciente(i){const p=getPacientes();p.splice(i,1);savePacientes(p);renderTab()}
+
+// ── RELATÓRIO EXECUTIVO ──────────────────────────────────────────────────
+async function gerarRelatorioExecutivo(){
+  const apiKey=localStorage.getItem('orion_api_key')||'';
+  const emps=Object.values(EMPS).filter(e=>!e.id.startsWith('custom_'));
+  const dados=emps.map(e=>`${e.nome} (${e.sigla}): Fat ${FMT.brlK(e.fat)}, Result ${FMT.brlK(e.result)}, Score ${e.score}, Status ${e.status}`).join('\n');
+  const alerts=getAlerts().filter(a=>!a.read).map(a=>a.text).join('; ');
+  const prompt_text=`Gere um relatório executivo completo do ecossistema ORION de Maxwell Machado.
+
+Dados das empresas:
+${dados}
+
+Alertas ativos: ${alerts||'Nenhum'}
+
+Estruture em seções:
+1. RESUMO EXECUTIVO (3 frases)
+2. ANÁLISE POR EMPRESA (cada uma com situação, ponto forte, ponto de atenção)
+3. RISCOS IDENTIFICADOS
+4. OPORTUNIDADES
+5. RECOMENDAÇÕES DE AÇÃO (top 5 prioridades)
+
+Seja direto, executivo, em português. Máximo 800 palavras.`;
+
+  const modal=document.createElement('div');
+  modal.className='overlay';
+  modal.onclick=ev=>{if(ev.target===modal)modal.remove()};
+  modal.innerHTML=`<div class="modal" style="position:relative;width:640px;max-height:80vh;overflow-y:auto">
+    <button class="modal-close" onclick="this.closest('.overlay').remove()">&times;</button>
+    <h2>📊 Relatório Executivo</h2>
+    <div id="relatorio-content" style="font-size:13px;line-height:1.6;color:var(--tx)"><em style="color:var(--blue3)">Gerando relatório com MAXXXI...</em></div>
+    <div class="modal-actions" style="margin-top:16px">
+      <button class="btn-sm btn-ghost" onclick="this.closest('.overlay').remove()">Fechar</button>
+      <button class="btn-sm btn-ghost" onclick="navigator.clipboard.writeText(document.getElementById('relatorio-content').innerText);showToast('Copiado!')">📋 Copiar</button>
+      <button class="btn-sm btn-blue" onclick="window.print()">🖨️ Imprimir</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+
+  if(!apiKey){
+    document.getElementById('relatorio-content').innerHTML=gerarRelatorioLocal(emps,alerts);
+    return;
+  }
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1500,messages:[{role:'user',content:prompt_text}]})
+    });
+    const d=await res.json();
+    const text=d.content?.[0]?.text||'Erro ao gerar relatório.';
+    document.getElementById('relatorio-content').innerHTML=text.replace(/\n/g,'<br>');
+  }catch(e){
+    document.getElementById('relatorio-content').innerHTML=gerarRelatorioLocal(emps,alerts);
+  }
+}
+function gerarRelatorioLocal(emps,alerts){
+  const portfolio=emps.filter(e=>e.id!=='gp');
+  const totalFat=portfolio.reduce((s,e)=>s+e.fat,0);
+  const totalRes=portfolio.reduce((s,e)=>s+e.result,0);
+  const melhor=[...portfolio].sort((a,b)=>b.result-a.result)[0];
+  const pior=[...portfolio].sort((a,b)=>a.score-b.score)[0];
+  return `<b>RESUMO EXECUTIVO</b><br>Ecossistema com faturamento de ${FMT.brlK(totalFat)} e resultado de ${FMT.brlK(totalRes)}. ${melhor.sigla} lidera em resultado. ${pior.sigla} requer atenção (score ${pior.score}).<br><br>`+
+    `<b>ANÁLISE POR EMPRESA</b><br>`+portfolio.map(e=>`<b>${e.nome}</b>: Fat ${FMT.brlK(e.fat)}, Score ${e.score}, Status ${e.status}. ${e.result>0?'Resultado positivo.':'⚠️ Atenção.'}<br>`).join('')+
+    `<br><b>RISCOS</b><br>${alerts||'Nenhum alerta crítico no momento.'}<br><br>`+
+    `<b>RECOMENDAÇÕES</b><br>1. Priorizar ${pior.sigla} (score mais baixo)<br>2. Manter crescimento de ${melhor.sigla}<br>3. Revisar inadimplência do portfólio<br>4. Atualizar metas trimestrais<br>5. Agendar reunião de planejamento estratégico`;
 }
 
 // ── FINANCEIRO TAB ──────────────────────────────────────────────────────

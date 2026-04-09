@@ -658,6 +658,7 @@ a{color:inherit;text-decoration:none}
     <div class="sb-lbl">Navegação</div>
     <div class="sb-item active" id="nav-home" onclick="goHome()">🏠 Home</div>
     <div class="sb-item" id="nav-ceo" onclick="goCEO()">📊 Visão CEO</div>
+    <div class="sb-item" id="nav-agenda" onclick="goAgenda()">📅 Agenda</div>
   </div>
   <div class="sb-div"></div>
   <div class="sb-section">
@@ -874,6 +875,16 @@ a{color:inherit;text-decoration:none}
     </div>
     <div id="vceo-alertas"></div>
   </div>
+</div>
+
+<!-- AGENDA GLOBAL -->
+<div id="page-agenda" class="hidden">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+    <div><h1 style="font-family:'Syne',sans-serif;font-size:24px;font-weight:900">📅 Agenda Global</h1>
+    <div style="font-size:13px;color:var(--tx3);margin-top:4px">Compromissos de todas as empresas</div></div>
+    <button class="btn-sm btn-blue" onclick="openModal('modal-evento')">+ Evento</button>
+  </div>
+  <div id="agenda-global-list"></div>
 </div>
 
 <!-- WORKSPACE -->
@@ -2233,13 +2244,31 @@ function exportCeoPDF(){
 
 // ── NAVEGAÇÃO ──────────────────────────────────────────────────────────────
 function showPage(pg){
-  ['home','ceo','ws'].forEach(p=>{
+  ['home','ceo','ws','agenda'].forEach(p=>{
     const el=document.getElementById('page-'+p);
-    el.classList.toggle('hidden',p!==pg);
-    if(p===pg){el.classList.remove('page-enter');void el.offsetWidth;el.classList.add('page-enter')}
+    if(el){el.classList.toggle('hidden',p!==pg);
+    if(p===pg){el.classList.remove('page-enter');void el.offsetWidth;el.classList.add('page-enter')}}
   });
 }
 function clearSb(){document.querySelectorAll('.sb-item').forEach(el=>el.classList.remove('active'))}
+
+function goAgenda(){
+  clearSb();
+  const el=document.getElementById('nav-agenda');if(el)el.classList.add('active');
+  showPage('agenda');
+  renderAgendaGlobal();
+}
+function renderAgendaGlobal(){
+  const el=document.getElementById('agenda-global-list');if(!el)return;
+  const all=[...AGENDA];
+  // Add compromissos GP
+  getCompromissosGP().forEach(c=>{all.push({titulo:c.titulo+' (GP)',dia:'',num:'',hora:c.hora||c.data||'',cor:'#ec4899'})});
+  el.innerHTML=all.length>0?all.map((a,i)=>`
+    <div class="ag-item" style="border-left-color:${a.cor||'var(--blue)'}">
+      <div class="ag-date"><div class="ag-day">${a.dia||''}</div><div class="ag-num">${a.num||''}</div></div>
+      <div style="flex:1"><div style="font-size:14px;font-weight:500">${a.titulo}</div><div style="font-size:12px;color:var(--tx3)">${a.hora||''}</div></div>
+    </div>`).join(''):'<div style="padding:20px;text-align:center;color:var(--tx3)">Nenhum compromisso agendado.</div>';
+}
 
 function goHome(){
   clearSb();
@@ -2315,9 +2344,10 @@ function openDrive(){window.open(curEmp?EMPS[curEmp]?.drive:'https://drive.googl
 
 // ── WORKSPACE ──────────────────────────────────────────────────────────────
 const WS_TABS_ALL=['KPIs','OKRs','Tarefas','Financeiro','Pipeline','Contratos','Riscos','Decisões','CRM','Notas','Arquivos'];
-const GP_TABS_DEFAULT=['KPIs','Patrimônio','Investimentos','Financeiro','Notas','Arquivos'];
+const GP_TABS_DEFAULT=['KPIs','Patrimônio','Investimentos','Financeiro','Metas','Compromissos','Notas','Arquivos'];
 const FS_TABS_DEFAULT=['KPIs','OKRs','Tarefas','Financeiro','Fundos','Projeções','Rentabilidade','Pipeline','Contratos','CRM','Notas','Arquivos'];
-const DW_TABS_DEFAULT=['KPIs','OKRs','Tarefas','Financeiro','Pacientes','Pipeline','Contratos','Riscos','Decisões','CRM','Notas','Arquivos'];
+const DW_TABS_DEFAULT=['KPIs','OKRs','Tarefas','Financeiro','Pacientes','Honorários','Pipeline','Contratos','Riscos','Decisões','CRM','Notas','Arquivos'];
+const OF_TABS_DEFAULT=['KPIs','OKRs','Tarefas','Financeiro','Projetos','Equipe','Pipeline','Contratos','Riscos','CRM','Notas','Arquivos'];
 
 function getEmpModulos(empresaId){
   const stored=localStorage.getItem('orion_modulos_'+empresaId);
@@ -2325,6 +2355,7 @@ function getEmpModulos(empresaId){
   if(empresaId==='gp') return GP_TABS_DEFAULT;
   if(empresaId==='fs') return FS_TABS_DEFAULT;
   if(empresaId==='dw') return DW_TABS_DEFAULT;
+  if(empresaId==='of') return OF_TABS_DEFAULT;
   return WS_TABS_ALL;
 }
 function saveEmpModulos(empresaId, modulos){
@@ -2546,6 +2577,11 @@ function renderTab(){
   else if(curTab==='Patrimônio'){ renderPatrimonio(e,c,co) }
   else if(curTab==='Investimentos'){ renderInvestimentos(e,c,co) }
   else if(curTab==='Pacientes'){ renderPacientes(e,c,co) }
+  else if(curTab==='Metas'){ renderMetasPessoais(e,c,co) }
+  else if(curTab==='Compromissos'){ renderCompromissosGP(e,c,co) }
+  else if(curTab==='Honorários'){ renderHonorarios(e,c,co) }
+  else if(curTab==='Projetos'){ renderProjetosOF(e,c,co) }
+  else if(curTab==='Equipe'){ renderEquipeOF(e,c,co) }
 }
 
 function handleFiles(ev){
@@ -2766,6 +2802,148 @@ function addPaciente(){
   savePacientes(pacs);renderTab();
 }
 function deletePaciente(i){const p=getPacientes();p.splice(i,1);savePacientes(p);renderTab()}
+
+// ── METAS PESSOAIS (GP) ──────────────────────────────────────────────────
+function getMetasGP(){ return JSON.parse(localStorage.getItem('orion_metas_gp')||'[]') }
+function saveMetasGP(m){ localStorage.setItem('orion_metas_gp',JSON.stringify(m)) }
+function renderMetasPessoais(e,c,co){
+  const metas=getMetasGP();
+  c.innerHTML=`<div class="flex aic jsb mb"><div class="slbl" style="margin:0">Metas Pessoais</div>
+    <button class="btn-sm btn-blue" onclick="addMetaGP()">+ Nova Meta</button></div>`+
+  (metas.length>0?metas.map((m,i)=>{
+    const pct=m.alvo>0?Math.min(m.atual/m.alvo*100,100):0;
+    const statusC=pct>=70?'var(--green)':pct>=40?'var(--amber)':'var(--red)';
+    return `<div class="okr-item"><div class="flex aic jsb mb-sm">
+      <div><div style="font-size:14px;font-weight:600">${m.titulo}</div><div style="font-size:11px;color:var(--tx3)">Prazo: ${m.prazo||'—'}</div></div>
+      <div style="text-align:right"><span style="font-family:'Syne',sans-serif;font-size:17px;font-weight:900;color:${statusC}">${pct.toFixed(0)}%</span></div>
+      <button class="task-del" onclick="deleteMetaGP(${i})">🗑</button>
+    </div>
+    <div style="font-size:12px;color:var(--tx3);margin-bottom:4px">${FMT.brl(m.atual)} / ${FMT.brl(m.alvo)}</div>
+    <div class="pbar"><div class="pfill" style="width:${pct}%;background:${co}"></div></div></div>`;
+  }).join(''):'<div style="padding:20px;text-align:center;color:var(--tx3)">Nenhuma meta cadastrada.</div>');
+}
+function addMetaGP(){
+  const titulo=prompt('Título da meta:');if(!titulo)return;
+  const alvo=parseFloat(prompt('Valor alvo (R$):','100000'))||0;
+  const atual=parseFloat(prompt('Valor atual (R$):','0'))||0;
+  const prazo=prompt('Prazo:','Dez/2026')||'';
+  const metas=getMetasGP();metas.push({titulo,alvo,atual,prazo,id:crypto.randomUUID()});
+  saveMetasGP(metas);renderTab();
+}
+function deleteMetaGP(i){const m=getMetasGP();m.splice(i,1);saveMetasGP(m);renderTab()}
+
+// ── COMPROMISSOS (GP) ──────────────────────────────────────────────────────
+function getCompromissosGP(){ return JSON.parse(localStorage.getItem('orion_comp_gp')||'[]') }
+function saveCompromissosGP(c){ localStorage.setItem('orion_comp_gp',JSON.stringify(c)) }
+function renderCompromissosGP(e,c,co){
+  const comps=getCompromissosGP().sort((a,b)=>(a.data||'').localeCompare(b.data||''));
+  c.innerHTML=`<div class="flex aic jsb mb"><div class="slbl" style="margin:0">Compromissos Pessoais</div>
+    <button class="btn-sm btn-blue" onclick="addCompGP()">+ Novo</button></div>`+
+  (comps.length>0?comps.map((cp,i)=>{
+    const dias=cp.data?Math.ceil((new Date(cp.data)-new Date())/86400000):999;
+    const urgC=dias<0?'var(--red)':dias<=3?'var(--amber)':'var(--green)';
+    return `<div class="ag-item" style="border-left-color:${urgC}">
+      <div class="ag-date"><div class="ag-day">${cp.data?new Date(cp.data+'T12:00:00').toLocaleDateString('pt-BR',{weekday:'short'}).toUpperCase():''}</div>
+      <div class="ag-num" style="font-size:16px">${cp.data?new Date(cp.data+'T12:00:00').getDate():''}</div></div>
+      <div style="flex:1"><div style="font-size:14px;font-weight:500">${cp.titulo}</div><div style="font-size:12px;color:var(--tx3)">${cp.hora||''} ${cp.tipo||''}</div></div>
+      <button class="task-del" onclick="deleteCompGP(${i})">🗑</button>
+    </div>`;
+  }).join(''):'<div style="padding:20px;text-align:center;color:var(--tx3)">Nenhum compromisso.</div>');
+}
+function addCompGP(){
+  const titulo=prompt('Título:');if(!titulo)return;
+  const data=prompt('Data (YYYY-MM-DD):',new Date().toISOString().slice(0,10))||'';
+  const hora=prompt('Hora:','')||'';
+  const tipo=prompt('Tipo (reunião/pessoal/saúde/financeiro):','pessoal')||'';
+  const comps=getCompromissosGP();comps.push({titulo,data,hora,tipo,id:crypto.randomUUID()});
+  saveCompromissosGP(comps);renderTab();
+}
+function deleteCompGP(i){const c=getCompromissosGP();c.splice(i,1);saveCompromissosGP(c);renderTab()}
+
+// ── HONORÁRIOS (Doctor Wealth) ──────────────────────────────────────────────
+function getHonorarios(){ return JSON.parse(localStorage.getItem('orion_honor_dw')||'[]') }
+function saveHonorarios(h){ localStorage.setItem('orion_honor_dw',JSON.stringify(h)) }
+function renderHonorarios(e,c,co){
+  const honors=getHonorarios();
+  const totalPendente=honors.filter(h=>h.status!=='pago').reduce((s,h)=>s+FMT.num(h.valor),0);
+  const totalPago=honors.filter(h=>h.status==='pago').reduce((s,h)=>s+FMT.num(h.valor),0);
+  c.innerHTML=`<div class="flex aic jsb mb"><div><div class="slbl" style="margin:0">Honorários — ${e.nome}</div>
+    <div style="font-size:12px;color:var(--tx3)">Pago: ${FMT.brl(totalPago)} · Pendente: <span style="color:var(--amber)">${FMT.brl(totalPendente)}</span></div></div>
+    <button class="btn-sm btn-blue" onclick="addHonorario()">+ Lançar</button></div>`+
+  (honors.length>0?honors.map((h,i)=>{
+    const sc=h.status==='pago'?'var(--green)':h.status==='vencido'?'var(--red)':'var(--amber)';
+    return `<div class="contract-item" style="border-left:3px solid ${sc}">
+      <div style="flex:1"><div style="font-size:14px;font-weight:600">${h.cliente}</div>
+      <div style="font-size:11px;color:var(--tx3)">Venc: ${h.vencimento||'—'} · Parc: ${h.parcela||'1/1'}</div></div>
+      <div style="text-align:right"><div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:${co}">${FMT.brl(h.valor)}</div>
+      <span class="stag" style="color:${sc};background:${sc}18;font-size:9px">${h.status}</span></div>
+      <button class="task-del" onclick="deleteHonorario(${i})">🗑</button>
+    </div>`;
+  }).join(''):'<div style="padding:20px;text-align:center;color:var(--tx3)">Nenhum honorário lançado.</div>');
+}
+function addHonorario(){
+  const cliente=prompt('Cliente:');if(!cliente)return;
+  const valor=parseFloat(prompt('Valor (R$):','890'))||0;
+  const vencimento=prompt('Vencimento (YYYY-MM-DD):','')||'';
+  const parcela=prompt('Parcela (ex: 1/12):','1/1')||'1/1';
+  const honors=getHonorarios();honors.push({cliente,valor,vencimento,parcela,status:'pendente',id:crypto.randomUUID()});
+  saveHonorarios(honors);renderTab();
+}
+function deleteHonorario(i){const h=getHonorarios();h.splice(i,1);saveHonorarios(h);renderTab()}
+
+// ── PROJETOS (Original Fotografia) ──────────────────────────────────────────
+function getProjetosOF(){ return JSON.parse(localStorage.getItem('orion_proj_of')||'[]') }
+function saveProjetosOF(p){ localStorage.setItem('orion_proj_of',JSON.stringify(p)) }
+function renderProjetosOF(e,c,co){
+  const projs=getProjetosOF();
+  c.innerHTML=`<div class="flex aic jsb mb"><div class="slbl" style="margin:0">Projetos — ${e.nome}</div>
+    <button class="btn-sm btn-blue" onclick="addProjetoOF()">+ Novo Projeto</button></div>`+
+  (projs.length>0?projs.map((p,i)=>{
+    const fases={'captacao':'🔵 Captação','producao':'🟡 Produção','edicao':'🟠 Edição','entrega':'🟢 Entrega'};
+    return `<div class="card" style="margin-bottom:10px">
+      <div class="flex aic jsb mb-sm"><div><div style="font-size:14px;font-weight:700">${p.nome}</div>
+      <div style="font-size:11px;color:var(--tx3)">${p.turma||''} · ${p.data||''}</div></div>
+      <span class="stag" style="color:${co};background:${co}18">${fases[p.fase]||p.fase}</span>
+      <button class="task-del" onclick="deleteProjetoOF(${i})">🗑</button></div>
+      <div class="flex aic jsb" style="font-size:12px;margin-bottom:4px"><span>Valor: ${FMT.brl(p.valor)}</span><span>${p.conclusao||0}% concluído</span></div>
+      <div class="pbar"><div class="pfill" style="width:${p.conclusao||0}%;background:${co}"></div></div>
+    </div>`;
+  }).join(''):'<div style="padding:20px;text-align:center;color:var(--tx3)">Nenhum projeto.</div>');
+}
+function addProjetoOF(){
+  const nome=prompt('Nome do evento/projeto:');if(!nome)return;
+  const turma=prompt('Turma:','')||'';
+  const data=prompt('Data:','')||'';
+  const valor=parseFloat(prompt('Valor contratado (R$):','0'))||0;
+  const fase=prompt('Fase (captacao/producao/edicao/entrega):','captacao')||'captacao';
+  const projs=getProjetosOF();projs.push({nome,turma,data,valor,fase,conclusao:0,id:crypto.randomUUID()});
+  saveProjetosOF(projs);renderTab();
+}
+function deleteProjetoOF(i){const p=getProjetosOF();p.splice(i,1);saveProjetosOF(p);renderTab()}
+
+// ── EQUIPE (Original Fotografia) ──────────────────────────────────────────
+function getEquipeOF(){ return JSON.parse(localStorage.getItem('orion_equipe_of')||'[]') }
+function saveEquipeOF(eq){ localStorage.setItem('orion_equipe_of',JSON.stringify(eq)) }
+function renderEquipeOF(e,c,co){
+  const equipe=getEquipeOF();
+  c.innerHTML=`<div class="flex aic jsb mb"><div class="slbl" style="margin:0">Equipe — ${e.nome}</div>
+    <button class="btn-sm btn-blue" onclick="addMembroOF()">+ Novo Membro</button></div>`+
+  (equipe.length>0?equipe.map((m,i)=>`<div class="task-item" style="border-left-color:${co}">
+    <span style="font-size:16px">👤</span>
+    <div style="flex:1"><div style="font-size:14px;font-weight:600">${m.nome}</div>
+    <div style="font-size:11px;color:var(--tx3)">${m.funcao||'Fotógrafo'} · ${m.eventos||0} eventos</div></div>
+    <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:${co}">${FMT.brl(m.comissao||0)}/evt</div>
+    <button class="task-del" onclick="deleteMembroOF(${i})">🗑</button>
+  </div>`).join(''):'<div style="padding:20px;text-align:center;color:var(--tx3)">Nenhum membro.</div>');
+}
+function addMembroOF(){
+  const nome=prompt('Nome:');if(!nome)return;
+  const funcao=prompt('Função:','Fotógrafo')||'Fotógrafo';
+  const comissao=parseFloat(prompt('Comissão por evento (R$):','500'))||0;
+  const equipe=getEquipeOF();equipe.push({nome,funcao,comissao,eventos:0,id:crypto.randomUUID()});
+  saveEquipeOF(equipe);renderTab();
+}
+function deleteMembroOF(i){const eq=getEquipeOF();eq.splice(i,1);saveEquipeOF(eq);renderTab()}
 
 // ── RELATÓRIO EXECUTIVO ──────────────────────────────────────────────────
 async function gerarRelatorioExecutivo(){
@@ -3813,6 +3991,36 @@ function loadStoredTasks(){
 function loadStoredAgenda(){
   const stored=getStoredAgenda();
   if(stored){AGENDA.length=0;stored.forEach(a=>AGENDA.push(a))}
+}
+
+// ── SESSION TIMEOUT ──────────────────────────────────────────────────────
+let sessionTimer=null;
+function resetSessionTimer(){
+  clearTimeout(sessionTimer);
+  sessionTimer=setTimeout(()=>{
+    if(LS('session')){
+      alert('Sessão expirada por inatividade (2h). Faça login novamente.');
+      doLogout();
+    }
+  },7200000); // 2 hours
+}
+['mousemove','keydown','click','scroll'].forEach(ev=>document.addEventListener(ev,resetSessionTimer,{passive:true}));
+
+// ── OFFLINE INDICATOR ──────────────────────────────────────────────────────
+function updateOnlineStatus(){
+  const dot=document.getElementById('notif-dot');
+  if(!navigator.onLine&&dot) dot.style.background='var(--tx3)';
+  else if(dot) dot.style.background=sbConnected()?'var(--green)':'var(--red)';
+}
+window.addEventListener('online',()=>{updateOnlineStatus();if(sbConnected()){syncFromSupabase();showToast('Online — sincronizando...')}});
+window.addEventListener('offline',()=>{updateOnlineStatus();showToast('Offline — dados salvos localmente')});
+
+// ── ACTION LOG ──────────────────────────────────────────────────────────────
+function logAction(action,detail){
+  const log=JSON.parse(localStorage.getItem('orion_action_log')||'[]');
+  log.push({action,detail,time:new Date().toISOString(),user:JSON.parse(LS('session')||'{}').name||'?'});
+  if(log.length>200) log.splice(0,log.length-200);
+  localStorage.setItem('orion_action_log',JSON.stringify(log));
 }
 
 // ── START ──────────────────────────────────────────────────────────────────

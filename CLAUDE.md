@@ -1,5 +1,15 @@
 # ORION — Plataforma de Gestão Executiva
 
+> **REGRA DE DEPLOY — LER ANTES DE QUALQUER COMMIT:**
+> Todo push DEVE ir para origin (`maxwellmachadoadm-ui/ORION`).
+> **NUNCA** fazer push apenas para MAXXXI esperando chegar ao Vercel.
+> Após cada commit, executar:
+> ```
+> git remote -v        # confirmar que origin = ORION
+> git push origin main
+> ```
+> Se o remote não for ORION, **parar e avisar Maxwell imediatamente**.
+
 ## Arquitetura
 
 - **Tipo**: Single-file static HTML app (`index.html`)

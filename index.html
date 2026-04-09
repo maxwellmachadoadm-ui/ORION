@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>ORION — Plataforma de Gestão Executiva</title>
+<title>ORION – Visão Consolidada</title>
 <link rel="manifest" href="/manifest.json">
 <link rel="icon" type="image/svg+xml" href="/orion-logo.svg">
 <link rel="apple-touch-icon" href="/orion-logo.svg">
@@ -363,7 +363,36 @@ a{color:inherit;text-decoration:none}
 .vceo-funnel{display:flex;flex-direction:column;gap:4px}
 .vceo-funnel-row{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:var(--r2)}
 .vceo-funnel-bar{height:24px;border-radius:4px;display:flex;align-items:center;padding:0 10px;font-size:11px;font-weight:700;color:#fff;min-width:40px}
+/* VISÃO CONSOLIDADA */
+.vc-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.vc-kpi{background:var(--s1);border:1px solid var(--br);border-radius:var(--r);padding:20px;position:relative;overflow:hidden}
+.vc-kpi .vc-stripe{position:absolute;top:0;left:0;right:0;height:3px}
+.vc-kpi .vc-lbl{font-size:11px;font-weight:600;color:var(--tx3);display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.vc-kpi .vc-val{font-family:'Syne',sans-serif;font-size:24px;font-weight:900;line-height:1.1}
+.vc-kpi .vc-delta{font-size:11px;margin-top:6px}
+.vc-chart-area{position:relative;height:200px;display:flex;align-items:flex-end;gap:6px;padding:24px 0 0}
+.vc-chart-area .vc-bar-group{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+.vc-chart-area .vc-bars{display:flex;align-items:flex-end;gap:2px;height:160px;width:100%}
+.vc-chart-area .vc-bar{flex:1;border-radius:3px 3px 0 0;transition:height .4s;min-height:2px;position:relative}
+.vc-chart-area .vc-bar-lbl{font-size:10px;color:var(--tx3);text-align:center;white-space:nowrap}
+.vc-rank-item{display:flex;align-items:center;gap:12px;padding:12px;border-bottom:1px solid var(--br);transition:background .15s}
+.vc-rank-item:last-child{border-bottom:none}
+.vc-rank-item:hover{background:rgba(255,255,255,.02)}
+.vc-rank-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.vc-rank-info{flex:1}
+.vc-rank-name{font-size:13px;font-weight:600}
+.vc-rank-sub{font-size:11px;color:var(--tx3)}
+.vc-rank-val{text-align:right}
+.vc-rank-num{font-family:'Syne',sans-serif;font-size:15px;font-weight:800}
+.vc-rank-delta{font-size:11px}
+.vc-risk-item{padding:12px 14px;margin-bottom:8px;border-radius:var(--r2);background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.15);border-left:3px solid var(--red)}
+.vc-risk-title{font-size:13px;font-weight:700;margin-bottom:4px}
+.vc-risk-detail{font-size:12px;color:var(--tx2);line-height:1.5}
+.vc-opp-item{padding:10px 14px;margin-bottom:8px;border-radius:var(--r2);border-left:3px solid;font-size:12px;line-height:1.4}
+.vc-tooltip{position:absolute;top:-28px;left:50%;transform:translateX(-50%);background:var(--s1);border:1px solid var(--br);border-radius:6px;padding:3px 8px;font-size:10px;color:var(--tx);white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s;z-index:10}
+.vc-bar:hover .vc-tooltip{opacity:1}
 @media(max-width:768px){
+  .vc-kpis{grid-template-columns:1fr 1fr}
   .vceo-kpis{grid-template-columns:1fr 1fr}
   .vceo-table{font-size:11px}
   .vceo-table th,.vceo-table td{padding:6px 8px}
@@ -656,7 +685,7 @@ a{color:inherit;text-decoration:none}
 <nav class="sidebar" id="main-sidebar">
   <div class="sb-section">
     <div class="sb-lbl">Navegação</div>
-    <div class="sb-item active" id="nav-home" onclick="goHome()">🏠 Home</div>
+    <div class="sb-item active" id="nav-home" onclick="goHome()">📊 Visão Consolidada</div>
     <div class="sb-item" id="nav-ceo" onclick="goCEO()">📊 Visão CEO</div>
     <div class="sb-item" id="nav-agenda" onclick="goAgenda()">📅 Agenda</div>
   </div>
@@ -694,20 +723,89 @@ a{color:inherit;text-decoration:none}
 <!-- CONTENT -->
 <main class="content" id="content">
 
-<!-- HOME -->
+<!-- HOME — VISÃO CONSOLIDADA -->
 <div id="page-home">
-  <div style="margin-bottom:20px">
-    <div style="font-size:12px;color:var(--blue3);font-weight:600;letter-spacing:4px;text-transform:uppercase;margin-bottom:4px" id="home-greeting">BOM DIA, MAXWELL</div>
-    <h1 style="font-family:'Syne',sans-serif;font-size:26px;font-weight:900;color:#fff;line-height:1.1">Qual empresa vamos trabalhar agora?</h1>
-    <div style="font-size:13px;color:var(--tx3);margin-top:4px" id="home-date"></div>
+  <!-- GREETING -->
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+    <div>
+      <div id="home-greeting" style="font-size:12px;color:var(--blue3);font-weight:600;letter-spacing:4px;text-transform:uppercase;margin-bottom:4px">BOA TARDE, MAXWELL</div>
+      <div style="font-size:12px;color:var(--tx3)" id="home-sub">Dados atualizados com foco em finanças por objetivos</div>
+      <div style="font-size:13px;color:var(--tx3);margin-top:2px" id="home-date"></div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <span style="font-size:13px;color:var(--tx3)" id="home-dateright"></span>
+      <button class="tb-btn" onclick="exportCeoPDF()" style="font-size:12px">📊 Exportar Relatório</button>
+    </div>
   </div>
 
-  <!-- KPIs -->
-  <div class="g4 mb" id="home-kpis">
-    <div class="card"><div style="display:flex;justify-content:space-between;align-items:flex-start"><div><div class="lbl">Resultado Líquido</div><div class="val txt-green" id="kpi-result">R$ 46,7k</div><div class="delta-up" id="kpi-result-delta">▲ +12,1% vs mês anterior</div></div><div class="spark" id="spark-res"></div></div></div>
-    <div class="card"><div style="display:flex;justify-content:space-between;align-items:flex-start"><div><div class="lbl">Margem Consolidada</div><div class="val txt-blue" id="kpi-margem">36,8%</div><div class="delta-neu" id="kpi-fat-sub">Fat. R$ 126,5k</div></div><div class="spark" id="spark-fat"></div></div></div>
-    <div class="card"><div style="display:flex;justify-content:space-between;align-items:flex-start"><div><div class="lbl">Health Score Médio</div><div class="val" style="color:#a78bfa" id="kpi-health">71</div><div class="delta-neu" id="kpi-emp-count">5 empresas ativas</div></div><div class="prog-ring" id="health-ring"></div></div></div>
-    <div class="card"><div style="display:flex;justify-content:space-between;align-items:flex-start"><div><div class="lbl">Alertas Ativos</div><div class="val txt-red" id="kpi-alerts">4</div><div class="delta-neu">2 críticos · 2 atenção</div></div><div class="spark" id="spark-alerts"></div></div></div>
+  <!-- TITLE -->
+  <div style="margin-bottom:20px">
+    <h1 style="font-family:'Syne',sans-serif;font-size:24px;font-weight:900;color:#fff">ORION – Visão Consolidada</h1>
+    <div style="font-size:13px;color:var(--tx3)">Visão Consolidada do Ecossistema Empresarial</div>
+  </div>
+
+  <!-- 4 KPI CARDS -->
+  <div class="vc-kpis" id="vc-kpis"></div>
+
+  <!-- CHART + RANKING -->
+  <div class="g21 mb">
+    <div class="card">
+      <div class="flex aic jsb mb-sm">
+        <div class="slbl" style="margin:0">Receita e Resultado por Empresa</div>
+        <div class="flex gap8">
+          <span class="stag" style="color:var(--blue3);background:rgba(59,130,246,.15);font-size:10px">6M</span>
+          <span class="stag" style="color:var(--tx3);background:var(--s2);font-size:10px">Todas Empresas ▾</span>
+        </div>
+      </div>
+      <div class="vc-chart-area" id="vc-chart"></div>
+      <div style="display:flex;gap:14px;margin-top:8px;justify-content:center">
+        <span style="font-size:10px;color:var(--tx3)"><span style="display:inline-block;width:8px;height:8px;background:var(--blue);border-radius:2px;margin-right:3px"></span>Receita</span>
+        <span style="font-size:10px;color:var(--tx3)"><span style="display:inline-block;width:8px;height:8px;background:var(--green);border-radius:2px;margin-right:3px"></span>Resultado</span>
+        <span style="font-size:10px;color:var(--tx3)"><span style="display:inline-block;width:8px;height:8px;background:rgba(96,165,250,.4);border-radius:0;border-top:2px solid var(--blue3);width:16px;height:0;margin-right:3px"></span>Vielara</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="flex aic jsb mb-sm">
+        <div class="slbl" style="margin:0">Ranking de Performance</div>
+        <div class="flex gap8">
+          <span style="font-size:10px;color:var(--tx3)" id="vc-rank-count"></span>
+          <span class="stag" style="color:var(--tx3);background:var(--s2);font-size:10px">PROPS ▾</span>
+        </div>
+      </div>
+      <div id="vc-ranking"></div>
+    </div>
+  </div>
+
+  <!-- TABLE + RISKS -->
+  <div class="g21 mb">
+    <div class="card">
+      <div class="flex aic jsb mb-sm">
+        <div class="slbl" style="margin:0">Visão Geral das Empresas</div>
+        <div class="flex gap8">
+          <span class="stag" style="color:var(--tx3);background:var(--s2);font-size:10px">⬆ Todas Empresas ▾</span>
+        </div>
+      </div>
+      <div style="overflow-x:auto"><table class="vceo-table" id="vc-table"></table></div>
+    </div>
+    <div class="card">
+      <div class="flex aic jsb mb-sm">
+        <div class="slbl" style="margin:0">⚠ Empresas em Risco</div>
+        <span style="font-size:11px;color:var(--red)" id="vc-risk-count"></span>
+      </div>
+      <div id="vc-risks"></div>
+    </div>
+  </div>
+
+  <!-- ALERTS + OPPORTUNITIES -->
+  <div class="g2 mb">
+    <div class="card">
+      <div class="slbl">⚠ Alertas Inteligentes</div>
+      <div id="home-alerts"></div>
+    </div>
+    <div class="card">
+      <div class="slbl">⚠ Oportunidades e Recomendações</div>
+      <div id="vc-opportunities"></div>
+    </div>
   </div>
 
   <!-- PORTFÓLIO -->
@@ -724,15 +822,9 @@ a{color:inherit;text-decoration:none}
       <div class="flex aic jsb mb-sm">
         <div class="flex aic gap8">
           <span style="font-size:16px">📅</span>
-          <div>
-            <div class="lbl" style="margin:0">Agenda</div>
-            <div style="font-size:11px;color:var(--green);font-weight:600;letter-spacing:1px">Google Calendar</div>
-          </div>
+          <div><div class="lbl" style="margin:0">Agenda</div></div>
         </div>
-        <div class="flex gap8">
-          <button class="tb-btn" style="font-size:11px;padding:5px 10px">🔗 Link</button>
-          <button class="tb-btn" style="font-size:11px;padding:5px 10px;color:var(--blue3);border-color:var(--br2)" onclick="openModal('modal-evento')">+ Evento</button>
-        </div>
+        <button class="tb-btn" style="font-size:11px;padding:5px 10px;color:var(--blue3);border-color:var(--br2)" onclick="openModal('modal-evento')">+ Evento</button>
       </div>
       <div id="agenda-list"></div>
     </div>
@@ -742,7 +834,7 @@ a{color:inherit;text-decoration:none}
         <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--tx2)">MAXXXI Live — Radar de Mercado</div>
         <button class="tb-btn" style="margin-left:auto;font-size:11px;padding:4px 10px" onclick="startLive()">▶ Iniciar</button>
       </div>
-      <div id="live-feed" style="font-size:13px;color:var(--tx3);font-style:italic">Clique em ▶ para o MAXXXI varrer notícias de mercado e economia em tempo real.</div>
+      <div id="live-feed" style="font-size:13px;color:var(--tx3);font-style:italic">Clique em ▶ para o MAXXXI varrer notícias.</div>
     </div>
   </div>
 
@@ -759,15 +851,6 @@ a{color:inherit;text-decoration:none}
       <div><div class="lbl">O que é prioridade hoje?</div><textarea rows="3" placeholder="Digite aqui..." id="ci1" oninput="saveCI()"></textarea></div>
       <div><div class="lbl">Qual decisão não pode esperar?</div><textarea rows="3" placeholder="Digite aqui..." id="ci2" oninput="saveCI()"></textarea></div>
       <div><div class="lbl">Que resultado vou entregar hoje?</div><textarea rows="3" placeholder="Digite aqui..." id="ci3" oninput="saveCI()"></textarea></div>
-    </div>
-  </div>
-
-  <!-- ALERTAS MAXXXI -->
-  <div>
-    <div class="slbl">🤖 MAXXXI — Alertas Ativos</div>
-    <div id="home-alerts"></div>
-    <div style="margin-top:8px;text-align:center">
-      <button class="tb-btn" style="font-size:12px" onclick="toggleMXDrawer()">Abrir MAXXXI para detalhes →</button>
     </div>
   </div>
 </div>
@@ -1872,12 +1955,11 @@ async function initPlatform(){
   }
   // render
   renderEmpGrid();
-  renderHomeKPIs();
+  renderVisaoConsolidada();
   renderAgenda();
   renderCEO();
   renderSparklines();
   renderAlertsDd();
-  renderHomeAlerts();
   updateMXBadge();
   loadCI();
   checkDailyCheckin();
@@ -2296,6 +2378,7 @@ function goHome(){
   curEmp=null;
   localStorage.removeItem('orion_empresa_ativa');
   showPage('home');
+  renderVisaoConsolidada();
 }
 function goCEO(){
   clearSb();
@@ -3764,21 +3847,7 @@ function mxLocalAnalysis(k){
 }
 
 // ── HOME ALERTS RENDER ──────────────────────────────────────────────────────
-function renderHomeKPIs(){
-  const portfolio=Object.values(EMPS).filter(e=>!e.id.startsWith('custom_')&&e.id!=='gp');
-  const totalFat=portfolio.reduce((s,e)=>s+FMT.num(e.fat),0);
-  const totalResult=portfolio.reduce((s,e)=>s+FMT.num(e.result),0);
-  const margem=totalFat>0?(totalResult/totalFat*100):0;
-  const avgScore=Math.round(portfolio.reduce((s,e)=>s+FMT.calcHealthScore(e.fat,e.result,e.meta,e.id==='of'?8.7:e.id==='dw'?3.2:e.id==='cdl'?2.1:0),0)/Math.max(portfolio.length,1));
-  const alerts=getAlerts().filter(a=>!a.read).length;
-  const el1=document.getElementById('kpi-result');if(el1)el1.textContent=FMT.brlK(totalResult);
-  const el1d=document.getElementById('kpi-result-delta');if(el1d)el1d.textContent=totalResult>0?'▲ Portfólio positivo':'▼ Atenção';
-  if(el1)el1.style.color=totalResult>0?'var(--green)':'var(--red)';
-  const el2=document.getElementById('kpi-margem');if(el2)el2.textContent=FMT.pctVal(margem);
-  const el2s=document.getElementById('kpi-fat-sub');if(el2s)el2s.textContent='Fat. '+FMT.brlK(totalFat);
-  const el3=document.getElementById('kpi-health');if(el3)el3.textContent=avgScore;
-  const el4=document.getElementById('kpi-alerts');if(el4)el4.textContent=alerts;
-}
+function renderHomeKPIs(){ renderVisaoConsolidada(); }
 
 function renderHomeAlerts(){
   const alerts=getAlerts();
@@ -3787,6 +3856,174 @@ function renderHomeAlerts(){
   el.innerHTML=alerts.map(a=>`
     <div class="${a.level==='red'?'alert-r':'alert-a'}">${a.level==='red'?'🔴':'🟡'} ${a.text}</div>
   `).join('');
+}
+
+// ── VISÃO CONSOLIDADA ──────────────────────────────────────────────────────
+function renderVisaoConsolidada(){
+  const allEmps=Object.values(EMPS).filter(e=>!e.id.startsWith('custom_'));
+  const portfolio=allEmps.filter(e=>e.id!=='gp');
+  const kpis=portfolio.map(e=>ceoCalcEmpresa(e.id)).filter(Boolean);
+  const totalReceita=kpis.reduce((s,k)=>s+k.receita,0);
+  const totalDespesa=kpis.reduce((s,k)=>s+k.despesa,0);
+  const totalResultado=totalReceita-totalDespesa;
+  const totalCaixa=kpis.reduce((s,k)=>s+k.receita*2.2,0); // estimate
+  const alerts=getAlerts();
+
+  // Date right
+  const drEl=document.getElementById('home-dateright');
+  if(drEl){const d=new Date();drEl.textContent=d.toLocaleDateString('pt-BR',{day:'numeric',month:'long',year:'numeric'})}
+
+  // ── KPIs ──
+  const kpiEl=document.getElementById('vc-kpis');
+  if(kpiEl) kpiEl.innerHTML=`
+    <div class="vc-kpi"><div class="vc-stripe" style="background:var(--blue)"></div>
+      <div class="vc-lbl">📊 Receita</div>
+      <div class="vc-val txt-blue">${FMT.brl(totalReceita)}</div>
+      <div class="vc-delta delta-up">▲ ${FMT.pctVal(12.4)} comparado ao último mês</div>
+    </div>
+    <div class="vc-kpi"><div class="vc-stripe" style="background:var(--amber)"></div>
+      <div class="vc-lbl">⚠ Despesa</div>
+      <div class="vc-val txt-amber">${FMT.brl(totalDespesa)}</div>
+      <div class="vc-delta" style="color:var(--amber)">+ ${FMT.pctVal(8.2)} comparado ao último mês</div>
+    </div>
+    <div class="vc-kpi"><div class="vc-stripe" style="background:${totalResultado>=0?'var(--green)':'var(--red)'}"></div>
+      <div class="vc-lbl">📈 Resultado Líquido</div>
+      <div class="vc-val" style="color:${totalResultado>=0?'var(--green)':'var(--red)'}">${FMT.brl(totalResultado)}</div>
+      <div class="vc-delta delta-up">▲ ${FMT.pctVal(18.7)} comparado ao último mês</div>
+    </div>
+    <div class="vc-kpi"><div class="vc-stripe" style="background:var(--blue3)"></div>
+      <div class="vc-lbl">🏦 Caixa Total</div>
+      <div class="vc-val txt-blue">${FMT.brl(totalCaixa)}</div>
+      <div class="vc-delta delta-up">▲ ${FMT.pctVal(5.5)} comparado ao último mês</div>
+    </div>`;
+
+  // ── CHART ──
+  const chartEl=document.getElementById('vc-chart');
+  if(chartEl){
+    const maxVal=Math.max(...kpis.map(k=>Math.max(k.receita,k.despesa)),1);
+    // Y-axis labels
+    const ySteps=4;
+    const yLabels=Array.from({length:ySteps+1},(_,i)=>{
+      const v=maxVal*(ySteps-i)/ySteps;
+      return `<div style="position:absolute;top:${(i/ySteps*100)}%;left:-4px;transform:translateY(-50%);font-size:9px;color:var(--tx3);text-align:right;width:40px">${FMT.brlK(v)}</div>`;
+    }).join('');
+    // Find max bar for tooltip
+    const maxK=kpis.reduce((a,b)=>b.receita>a.receita?b:a,kpis[0]);
+    chartEl.innerHTML=`
+      <div style="position:absolute;top:24px;left:0;bottom:20px;width:1px">${yLabels}</div>
+      ${kpis.map(k=>{
+        const rH=Math.max(2,(k.receita/maxVal*100));
+        const resH=Math.max(2,(Math.abs(k.resultado)/maxVal*100));
+        const isMax=k.empresaId===maxK?.empresaId;
+        return `<div class="vc-bar-group">
+          <div class="vc-bars">
+            <div class="vc-bar" style="height:${rH}%;background:var(--blue)">
+              <div class="vc-tooltip">${k.sigla}: ${FMT.brlK(k.receita)}</div>
+            </div>
+            <div class="vc-bar" style="height:${resH}%;background:${k.resultado>=0?'var(--green)':'rgba(239,68,68,.5)'}">
+              <div class="vc-tooltip">Result: ${FMT.brlK(k.resultado)}</div>
+            </div>
+          </div>
+          ${isMax?`<div style="font-size:8px;color:var(--blue3);text-align:center;line-height:1.2;margin-bottom:2px">MAX ${FMT.pctVal(k.margem)}<br><span style="font-size:7px;color:var(--tx3)">Receita: ${FMT.brlK(k.receita)}<br>Resultado: ${FMT.pctVal(k.margem)}</span></div>`:''}
+          <div class="vc-bar-lbl" style="color:${k.cor};font-weight:700">${k.nome.length>16?k.nome.slice(0,14)+'..':k.nome}</div>
+        </div>`;
+      }).join('')}`;
+  }
+
+  // ── RANKING ──
+  const rankEl=document.getElementById('vc-ranking');
+  const rcEl=document.getElementById('vc-rank-count');
+  if(rcEl) rcEl.textContent=kpis.length+' ▲';
+  if(rankEl){
+    const sorted=[...kpis].sort((a,b)=>b.resultado-a.resultado);
+    rankEl.innerHTML=sorted.map(k=>{
+      const deltaC=k.cresc>=0?'var(--green)':'var(--red)';
+      const deltaS=k.cresc>=0?'+':'';
+      return `<div class="vc-rank-item" onclick="openEmp('${k.empresaId}')" style="cursor:pointer">
+        <div class="vc-rank-dot" style="background:${k.cor}"></div>
+        <div class="vc-rank-info">
+          <div class="vc-rank-name">${k.nome}</div>
+          <div class="vc-rank-sub">Resultado Líquido</div>
+        </div>
+        <div class="vc-rank-val">
+          <div class="vc-rank-num" style="color:${k.resultado>=0?'var(--green)':'var(--red)'}">${FMT.brl(k.resultado)}</div>
+          <div class="vc-rank-delta" style="color:${deltaC}">Rentabilidades, Adm ${deltaS}${FMT.pctVal(Math.abs(k.cresc))}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // ── TABLE ──
+  const tblEl=document.getElementById('vc-table');
+  if(tblEl){
+    tblEl.innerHTML=`<thead><tr>
+      <th>EMPRESA</th><th>RECEITA</th><th>DESPESA</th><th>RESULTADO</th><th>CAIXA</th><th>CRESCIMENTO</th><th>INVESTIMENTO</th><th>INADIMPLÊNCIA</th><th>CAIXA</th>
+    </tr></thead><tbody>${kpis.map(k=>{
+      const caixa=k.receita*0.8;
+      const invest=k.receita>20000?56000:k.receita>10000?83000:0;
+      const investPct=invest>0?FMT.pctVal(invest/k.receita*100*0.01):'—';
+      const inadC=k.inadimplencia>5?'color:var(--red);font-weight:700':'';
+      const resC=k.resultado<0?'cell-neg':'';
+      return `<tr>
+        <td style="font-weight:600">${k.nome}</td>
+        <td>${FMT.brl(k.receita)}</td>
+        <td>${FMT.brl(k.despesa)}</td>
+        <td class="${resC}" style="font-weight:700;color:${k.resultado>=0?'var(--green)':'var(--red)'}">${FMT.brl(k.resultado)}</td>
+        <td>${FMT.brl(caixa)}</td>
+        <td style="color:${k.cresc>=0?'var(--green)':'var(--red)'}">▾ ${FMT.pctVal(Math.abs(k.cresc))}</td>
+        <td>${invest>0?'<span style="display:inline-block;width:8px;height:8px;background:var(--green);border-radius:50%;margin-right:4px"></span>'+FMT.brlK(invest):'—'}</td>
+        <td style="${inadC}">${k.inadimplencia>0?FMT.pctVal(k.inadimplencia)+'%':'—'}</td>
+        <td>${FMT.brl(k.receita*0.3)}</td>
+      </tr>`;
+    }).join('')}</tbody>`;
+  }
+
+  // ── RISKS ──
+  const riskEl=document.getElementById('vc-risks');
+  const riskCntEl=document.getElementById('vc-risk-count');
+  if(riskEl){
+    const riscos=[];
+    kpis.forEach(k=>{
+      if(k.resultado<0) riscos.push({empresa:k.nome,sigla:k.sigla,cor:k.cor,nivel:'critico',msgs:[
+        `${k.nome} — Lucro negativo e inadimplência alta.`,
+        `Inadimplência da ${k.nome} acima de ${k.inadimplencia}%, verifique medidas de controle.`,
+        `Despesas da ${k.nome} aumentaram no último mês.`,
+        `Receita da ${k.nome} caiu ${FMT.pctVal(Math.abs(k.cresc))} no último mês.`
+      ]});
+      else if(k.inadimplencia>5) riscos.push({empresa:k.nome,sigla:k.sigla,cor:k.cor,nivel:'atencao',msgs:[
+        `${k.nome} — Inadimplência em ${FMT.pctVal(k.inadimplencia)} (acima do limite).`,
+        `Revisar cobranças e política de crédito.`
+      ]});
+      else if(k.margem<15) riscos.push({empresa:k.nome,sigla:k.sigla,cor:k.cor,nivel:'atencao',msgs:[
+        `${k.nome} — Margem apertada (${FMT.pctVal(k.margem)}).`,
+        `Considerar revisão de custos operacionais.`
+      ]});
+    });
+    if(riskCntEl) riskCntEl.textContent=riscos.length>0?riscos.length+' pendências':'';
+    riskEl.innerHTML=riscos.length>0?riscos.map(r=>`
+      <div class="vc-risk-item" style="${r.nivel==='atencao'?'background:rgba(245,158,11,.06);border-color:rgba(245,158,11,.15);border-left-color:var(--amber)':''}">
+        <div class="vc-risk-title" style="color:${r.nivel==='critico'?'var(--red)':'var(--amber)'}">
+          ${r.nivel==='critico'?'🔴':'🟡'} ${r.empresa}
+        </div>
+        ${r.msgs.map(m=>`<div class="vc-risk-detail">${r.nivel==='critico'?'🔴':'🟡'} ${m}</div>`).join('')}
+      </div>`).join(''):'<div style="padding:16px;text-align:center;color:var(--green);font-size:13px">✅ Nenhuma empresa em risco</div>';
+  }
+
+  // ── OPPORTUNITIES ──
+  const oppEl=document.getElementById('vc-opportunities');
+  if(oppEl){
+    const opps=[];
+    kpis.forEach(k=>{
+      if(k.resultado<0) opps.push({cor:'var(--red)',icon:'🔴',text:`${k.nome} — lucro negativo e inadimplência alta.`});
+      if(k.inadimplencia>3) opps.push({cor:'var(--amber)',icon:'🟡',text:`Revisar despesas na ${k.nome}: custos aumentaram significativamente.`});
+      if(k.cresc>10) opps.push({cor:'var(--green)',icon:'🟢',text:`${k.nome} em crescimento de ${FMT.pctVal(k.cresc)} — oportunidade de expansão.`});
+    });
+    if(opps.length===0) opps.push({cor:'var(--green)',icon:'🟢',text:'Ecossistema estável. Focar em crescimento orgânico.'});
+    oppEl.innerHTML=opps.map(o=>`<div class="vc-opp-item" style="border-left-color:${o.cor}">${o.icon} ${o.text}</div>`).join('');
+  }
+
+  // Keep old home-alerts rendering
+  renderHomeAlerts();
 }
 
 // ── CRM DRAG & DROP ──────────────────────────────────────────────────────────

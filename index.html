@@ -1915,15 +1915,23 @@ function renderEmpGrid(){
   const portfolio=allEmps.filter(e=>e.id!=='gp'&&!e.id.startsWith('custom_'));
   const pessoal=allEmps.filter(e=>e.id==='gp');
   const custom=allEmps.filter(e=>e.id.startsWith('custom_'));
+  const bestId=portfolio.length>0?[...portfolio].sort((a,b)=>b.result-a.result)[0].id:null;
+  const worstId=portfolio.length>0?[...portfolio].sort((a,b)=>a.score-b.score)[0].id:null;
   const renderCards=(emps)=>emps.map(e=>{
     const pct=e.meta>0?Math.min(e.fat/e.meta*100,100).toFixed(0):0;
     const crescC=e.cresc>=0?'var(--green)':'var(--red)';
     const crescS=e.cresc>=0?'▲':'▼';
+    const isBest=e.id===bestId;
+    const isWorst=e.id===worstId&&e.id!==bestId;
+    const borderStyle=isBest?'border:2px solid #f59e0b;box-shadow:0 0 12px rgba(245,158,11,.2)':isWorst?'border:2px solid var(--red);animation:pulse 2s infinite':'';
+    const margem=(e.fat>0&&e.result!==0)?((e.result/e.fat)*100).toFixed(0)+'%':'—';
     return `
     <div class="emp-card" id="card-${e.id}" onclick="openEmp('${e.id}')"
-      style="--emp-c:${e.cor};--emp-rgb:${e.rgb};"
+      style="--emp-c:${e.cor};--emp-rgb:${e.rgb};${borderStyle}"
       onmouseenter="this.style.borderColor='${e.cor}55'"
-      onmouseleave="this.style.borderColor=curEmp==='${e.id}'?'${e.cor}':'rgba(255,255,255,0.07)'">
+      onmouseleave="this.style.borderColor='${isBest?'#f59e0b':isWorst?'var(--red)':'rgba(255,255,255,0.07)'}'">
+      ${isBest?'<div style="position:absolute;top:8px;right:8px;font-size:14px">🏆</div>':''}
+      ${isWorst?'<div style="position:absolute;top:8px;right:8px;font-size:14px">⚠️</div>':''}
       <div class="emp-top"></div>
       <div class="emp-header">
         <div class="flex aic gap12">
@@ -1937,9 +1945,9 @@ function renderEmpGrid(){
       </div>
       ${e.id!=='gp'?`
       <div class="emp-nums">
-        <div><div class="emp-nlbl">Faturamento</div><div class="emp-nval" style="color:${e.cor}">${fmt(e.fat)}</div></div>
-        <div><div class="emp-nlbl">Margem</div><div class="emp-nval">${e.fat>0?((e.result/e.fat)*100).toFixed(0)+'%':'—'}</div></div>
-        <div><div class="emp-nlbl">vs Meta</div><div class="emp-nval" style="color:${crescC}">${crescS} ${Math.abs(e.cresc)}%</div></div>
+        <div><div class="emp-nlbl">Resultado</div><div class="emp-nval" style="color:${e.result>=0?'var(--green)':'var(--red)'}">${fmt(e.result)}</div></div>
+        <div><div class="emp-nlbl">Margem</div><div class="emp-nval">${margem}</div></div>
+        <div><div class="emp-nlbl">Tendência</div><div class="emp-nval" style="color:${crescC}">${crescS} ${Math.abs(e.cresc)}%</div></div>
       </div>
       <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--tx3);margin-bottom:4px"><span>${fmt(e.fat)}</span><span>Meta ${fmt(e.meta)}</span></div>
       <div class="pbar"><div class="pfill" style="width:${pct}%;background:${e.cor}"></div></div>`:`
@@ -2355,7 +2363,7 @@ function openDrive(){window.open(curEmp?EMPS[curEmp]?.drive:'https://drive.googl
 
 // ── WORKSPACE ──────────────────────────────────────────────────────────────
 const WS_TABS_ALL=['KPIs','OKRs','Tarefas','Financeiro','Pipeline','Contratos','Riscos','Decisões','CRM','Notas','Arquivos'];
-const GP_TABS_DEFAULT=['KPIs','Patrimônio','Investimentos','Financeiro','Metas','Compromissos','Notas','Arquivos'];
+const GP_TABS_DEFAULT=['KPIs','Patrimônio','Investimentos','Fluxo Pessoal','Compromissos','Metas','Notas','Arquivos'];
 const FS_TABS_DEFAULT=['KPIs','OKRs','Tarefas','Financeiro','Fundos','Projeções','Rentabilidade','Pipeline','Contratos','CRM','Notas','Arquivos'];
 const DW_TABS_DEFAULT=['KPIs','OKRs','Tarefas','Financeiro','Pacientes','Honorários','Pipeline','Contratos','Riscos','Decisões','CRM','Notas','Arquivos'];
 const OF_TABS_DEFAULT=['KPIs','OKRs','Tarefas','Financeiro','Projetos','Equipe','Pipeline','Contratos','Riscos','CRM','Notas','Arquivos'];
@@ -2617,6 +2625,7 @@ function renderTab(){
   else if(curTab==='Patrimônio'){ renderPatrimonio(e,c,co) }
   else if(curTab==='Investimentos'){ renderInvestimentos(e,c,co) }
   else if(curTab==='Pacientes'){ renderPacientes(e,c,co) }
+  else if(curTab==='Fluxo Pessoal'){ renderFluxoPessoal(e,c,co) }
   else if(curTab==='Metas'){ renderMetasPessoais(e,c,co) }
   else if(curTab==='Compromissos'){ renderCompromissosGP(e,c,co) }
   else if(curTab==='Honorários'){ renderHonorarios(e,c,co) }
@@ -2990,6 +2999,44 @@ function addPaciente(){
   savePacientes(pacs);renderTab();
 }
 function deletePaciente(i){const p=getPacientes();p.splice(i,1);savePacientes(p);renderTab()}
+
+// ── FLUXO PESSOAL (GP) ──────────────────────────────────────────────────
+function getFluxoGP(){ return JSON.parse(localStorage.getItem('orion_fluxo_gp')||'[]') }
+function saveFluxoGP(f){ localStorage.setItem('orion_fluxo_gp',JSON.stringify(f)) }
+function renderFluxoPessoal(e,c,co){
+  const fluxo=getFluxoGP();
+  const cats=['Moradia','Alimentação','Saúde','Lazer','Transporte','Educação','Outros'];
+  const receitas=fluxo.filter(f=>f.tipo==='receita').reduce((s,f)=>s+FMT.num(f.valor),0);
+  const despesas=fluxo.filter(f=>f.tipo==='despesa').reduce((s,f)=>s+FMT.num(f.valor),0);
+  const saldo=receitas-despesas;
+  // Agrupar despesas por categoria
+  const porCat={};
+  fluxo.filter(f=>f.tipo==='despesa').forEach(f=>{porCat[f.categoria||'Outros']=(porCat[f.categoria||'Outros']||0)+FMT.num(f.valor)});
+  c.innerHTML=`<div class="flex aic jsb mb"><div><div class="slbl" style="margin:0">Fluxo Pessoal</div>
+    <div style="font-size:12px;color:var(--tx3)">Receitas: ${FMT.brl(receitas)} · Despesas: ${FMT.brl(despesas)} · Saldo: <b style="color:${saldo>=0?'var(--green)':'var(--red)'}">${FMT.brl(saldo)}</b></div></div>
+    <button class="btn-sm btn-blue" onclick="addFluxoGP()">+ Lançamento</button></div>
+    <div class="g3 mb">${cats.map(cat=>{
+      const val=porCat[cat]||0;
+      return val>0?`<div class="card-sm"><div class="lbl">${cat}</div><div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:var(--red)">${FMT.brl(val)}</div></div>`:'';
+    }).filter(Boolean).join('')||'<div class="card-sm"><div style="color:var(--tx3);font-size:13px">Sem despesas registradas</div></div>'}</div>
+    ${fluxo.length>0?fluxo.sort((a,b)=>(b.data||'').localeCompare(a.data||'')).slice(0,10).map((f,i)=>`<div class="task-item" style="border-left-color:${f.tipo==='receita'?'var(--green)':'var(--red)'}">
+      <span>${f.tipo==='receita'?'💰':'💸'}</span>
+      <div style="flex:1"><div style="font-size:13px;font-weight:500">${f.descricao||f.categoria||'—'}</div>
+      <div style="font-size:11px;color:var(--tx3)">${f.data||''} · ${f.categoria||''}</div></div>
+      <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:${f.tipo==='receita'?'var(--green)':'var(--red)'}">${f.tipo==='receita'?'+':'−'}${FMT.brl(f.valor)}</div>
+      <button class="task-del" onclick="deleteFluxoGP(${i})">🗑</button>
+    </div>`).join(''):''}`;
+}
+function addFluxoGP(){
+  const tipo=prompt('Tipo (receita/despesa):','despesa');if(!tipo)return;
+  const descricao=prompt('Descrição:');if(!descricao)return;
+  const valor=parseFloat(prompt('Valor (R$):','0'))||0;
+  const categoria=prompt('Categoria (Moradia/Alimentação/Saúde/Lazer/Transporte/Educação/Outros):','Outros')||'Outros';
+  const data=prompt('Data (YYYY-MM-DD):',new Date().toISOString().slice(0,10))||'';
+  const f=getFluxoGP();f.push({tipo,descricao,valor,categoria,data,id:crypto.randomUUID()});
+  saveFluxoGP(f);renderTab();
+}
+function deleteFluxoGP(i){const f=getFluxoGP();f.splice(i,1);saveFluxoGP(f);renderTab()}
 
 // ── METAS PESSOAIS (GP) ──────────────────────────────────────────────────
 function getMetasGP(){ return JSON.parse(localStorage.getItem('orion_metas_gp')||'[]') }

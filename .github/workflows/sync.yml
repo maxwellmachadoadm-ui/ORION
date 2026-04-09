@@ -1,0 +1,17 @@
+name: Sync to ORION
+on:
+  push:
+    branches: [main, "claude/*"]
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Push to ORION
+        run: |
+          git remote add orion https://x-access-token:${{ secrets.ORION_TOKEN }}@github.com/maxwellmachadoadm-ui/ORION.git
+          git fetch orion
+          git checkout main
+          git push orion main --force

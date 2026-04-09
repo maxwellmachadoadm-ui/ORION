@@ -1424,7 +1424,6 @@ function calcularKPIsFinanceiro(empresaId){
 let curEmp = null;
 let curTab = 'KPIs';
 let mxOpen = false;
-let mxHistory = [{role:'assistant',content:'Olá, Maxwell. Sou o MAXXXI — seu agente executivo. Posso analisar empresas, responder sobre a plataforma, gerar briefings e muito mais. O que precisa?'}];
 let liveInterval = null;
 let liveIdx = 0;
 
@@ -3467,13 +3466,15 @@ function checkDailyBriefing(){
   const u=JSON.parse(LS('session')||'{}');
   const name=u.name?u.name.split(' ')[0]:'';
   const alerts=getAlerts().filter(a=>!a.read);
+  const portfolio=Object.values(EMPS).filter(e=>!e.id.startsWith('custom_')&&e.id!=='gp');
+  const totalResult=portfolio.reduce((s,e)=>s+FMT.num(e.result),0);
+  const totalFat=portfolio.reduce((s,e)=>s+FMT.num(e.fat),0);
   const briefing=`Bom dia, ${name}! Briefing de hoje:<br><br>` +
-    `📊 <b>Ecossistema:</b> R$ 126,5k faturamento (+8,2%)<br>` +
+    `📊 <b>Ecossistema:</b> ${FMT.brlK(totalFat)} faturamento, resultado ${FMT.brlK(totalResult)}<br>` +
     `⚠️ <b>${alerts.length} alertas</b> pendentes${alerts.length>0?' — '+alerts[0].text:''}<br>` +
-    `🎯 <b>Prioridade:</b> Original Fotografia em turnaround (inadimplência 8,7%)<br><br>` +
-    `O que deseja analisar?`;
-  addMXMsg('ai',briefing);
-  mxHistory.push({role:'assistant',content:briefing});
+    `🎯 <b>Prioridade:</b> Original Fotografia em turnaround (inadimplência 8,7%)`;
+  const el=document.getElementById('mx-analysis-content');
+  if(el) el.innerHTML=briefing;
 }
 function toggleMX(){toggleMXDrawer()}
 
@@ -3511,57 +3512,6 @@ function mxLocalAnalysis(k){
   lines.push(`📊 Health Score: ${k.score}/100`);
   return lines.join('<br>');
 }
-function qSend(txt){document.getElementById('mx-in').value=txt;sendMX()}
-
-async function sendMX(){
-  const inp=document.getElementById('mx-in');
-  const txt=inp.value.trim();
-  if(!txt)return;
-  inp.value='';
-  addMXMsg('user',txt);
-  mxHistory.push({role:'user',content:txt});
-  const typing=addMXMsg('ai','<em style="color:var(--blue3)">MAXXXI está analisando...</em>');
-  const ctx=`Você é MAXXXI — Agente Executivo da plataforma ORION de Maxwell Oliveira Machado.
-Maxwell é CEO, Contador, Presidente da CDL de Divinópolis, MG.
-Empresas: Doctor Wealth (contabilidade médica, 47 clientes, R$ 48,5k/mês, meta R$ 60k), Original Fotografia (estúdio, turnaround, inadimplência 8,7%), Forme Seguro (fundos de formatura universitária premium, 3 fundos, R$ 420k gerenciados), CDL Divinópolis (1.100 associados), Gestão Pessoal (patrimônio R$ 1,2M).
-Empresa ativa agora: ${curEmp?EMPS[curEmp]?.nome:'Visão Geral do Ecossistema'}.
-Plataforma ORION: sidebar com empresas, workspace com abas KPIs/OKRs/Tarefas/Contratos/Riscos/Decisões/CRM/Arquivos, Home com agenda e check-in, MAXXXI Live com radar de mercado.
-Responda de forma direta, executiva, em português. Máximo 3 parágrafos curtos.`;
-  try{
-    const apiKey=localStorage.getItem('orion_api_key')||'';
-    if(!apiKey){throw new Error('no_key')}
-    const res=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
-        max_tokens:800,
-        system:ctx,
-        messages:mxHistory.slice(-10)
-      })
-    });
-    const d=await res.json();
-    const reply=d.content?.[0]?.text||'Erro na resposta.';
-    typing.querySelector('.msg-bubble-ai').innerHTML=reply.replace(/\n/g,'<br>');
-    mxHistory.push({role:'assistant',content:reply});
-  }catch(e){
-    // Fallback local responses
-    const reply=localMXResponse(txt,curEmp);
-    typing.querySelector('.msg-bubble-ai').innerHTML=reply;
-    mxHistory.push({role:'assistant',content:reply});
-  }
-  document.getElementById('mx-msgs').scrollTop=document.getElementById('mx-msgs').scrollHeight;
-}
-
-function addMXMsg(role,html){
-  const wrap=document.getElementById('mx-msgs');
-  const d=document.createElement('div');
-  d.className=role==='ai'?'msg-ai':'msg-u';
-  d.innerHTML=(role==='ai'?'<div class="msg-from">MAXXXI</div>':'')+`<div class="${role==='ai'?'msg-bubble-ai':'msg-bubble-u'}">${html}</div>`;
-  wrap.appendChild(d);
-  wrap.scrollTop=wrap.scrollHeight;
-  return d;
-}
 
 // ── HOME ALERTS RENDER ──────────────────────────────────────────────────────
 function renderHomeKPIs(){
@@ -3587,28 +3537,6 @@ function renderHomeAlerts(){
   el.innerHTML=alerts.map(a=>`
     <div class="${a.level==='red'?'alert-r':'alert-a'}">${a.level==='red'?'🔴':'🟡'} ${a.text}</div>
   `).join('');
-}
-
-// ── MAXXXI LOCAL FALLBACK ──────────────────────────────────────────────────
-function localMXResponse(msg,empId){
-  const m=msg.toLowerCase();
-  const e=empId?EMPS[empId]:null;
-  if(m.includes('como')&&(m.includes('uso')||m.includes('usar')||m.includes('plataforma')||m.includes('funciona'))){
-    return 'A plataforma ORION possui:<br>• <b>Home</b> — visão geral com KPIs, agenda e check-in<br>• <b>Visão CEO</b> — ranking e distribuição consolidada<br>• <b>Workspace</b> — clique em qualquer empresa para ver KPIs, OKRs, Tarefas, CRM, Fluxo de Caixa e mais<br>• <b>Ctrl+K</b> — busca rápida para navegar<br>• Arraste cards no CRM entre colunas. Tarefas podem ser criadas, concluídas e deletadas.';
-  }
-  if(m.includes('prioridade')||m.includes('atenção')){
-    return '⚠️ <b>Original Fotografia</b> precisa de atenção imediata:<br>• Inadimplência em 8,7% (acima do limite)<br>• Contrato XYZ inadimplente há 60 dias<br>• Crescimento negativo de -4,2%<br><br>Recomendo: reunião de reestruturação de preços e cobrança ativa.';
-  }
-  if(m.includes('briefing')||m.includes('ceo')||m.includes('ecossistema')){
-    return '📊 <b>Briefing Executivo — Ecossistema ORION</b><br><br>• Faturamento total: R$ 126,5k (+8,2%)<br>• Resultado líquido: R$ 46,7k (+12,1%)<br>• Health Score médio: 71/100<br>• 4 alertas ativos (2 críticos)<br><br>Destaques: CDL é a mais estável (88 score), Forme Seguro tem maior potencial de crescimento (+50%).';
-  }
-  if(m.includes('crm')){
-    return '📋 O módulo CRM mostra o funil de vendas por empresa:<br>• <b>Lead</b> → <b>Proposta</b> → <b>Negociação</b> → <b>Fechado</b><br>• Arraste cards entre colunas para atualizar o status<br>• Clique em "+ Adicionar" para novos contatos<br>• Tudo salva automaticamente no navegador.';
-  }
-  if(e){
-    return `📈 <b>${e.nome}</b> — Resumo Rápido:<br>• Faturamento: R$ ${(e.fat/1000).toFixed(0)}k | Meta: R$ ${(e.meta/1000).toFixed(0)}k<br>• Health Score: ${e.score}/100<br>• Status: ${e.status}<br>• ${e.tarefas.filter(t=>!t.k).length} tarefas pendentes<br><br>Posso ajudar com algo específico sobre ${e.nome}?`;
-  }
-  return 'Entendi sua pergunta. Para respostas mais completas com IA, configure sua API Key em: localStorage.setItem("orion_api_key", "sk-ant-..."). Enquanto isso, posso ajudar com briefings, prioridades e informações da plataforma. Pergunte sobre qualquer empresa!';
 }
 
 // ── CRM DRAG & DROP ──────────────────────────────────────────────────────────

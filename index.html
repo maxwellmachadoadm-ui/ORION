@@ -12,6 +12,7 @@
 <meta name="apple-mobile-web-app-title" content="ORION">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -3627,26 +3628,208 @@ function dropPipe(ev,stage){
 }
 
 // ── EXTRATO IMPORT ──────────────────────────────────────────────────────────
-function importExtrato(){
+// ── EXTRATO: helpers ──────────────────────────────────────────────────────
+function escHtml(s){
+  return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function parseDateBR(s){
+  s=String(s||'').trim();
+  if(!s) return '';
+  // ISO: YYYY-MM-DD
+  let m=s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if(m) return `${m[1]}-${m[2]}-${m[3]}`;
+  // OFX compact: YYYYMMDD (optional HHMMSS)
+  m=s.match(/^(\d{4})(\d{2})(\d{2})/);
+  if(m && !/\D/.test(s.slice(0,8))) return `${m[1]}-${m[2]}-${m[3]}`;
+  // DD/MM/YYYY or DD-MM-YYYY or MM/DD/YYYY (pt-BR default = DD/MM)
+  m=s.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})/);
+  if(m){
+    const a=parseInt(m[1],10), b=parseInt(m[2],10);
+    // Desambiguação: se um dos dois >12, fica claro quem é dia/mês
+    let dd,mm;
+    if(a>12){dd=a;mm=b}
+    else if(b>12){dd=b;mm=a}
+    else {dd=a;mm=b} // default BR: DD/MM
+    return `${m[3]}-${String(mm).padStart(2,'0')}-${String(dd).padStart(2,'0')}`;
+  }
+  // DD/MM/YY
+  m=s.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2})$/);
+  if(m){
+    const yy=parseInt(m[3],10);
+    const year=yy<50?2000+yy:1900+yy;
+    const a=parseInt(m[1],10), b=parseInt(m[2],10);
+    let dd,mm;
+    if(a>12){dd=a;mm=b} else if(b>12){dd=b;mm=a} else {dd=a;mm=b}
+    return `${year}-${String(mm).padStart(2,'0')}-${String(dd).padStart(2,'0')}`;
+  }
+  // Fallback: tenta Date.parse
+  const dt=new Date(s);
+  if(!isNaN(dt.getTime())) return dt.toISOString().slice(0,10);
+  return '';
+}
+function parseAmountBR(raw){
+  raw=String(raw||'').replace(/[^\d.,\-]/g,'');
+  if(!raw) return 0;
+  const lastDot=raw.lastIndexOf('.');
+  const lastCom=raw.lastIndexOf(',');
+  let s=raw;
+  if(lastDot>-1 && lastCom>-1){
+    if(lastCom>lastDot) s=raw.replace(/\./g,'').replace(',','.'); // BR: 1.234,56
+    else s=raw.replace(/,/g,''); // US: 1,234.56
+  } else if(lastCom>-1){
+    s=raw.replace(',','.'); // decimal BR sem milhar
+  }
+  const n=parseFloat(s);
+  return isNaN(n)?0:n;
+}
+function parseCSV(text){
+  const norm=text.replace(/\r\n?/g,'\n');
+  const lines=norm.split('\n').filter(l=>l.trim());
+  if(lines.length===0) return [];
+  // Detectar separador pela linha com maior contagem
+  const cands=[',',';','\t','|'];
+  let sep=',',best=0;
+  cands.forEach(s=>{const c=(lines[0].match(new RegExp('\\'+s,'g'))||[]).length; if(c>best){best=c;sep=s}});
+  const parseLine=(line)=>{
+    const out=[];let cur='';let inQ=false;
+    for(let i=0;i<line.length;i++){
+      const ch=line[i];
+      if(ch==='"'){
+        if(inQ&&line[i+1]==='"'){cur+='"';i++} else inQ=!inQ;
+      } else if(ch===sep && !inQ){ out.push(cur); cur=''; }
+      else cur+=ch;
+    }
+    out.push(cur);
+    return out.map(s=>s.trim());
+  };
+  // Detectar header
+  const first=parseLine(lines[0]);
+  const isHeader=first.some(c=>/^(data|date|descri|desc|memo|valor|amount|hist[oó]rico|lancamento|nome)/i.test(c));
+  let dateIdx=0,descIdx=1,amtIdx=2;
+  if(isHeader){
+    first.forEach((col,i)=>{
+      if(/^(data|date)/i.test(col)) dateIdx=i;
+      else if(/(descri|desc|memo|hist|lancamento|nome)/i.test(col)) descIdx=i;
+      else if(/(valor|amount|value|credit|debit)/i.test(col)) amtIdx=i;
+    });
+  }
+  const rows=isHeader?lines.slice(1):lines;
+  const txns=[];
+  rows.forEach(line=>{
+    const parts=parseLine(line);
+    if(parts.length<3) return;
+    const date=parseDateBR(parts[dateIdx]||'');
+    const desc=(parts[descIdx]||'').replace(/^"|"$/g,'').trim();
+    const amount=parseAmountBR(parts[amtIdx]||'');
+    if(desc && amount!==0 && date) txns.push({date,desc,amount});
+  });
+  return txns;
+}
+function parseOFX(text){
+  const txns=[];
+  // Normaliza blocos STMTTRN — OFX pode ser SGML (sem close) ou XML
+  const chunks=text.split(/<STMTTRN>/i).slice(1);
+  chunks.forEach(chunk=>{
+    // Corta no próximo </STMTTRN> ou <STMTTRN> caso venha concatenado
+    const blk=chunk.split(/<\/STMTTRN>|<STMTTRN>/i)[0];
+    const dt=blk.match(/<DTPOSTED>\s*([^<\n\r]+)/i);
+    const amt=blk.match(/<TRNAMT>\s*([^<\n\r]+)/i);
+    const memo=blk.match(/<MEMO>\s*([^<\n\r]+)/i);
+    const name=blk.match(/<NAME>\s*([^<\n\r]+)/i);
+    if(dt && amt){
+      const date=parseDateBR(dt[1].trim());
+      const amount=parseFloat(String(amt[1]).trim().replace(',','.'))||0;
+      const desc=String(memo?.[1]||name?.[1]||'').trim();
+      if(desc && amount!==0 && date) txns.push({date,desc,amount});
+    }
+  });
+  return txns;
+}
+function parseXLSX(file){
+  return new Promise((resolve,reject)=>{
+    if(typeof XLSX==='undefined'){reject(new Error('SheetJS não carregado'));return}
+    const reader=new FileReader();
+    reader.onload=(e)=>{
+      try{
+        const data=new Uint8Array(e.target.result);
+        const wb=XLSX.read(data,{type:'array',cellDates:true});
+        const sh=wb.Sheets[wb.SheetNames[0]];
+        const rows=XLSX.utils.sheet_to_json(sh,{header:1,raw:false,dateNF:'yyyy-mm-dd',defval:''});
+        const csv=rows.map(r=>r.map(c=>{
+          const v=(c==null?'':String(c));
+          // Escapa aspas e envelopa se contiver separador
+          return /[",;\t]/.test(v) ? '"'+v.replace(/"/g,'""')+'"' : v;
+        }).join(',')).join('\n');
+        resolve(parseCSV(csv));
+      }catch(err){reject(err)}
+    };
+    reader.onerror=()=>reject(reader.error);
+    reader.readAsArrayBuffer(file);
+  });
+}
+async function parseImageOCR(file){
+  const apiKey=localStorage.getItem('orion_api_key')||'';
+  if(!apiKey){showToast('Configure a API key da Claude (menu → ⚙️) para OCR de imagem.');return []}
+  const toDataUrl=(f)=>new Promise((res,rej)=>{
+    const r=new FileReader();
+    r.onload=()=>res(r.result); r.onerror=()=>rej(r.error);
+    r.readAsDataURL(f);
+  });
+  try{
+    const dataUrl=await toDataUrl(file);
+    const base64=String(dataUrl).split(',')[1]||'';
+    const mime=file.type||'image/jpeg';
+    const prompt='Esta imagem é um extrato bancário. Extraia TODAS as transações em JSON array. Formato estrito: [{"date":"YYYY-MM-DD","desc":"descrição","amount":123.45}]. Use valores negativos para despesas/débitos e positivos para receitas/créditos. Responda APENAS o JSON array, sem comentários.';
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',max_tokens:4000,
+        messages:[{role:'user',content:[
+          {type:'image',source:{type:'base64',media_type:mime,data:base64}},
+          {type:'text',text:prompt}
+        ]}]
+      })
+    });
+    const d=await res.json();
+    const text=d.content?.[0]?.text||'';
+    const match=text.match(/\[[\s\S]*\]/);
+    if(!match) return [];
+    const arr=JSON.parse(match[0]);
+    return arr.map(t=>({
+      date:parseDateBR(t.date||''),
+      desc:String(t.desc||t.description||'').trim(),
+      amount:parseFloat(t.amount)||0
+    })).filter(t=>t.desc && t.amount!==0 && t.date);
+  }catch(e){console.warn('OCR falhou:',e); showToast('OCR falhou: '+e.message); return []}
+}
+// ── EXTRATO: orquestrador ─────────────────────────────────────────────────
+window._tempExtrato=null;
+async function importExtrato(){
   const inp=document.createElement('input');
-  inp.type='file';inp.accept='.csv,.ofx,.txt';
+  inp.type='file';
+  inp.accept='.csv,.ofx,.txt,.xls,.xlsx,.jpg,.jpeg,.png,.gif,.webp';
   inp.onchange=async(ev)=>{
     const f=ev.target.files[0]; if(!f)return;
-    const text=await f.text();
-    const lines=text.split('\n').filter(l=>l.trim());
-    const txns=[];
-    // Try CSV parse: date,description,amount
-    lines.forEach(line=>{
-      const parts=line.split(/[,;\t]/);
-      if(parts.length>=3){
-        const dateStr=parts[0].trim();
-        const desc=parts[1].trim();
-        const amount=parseFloat(parts[2].replace(/[^\d.,-]/g,'').replace(',','.'))||0;
-        if(desc&&amount!==0) txns.push({date:dateStr,desc,amount});
+    const name=(f.name||'').toLowerCase();
+    const ext=name.split('.').pop();
+    showToast('Processando '+f.name+'…');
+    let txns=[];
+    try{
+      if(ext==='ofx'){
+        const text=await f.text();
+        txns=parseOFX(text);
+      } else if(ext==='xlsx'||ext==='xls'){
+        txns=await parseXLSX(f);
+      } else if(['jpg','jpeg','png','gif','webp'].includes(ext) || (f.type||'').startsWith('image/')){
+        txns=await parseImageOCR(f);
+      } else {
+        const text=await f.text();
+        if(/<OFX|<STMTTRN/i.test(text)) txns=parseOFX(text);
+        else txns=parseCSV(text);
       }
-    });
-    if(txns.length===0){showToast('Nenhuma transação encontrada no arquivo.');return}
-    // Classify with AI or fallback
+    }catch(e){ console.warn('Parse falhou:',e); showToast('Erro ao processar: '+e.message); return; }
+    if(!txns||txns.length===0){showToast('Nenhuma transação encontrada no arquivo.');return}
     const classified=await classifyTransactions(txns);
     showExtratoReview(classified);
   };
@@ -3660,7 +3843,7 @@ async function classifyTransactions(txns){
     const res=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
       headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:2000,messages:[{role:'user',content:prompt}]})
     });
     const d=await res.json();
     const text=d.content?.[0]?.text||'';
@@ -3673,36 +3856,43 @@ async function classifyTransactions(txns){
   return txns.map(t=>({...t,type:t.amount>0?'income':'expense',category:t.amount>0?'Outras Receitas':'Outras Despesas'}));
 }
 function showExtratoReview(txns){
+  window._tempExtrato=txns;
   const c=document.getElementById('ws-content');
-  c.innerHTML=`<div style="margin-bottom:14px">
-    <div class="slbl">Revisar Transações Importadas (${txns.length})</div>
-    <div style="font-size:12px;color:var(--tx3);margin-bottom:10px">Verifique a classificação e clique em Confirmar para salvar.</div>
-  </div>
-  ${txns.map((t,i)=>`<div class="task-item" style="border-left-color:${t.type==='income'?'var(--green)':'var(--red)'}">
+  const items=txns.map(t=>`<div class="task-item" style="border-left-color:${t.type==='income'?'var(--green)':'var(--red)'}">
     <span style="font-size:14px">${t.type==='income'?'💰':'💸'}</span>
     <div style="flex:1">
-      <div style="font-size:13px;font-weight:500">${t.desc}</div>
-      <div style="font-size:11px;color:var(--tx3)">${t.date} · ${t.category}</div>
+      <div style="font-size:13px;font-weight:500">${escHtml(t.desc)}</div>
+      <div style="font-size:11px;color:var(--tx3)">${escHtml(t.date)} · ${escHtml(t.category||'')}</div>
     </div>
     <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:${t.type==='income'?'var(--green)':'var(--red)'}">
       ${t.type==='income'?'+':'−'} ${FMT.brl(Math.abs(t.amount))}
     </div>
-  </div>`).join('')}
+  </div>`).join('');
+  c.innerHTML=`<div style="margin-bottom:14px">
+    <div class="slbl">Revisar Transações Importadas (${txns.length})</div>
+    <div style="font-size:12px;color:var(--tx3);margin-bottom:10px">Verifique a classificação e clique em Confirmar para salvar.</div>
+  </div>
+  ${items}
   <div style="display:flex;gap:8px;margin-top:14px">
-    <button class="btn-sm btn-ghost" onclick="renderTab()">Cancelar</button>
-    <button class="btn-sm btn-blue" onclick="confirmExtrato(${JSON.stringify(txns).replace(/"/g,'&quot;')})">✅ Confirmar ${txns.length} transações</button>
+    <button class="btn-sm btn-ghost" onclick="cancelExtrato()">Cancelar</button>
+    <button class="btn-sm btn-blue" onclick="confirmExtrato()">✅ Confirmar ${txns.length} transações</button>
   </div>`;
 }
-function confirmExtrato(txns){
-  if(typeof txns==='string') txns=JSON.parse(txns.replace(/&quot;/g,'"'));
+function cancelExtrato(){ window._tempExtrato=null; renderTab(); }
+function confirmExtrato(){
+  const txns=Array.isArray(window._tempExtrato)?window._tempExtrato:[];
+  if(txns.length===0){showToast('Nada para confirmar.');return}
   txns.forEach(t=>{
     criarLancamento({
-      empresa_id:curEmp,type:t.type,
-      valor:Math.abs(t.amount),data:t.date.length===10?t.date:new Date().toISOString().slice(0,10),
-      descricao:t.desc,categoria:t.category,status:'confirmado'
+      empresa_id:curEmp, type:t.type,
+      valor:Math.abs(t.amount),
+      data:(t.date && /^\d{4}-\d{2}-\d{2}$/.test(t.date))?t.date:new Date().toISOString().slice(0,10),
+      descricao:t.desc, categoria:t.category, status:'confirmado'
     });
   });
-  showToast(txns.length+' transações importadas!');
+  const n=txns.length;
+  window._tempExtrato=null;
+  showToast(n+' transações importadas!');
   renderTab();
 }
 

@@ -3219,10 +3219,24 @@ function goCEO(){
 }
 
 function openEmp(id){
-  curEmp=id;
-  localStorage.setItem('orion_empresa_ativa',id);
   const e=EMPS[id];
   if(!e)return;
+  // RBAC: precisa pelo menos view em dashboard da empresa
+  if(typeof hasPerm==='function' && !hasPerm('dashboard','view',id)){
+    curEmp = id;
+    localStorage.setItem('orion_empresa_ativa',id);
+    clearSb();
+    document.getElementById('drive-lbl').textContent=e.nome+' Drive';
+    showPage('ws');
+    const wh=document.getElementById('ws-header'); if(wh) wh.innerHTML='';
+    const wt=document.getElementById('ws-tabs'); if(wt) wt.innerHTML='';
+    const wc=document.getElementById('ws-content');
+    if(wc) renderAccessDenied(wc, 'a empresa '+e.nome);
+    if(typeof renderWSSidebarModules==='function') renderWSSidebarModules();
+    return;
+  }
+  curEmp=id;
+  localStorage.setItem('orion_empresa_ativa',id);
   clearSb();
   const sbEl=document.getElementById('sb-'+id)||document.getElementById('sb-gp');
   if(sbEl)sbEl.classList.add('active');
@@ -3338,9 +3352,12 @@ function renderWS(){
         <button class="btn btn-ia" onclick="toggleMXDrawer();mxAnalyzeActive()" title="Análise IA desta empresa">🤖 Análise IA</button>
       </div>
     </div>`;
-  // tabs (filtered by empresa modules)
+  // tabs (filtered by empresa modules + RBAC)
   const wt=document.getElementById('ws-tabs');
-  const activeTabs=getEmpModulos(curEmp);
+  let activeTabs=getEmpModulos(curEmp);
+  if(typeof canSeeTab==='function'){
+    activeTabs = activeTabs.filter(t=>canSeeTab(t, curEmp));
+  }
   if(!activeTabs.includes(curTab)) curTab=activeTabs[0]||'KPIs';
   wt.innerHTML=activeTabs.map(t=>`<button class="tab ${curTab===t?'active':''}" onclick="switchTab('${t}')">${t}</button>`).join('');
   renderTab();
@@ -3406,6 +3423,12 @@ function renderTab(){
   const e=EMPS[curEmp];
   const c=document.getElementById('ws-content');
   const co=e.cor;
+
+  // RBAC: bloqueia navegação direta para aba sem permissão
+  if(typeof canSeeTab==='function' && !canSeeTab(curTab, curEmp)){
+    if(c) renderAccessDenied(c, 'o módulo "'+curTab+'"');
+    return;
+  }
 
   if(curTab==='KPIs'){
     const tarefasPend=(e.tarefas||[]).filter(t=>!t.k).slice(0,5);
@@ -4683,6 +4706,82 @@ function updateAdminNavVisibility(){
   if(el) el.classList.toggle('hidden', !admIsAdmin(sess));
 }
 
+// ── RBAC — verificação de permissões ─────────────────────────────────────
+// Mapa das abas do workspace → módulos de permissão.
+const TAB_MODULE_MAP = {
+  'KPIs':'dashboard','OKRs':'dashboard','Tarefas':'dashboard',
+  'Pipeline':'analytics','CRM':'analytics','Pacientes':'analytics',
+  'Projetos':'analytics','Equipe':'analytics',
+  'Financeiro':'financeiro','Fundos':'financeiro','Rentabilidade':'financeiro',
+  'Patrimônio':'financeiro','Investimentos':'financeiro',
+  'Fluxo Pessoal':'financeiro','Honorários':'financeiro',
+  'Projeções':'analytics',
+  'Extrato IA':'extrato_ia',
+  'Contratos':'documentos','Riscos':'documentos','Decisões':'documentos',
+  'Notas':'documentos','Arquivos':'documentos',
+  'Metas':'dashboard','Compromissos':'dashboard'
+};
+
+function currentUser(){
+  try{ return JSON.parse(localStorage.getItem('orion_session')||'null'); }catch(e){ return null; }
+}
+
+function isSuperAdmin(u){
+  if(!u) return false;
+  const r = (u.role||'').toLowerCase();
+  return r==='admin' || r==='super_admin';
+}
+
+function hasPerm(modKey, action, empresaId){
+  // action ∈ view|create|edit|approve|delete
+  const u = currentUser();
+  if(!u) return false;
+  if(isSuperAdmin(u)) return true;
+  const empId = empresaId||curEmp;
+  if(!empId) return true; // Home / CEO / Agenda — livre
+  const perms = (u.perms||{})[empId];
+  if(!perms){
+    // Sem perms específicas → cai no papel geral
+    const roleDefault = admGetPermDefaults(u.role||'viewer');
+    return !!((roleDefault.modules[modKey]||{})[action]);
+  }
+  if((perms.role||'')==='super_admin') return true;
+  return !!((perms.modules[modKey]||{})[action]);
+}
+
+function hasEiaPerm(key, empresaId){
+  // key ∈ upload|view|editClass|approve|reprocess|retrain|export|delete
+  const u = currentUser();
+  if(!u) return false;
+  if(isSuperAdmin(u)) return true;
+  const empId = empresaId||curEmp;
+  if(!empId) return false;
+  const perms = (u.perms||{})[empId];
+  if(!perms){
+    const roleDefault = admGetPermDefaults(u.role||'viewer');
+    return !!roleDefault.eia[key];
+  }
+  if((perms.role||'')==='super_admin') return true;
+  return !!((perms.eia||{})[key]);
+}
+
+function canSeeTab(tabName, empresaId){
+  const mod = TAB_MODULE_MAP[tabName] || 'dashboard';
+  return hasPerm(mod, 'view', empresaId);
+}
+
+function renderAccessDenied(container, context){
+  if(!container) return;
+  container.innerHTML = `<div class="adm-empty" style="padding:60px 20px;max-width:480px;margin:40px auto;text-align:center">
+    <div style="font-size:44px;margin-bottom:12px">🔒</div>
+    <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--tx);margin-bottom:6px">Acesso restrito</div>
+    <div style="font-size:12.5px;color:var(--tx3);line-height:1.5">Você não tem permissão para acessar ${escHtml(context||'este recurso')}. Solicite ao administrador.</div>
+    <div style="margin-top:16px">
+      <button class="btn btn-ghost" onclick="goHome()">← Voltar para Home</button>
+    </div>
+  </div>`;
+}
+
 // ── EXTRATO IA v2 — executive document intelligence ───────────────────────
 // Storage keys:
 //   orion_extrato_ia_<empId>        → docs por empresa
@@ -4940,6 +5039,7 @@ function renderExtratoIA(e,c,co){
     </div>
 
     <!-- DROP ZONE -->
+    ${(typeof hasEiaPerm!=='function' || hasEiaPerm('upload')) ? `
     <div class="file-zone eia-drop" id="eia-drop"
       ondragover="event.preventDefault();this.classList.add('dragover')"
       ondragleave="this.classList.remove('dragover')"
@@ -4951,6 +5051,7 @@ function renderExtratoIA(e,c,co){
       <input type="file" id="eia-file" hidden multiple accept=".pdf,.xlsx,.xls,.csv,.png,.jpg,.jpeg,.webp" onchange="eiaOnFile(event)"/>
       <div id="eia-progress" class="eia-progress hidden"></div>
     </div>
+    ` : `<div class="adm-empty" style="padding:20px;font-size:12px">🔒 Você não tem permissão de upload neste módulo.</div>`}
 
     ${totDocs===0 ? `
       <div class="eia-empty">
@@ -5027,9 +5128,9 @@ function renderExtratoIA(e,c,co){
         <div class="eia-bstat"><span class="eia-bstat-n" style="color:var(--purple)">${allConf}%</span><span class="eia-bstat-l">Confiança</span></div>
       </div>
       <div class="eia-bottom-actions">
-        <button class="btn btn-ghost" onclick="eiaApproveAllReviewed()">✓ Aprovar todos (≥70%)</button>
-        <button class="btn btn-ghost" onclick="eiaRetrainModel()">🧠 Retreinar Modelo</button>
-        <button class="btn btn-ia" onclick="eiaGenerateReport()">📊 Gerar Relatório IA</button>
+        ${(typeof hasEiaPerm!=='function' || hasEiaPerm('approve')) ? `<button class="btn btn-ghost" onclick="eiaApproveAllReviewed()">✓ Aprovar todos (≥70%)</button>` : ''}
+        ${(typeof hasEiaPerm!=='function' || hasEiaPerm('retrain')) ? `<button class="btn btn-ghost" onclick="eiaRetrainModel()">🧠 Retreinar Modelo</button>` : ''}
+        ${(typeof hasEiaPerm!=='function' || hasEiaPerm('export')) ? `<button class="btn btn-ia" onclick="eiaGenerateReport()">📊 Gerar Relatório IA</button>` : ''}
       </div>
     </div>
     `}
@@ -5064,9 +5165,9 @@ function eiaRenderEntriesTable(doc){
       <td class="eia-cell-status">${statusBadge}</td>
       <td class="eia-cell-actions">
         ${e.status==='pending' ? `
-          <button class="eia-act-btn eia-act-app" title="Aprovar" onclick="eiaEntryApprove('${doc.id}','${e.id}')">✓</button>
-          <button class="eia-act-btn eia-act-edit" title="Reclassificar" onclick="eiaEntryReclassify('${doc.id}','${e.id}')">✎</button>
-          <button class="eia-act-btn eia-act-rej" title="Rejeitar" onclick="eiaEntryReject('${doc.id}','${e.id}')">✕</button>
+          ${(typeof hasEiaPerm!=='function' || hasEiaPerm('approve')) ? `<button class="eia-act-btn eia-act-app" title="Aprovar" onclick="eiaEntryApprove('${doc.id}','${e.id}')">✓</button>` : ''}
+          ${(typeof hasEiaPerm!=='function' || hasEiaPerm('editClass')) ? `<button class="eia-act-btn eia-act-edit" title="Reclassificar" onclick="eiaEntryReclassify('${doc.id}','${e.id}')">✎</button>` : ''}
+          ${(typeof hasEiaPerm!=='function' || hasEiaPerm('approve') || hasEiaPerm('editClass')) ? `<button class="eia-act-btn eia-act-rej" title="Rejeitar" onclick="eiaEntryReject('${doc.id}','${e.id}')">✕</button>` : ''}
         ` : `<span style="color:var(--tx3);font-size:10px">${e.correctedBy?escHtml(e.correctedBy):''}${e.correctedAt?' · '+eiaFormatWhen(e.correctedAt):''}</span>`}
       </td>
     </tr>`;
@@ -5113,6 +5214,7 @@ function eiaOnDrop(ev){
 async function eiaIngestFiles(files){
   if(!curEmp) return;
   if(files.length===0) return;
+  if(typeof hasEiaPerm==='function' && !hasEiaPerm('upload')){ showToast('Sem permissão para upload neste módulo'); return; }
   const list = eiaGet(curEmp);
   const sess = JSON.parse(localStorage.getItem('orion_session')||'{}');
   const reviewer = sess.name||sess.email||'usuário';
@@ -5185,6 +5287,7 @@ function eiaAnimateProgress(idx, step, pct){
 
 // ── Ações em LANÇAMENTOS (linha) ───────────────────────────────────────
 function eiaEntryApprove(docId, entryId){
+  if(typeof hasEiaPerm==='function' && !hasEiaPerm('approve')){ showToast('Sem permissão para aprovar'); return; }
   const list = eiaGet(curEmp);
   const doc = list.find(d=>d.id===docId); if(!doc) return;
   const e = (doc.entries||[]).find(x=>x.id===entryId); if(!e) return;
@@ -5198,6 +5301,7 @@ function eiaEntryApprove(docId, entryId){
   renderTab();
 }
 function eiaEntryReject(docId, entryId){
+  if(typeof hasEiaPerm==='function' && !hasEiaPerm('approve') && !hasEiaPerm('editClass')){ showToast('Sem permissão'); return; }
   const list = eiaGet(curEmp);
   const doc = list.find(d=>d.id===docId); if(!doc) return;
   const e = (doc.entries||[]).find(x=>x.id===entryId); if(!e) return;
@@ -5211,6 +5315,7 @@ function eiaEntryReject(docId, entryId){
   renderTab();
 }
 function eiaEntryReclassify(docId, entryId){
+  if(typeof hasEiaPerm==='function' && !hasEiaPerm('editClass')){ showToast('Sem permissão para reclassificar'); return; }
   const list = eiaGet(curEmp);
   const doc = list.find(d=>d.id===docId); if(!doc) return;
   const e = (doc.entries||[]).find(x=>x.id===entryId); if(!e) return;
@@ -5275,6 +5380,7 @@ function eiaApproveAllReviewed(){
   renderTab();
 }
 function eiaRetrainModel(){
+  if(typeof hasEiaPerm==='function' && !hasEiaPerm('retrain')){ showToast('Sem permissão para retreinar'); return; }
   // "Retreinar" = consolidar vocabulário a partir das correções aprovadas e limpar ruído (count<1)
   const corrections = JSON.parse(localStorage.getItem('orion_extrato_ia_corrections')||'{}');
   const tokens = Object.keys(corrections);
@@ -5285,6 +5391,7 @@ function eiaRetrainModel(){
 }
 
 function eiaDelete(id){
+  if(typeof hasEiaPerm==='function' && !hasEiaPerm('delete')){ showToast('Sem permissão para excluir'); return; }
   if(!confirm('Remover este documento e todos os lançamentos?')) return;
   const list = eiaGet(curEmp).filter(x=>x.id!==id);
   eiaSave(curEmp, list);
@@ -5482,6 +5589,7 @@ function eiaRenderLearning(){
 
 // ── GERAR RELATÓRIO IA ─────────────────────────────────────────────────
 async function eiaGenerateReport(){
+  if(typeof hasEiaPerm==='function' && !hasEiaPerm('export')){ showToast('Sem permissão para exportar'); return; }
   const list = eiaGet(curEmp);
   if(list.length===0){ showToast('Nenhum documento processado ainda'); return; }
   const empresa = EMPS[curEmp];

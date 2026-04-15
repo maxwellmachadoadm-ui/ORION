@@ -686,87 +686,18 @@ a{color:inherit;text-decoration:none}
 
 <!-- HOME — VISÃO CONSOLIDADA -->
 <div id="page-home">
-  <!-- GREETING -->
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-    <div>
-      <div id="home-greeting" style="font-size:12px;color:var(--blue3);font-weight:600;letter-spacing:4px;text-transform:uppercase;margin-bottom:4px">BOA TARDE, MAXWELL</div>
-      <div style="font-size:12px;color:var(--tx3)" id="home-sub">Dados atualizados com foco em finanças por objetivos</div>
-      <div style="font-size:13px;color:var(--tx3);margin-top:2px" id="home-date"></div>
-    </div>
-    <div style="display:flex;gap:8px;align-items:center">
-      <span style="font-size:13px;color:var(--tx3)" id="home-dateright"></span>
-      <button class="tb-btn" onclick="exportCeoPDF()" style="font-size:12px">📊 Exportar Relatório</button>
-    </div>
-  </div>
-
-  <!-- TITLE -->
   <div style="margin-bottom:20px">
-    <h1 style="font-family:'Syne',sans-serif;font-size:24px;font-weight:900;color:#fff">ORION – Visão Consolidada</h1>
-    <div style="font-size:13px;color:var(--tx3)">Visão Consolidada do Ecossistema Empresarial</div>
+    <div style="font-size:12px;color:var(--blue3);font-weight:600;letter-spacing:4px;text-transform:uppercase;margin-bottom:4px" id="home-greeting">BOM DIA, MAXWELL</div>
+    <h1 style="font-family:'Syne',sans-serif;font-size:26px;font-weight:900;color:#fff;line-height:1.1">Qual empresa vamos trabalhar agora?</h1>
+    <div style="font-size:13px;color:var(--tx3);margin-top:4px" id="home-date"></div>
   </div>
 
-  <!-- 4 KPI CARDS -->
-  <div class="vc-kpis" id="vc-kpis"></div>
-
-  <!-- CHART + RANKING -->
-  <div class="g21 mb">
-    <div class="card">
-      <div class="flex aic jsb mb-sm">
-        <div class="slbl" style="margin:0">Receita e Resultado por Empresa</div>
-        <div class="flex gap8">
-          <span class="stag" style="color:var(--blue3);background:rgba(59,130,246,.15);font-size:10px">6M</span>
-          <span class="stag" style="color:var(--tx3);background:var(--s2);font-size:10px">Todas Empresas ▾</span>
-        </div>
-      </div>
-      <div class="vc-chart-area" id="vc-chart"></div>
-      <div style="display:flex;gap:14px;margin-top:8px;justify-content:center">
-        <span style="font-size:10px;color:var(--tx3)"><span style="display:inline-block;width:8px;height:8px;background:var(--blue);border-radius:2px;margin-right:3px"></span>Receita</span>
-        <span style="font-size:10px;color:var(--tx3)"><span style="display:inline-block;width:8px;height:8px;background:var(--green);border-radius:2px;margin-right:3px"></span>Resultado</span>
-        <span style="font-size:10px;color:var(--tx3)"><span style="display:inline-block;width:8px;height:8px;background:rgba(96,165,250,.4);border-radius:0;border-top:2px solid var(--blue3);width:16px;height:0;margin-right:3px"></span>Vielara</span>
-      </div>
-    </div>
-    <div class="card">
-      <div class="flex aic jsb mb-sm">
-        <div class="slbl" style="margin:0">Ranking de Performance</div>
-        <div class="flex gap8">
-          <span style="font-size:10px;color:var(--tx3)" id="vc-rank-count"></span>
-          <span class="stag" style="color:var(--tx3);background:var(--s2);font-size:10px">PROPS ▾</span>
-        </div>
-      </div>
-      <div id="vc-ranking"></div>
-    </div>
-  </div>
-
-  <!-- TABLE + RISKS -->
-  <div class="g21 mb">
-    <div class="card">
-      <div class="flex aic jsb mb-sm">
-        <div class="slbl" style="margin:0">Visão Geral das Empresas</div>
-        <div class="flex gap8">
-          <span class="stag" style="color:var(--tx3);background:var(--s2);font-size:10px">⬆ Todas Empresas ▾</span>
-        </div>
-      </div>
-      <div style="overflow-x:auto"><table class="vceo-table" id="vc-table"></table></div>
-    </div>
-    <div class="card">
-      <div class="flex aic jsb mb-sm">
-        <div class="slbl" style="margin:0">⚠ Empresas em Risco</div>
-        <span style="font-size:11px;color:var(--red)" id="vc-risk-count"></span>
-      </div>
-      <div id="vc-risks"></div>
-    </div>
-  </div>
-
-  <!-- ALERTS + OPPORTUNITIES -->
-  <div class="g2 mb">
-    <div class="card">
-      <div class="slbl">⚠ Alertas Inteligentes</div>
-      <div id="home-alerts"></div>
-    </div>
-    <div class="card">
-      <div class="slbl">⚠ Oportunidades e Recomendações</div>
-      <div id="vc-opportunities"></div>
-    </div>
+  <!-- KPIs -->
+  <div class="g4 mb">
+    <div class="card"><div style="display:flex;justify-content:space-between;align-items:flex-start"><div><div class="lbl">Faturamento do Ecossistema</div><div class="val txt-blue" id="kpi-fat">R$ 126,5k</div><div class="delta-up">▲ +8,2% vs mês anterior</div></div><div class="spark" id="spark-fat"></div></div></div>
+    <div class="card"><div style="display:flex;justify-content:space-between;align-items:flex-start"><div><div class="lbl">Resultado Líquido</div><div class="val txt-green">R$ 46,7k</div><div class="delta-up">▲ +12,1% vs mês anterior</div></div><div class="spark" id="spark-res"></div></div></div>
+    <div class="card"><div style="display:flex;justify-content:space-between;align-items:flex-start"><div><div class="lbl">Health Score Médio</div><div class="val" style="color:#a78bfa" id="kpi-health">71</div><div class="delta-neu" id="kpi-emp-count">5 empresas ativas</div></div><div class="prog-ring" id="health-ring"></div></div></div>
+    <div class="card"><div style="display:flex;justify-content:space-between;align-items:flex-start"><div><div class="lbl">Alertas Ativos</div><div class="val txt-red" id="kpi-alerts">4</div><div class="delta-neu">2 críticos · 2 atenção</div></div><div class="spark" id="spark-alerts"></div></div></div>
   </div>
 
   <!-- PORTFÓLIO -->
@@ -783,9 +714,15 @@ a{color:inherit;text-decoration:none}
       <div class="flex aic jsb mb-sm">
         <div class="flex aic gap8">
           <span style="font-size:16px">📅</span>
-          <div><div class="lbl" style="margin:0">Agenda</div></div>
+          <div>
+            <div class="lbl" style="margin:0">Agenda</div>
+            <div style="font-size:11px;color:var(--green);font-weight:600;letter-spacing:1px">Google Calendar</div>
+          </div>
         </div>
-        <button class="tb-btn" style="font-size:11px;padding:5px 10px;color:var(--blue3);border-color:var(--br2)" onclick="openModal('modal-evento')">+ Evento</button>
+        <div class="flex gap8">
+          <button class="tb-btn" style="font-size:11px;padding:5px 10px">🔗 Link</button>
+          <button class="tb-btn" style="font-size:11px;padding:5px 10px;color:var(--blue3);border-color:var(--br2)" onclick="openModal('modal-evento')">+ Evento</button>
+        </div>
       </div>
       <div id="agenda-list"></div>
     </div>
@@ -795,7 +732,7 @@ a{color:inherit;text-decoration:none}
         <div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--tx2)">MAXXXI Live — Radar de Mercado</div>
         <button class="tb-btn" style="margin-left:auto;font-size:11px;padding:4px 10px" onclick="startLive()">▶ Iniciar</button>
       </div>
-      <div id="live-feed" style="font-size:13px;color:var(--tx3);font-style:italic">Clique em ▶ para o MAXXXI varrer notícias.</div>
+      <div id="live-feed" style="font-size:13px;color:var(--tx3);font-style:italic">Clique em ▶ para o MAXXXI varrer notícias de mercado e economia em tempo real.</div>
     </div>
   </div>
 
@@ -812,6 +749,15 @@ a{color:inherit;text-decoration:none}
       <div><div class="lbl">O que é prioridade hoje?</div><textarea rows="3" placeholder="Digite aqui..." id="ci1" oninput="saveCI()"></textarea></div>
       <div><div class="lbl">Qual decisão não pode esperar?</div><textarea rows="3" placeholder="Digite aqui..." id="ci2" oninput="saveCI()"></textarea></div>
       <div><div class="lbl">Que resultado vou entregar hoje?</div><textarea rows="3" placeholder="Digite aqui..." id="ci3" oninput="saveCI()"></textarea></div>
+    </div>
+  </div>
+
+  <!-- ALERTAS MAXXXI -->
+  <div>
+    <div class="slbl">🤖 MAXXXI — Alertas Ativos</div>
+    <div id="home-alerts"></div>
+    <div style="margin-top:8px;text-align:center">
+      <button class="tb-btn" style="font-size:12px" onclick="toggleMXDrawer()">Abrir MAXXXI para detalhes →</button>
     </div>
   </div>
 </div>

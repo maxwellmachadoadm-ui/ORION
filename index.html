@@ -1778,6 +1778,47 @@ textarea:focus{
 /* Global search overlay (FASE K) — reaproveita cmd-overlay pattern */
 .gsearch-section{padding:6px 12px 4px;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--tx3);font-weight:700;background:rgba(255,255,255,.02)}
 
+/* View toggle (tabela/timeline) */
+.adm-view-toggle{display:inline-flex;background:var(--s0);border:1px solid var(--br);border-radius:10px;padding:2px;gap:2px}
+.adm-view-toggle button{background:transparent;border:none;padding:6px 12px;border-radius:8px;color:var(--tx2);font-size:12px;font-weight:600;cursor:pointer;transition:.12s;font-family:inherit}
+.adm-view-toggle button:hover{color:var(--tx)}
+.adm-view-toggle button.active{background:var(--blue);color:#fff}
+
+/* Timeline de auditoria (FASE N) */
+.audit-timeline{display:flex;flex-direction:column;gap:18px;padding:6px 2px;max-height:660px;overflow:auto}
+.aud-day-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;position:sticky;top:0;background:var(--bg);padding:8px 2px;z-index:2}
+.aud-day-dot{width:10px;height:10px;border-radius:50%;background:var(--purple);box-shadow:0 0 0 3px rgba(167,139,250,.15)}
+.aud-day-label{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--tx);letter-spacing:-.2px;text-transform:capitalize}
+.aud-day-count{font-size:10.5px;color:var(--tx3);margin-left:auto}
+.aud-day-body{display:flex;flex-direction:column;gap:4px;border-left:2px solid var(--br);padding-left:14px;margin-left:4px}
+.aud-item{display:grid;grid-template-columns:56px 24px 1fr;gap:10px;align-items:flex-start;padding:8px 10px;background:var(--s1);border:1px solid var(--br);border-radius:10px;transition:.12s;position:relative}
+.aud-item:hover{border-color:rgba(59,130,246,.25)}
+.aud-item.critical{border-left:3px solid var(--red);background:rgba(239,68,68,.04)}
+.aud-item.critical .aud-dot{background:rgba(239,68,68,.15);color:var(--red)}
+.aud-time{color:var(--tx3);font-family:'DM Sans',sans-serif;font-variant-numeric:tabular-nums;font-size:11px;padding-top:2px;white-space:nowrap}
+.aud-dot{width:24px;height:24px;border-radius:50%;background:rgba(59,130,246,.12);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.aud-body{min-width:0}
+.aud-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.aud-action{font-size:12px;font-weight:600;color:var(--blue3);font-family:'DM Sans',sans-serif}
+.aud-emp{font-size:9.5px;font-weight:800;padding:1px 7px;border-radius:5px;border:1px solid}
+.aud-meta{font-size:11px;color:var(--tx2);margin-top:3px}
+.aud-actor{color:var(--tx);font-weight:500}
+.aud-target{color:var(--tx3)}
+.aud-change{font-family:'Courier New',monospace;font-size:10.5px;margin-top:4px;color:var(--tx3)}
+.aud-old{color:var(--red);opacity:.8}
+.aud-new{color:var(--green)}
+
+/* Destaque para linhas críticas na tabela */
+.adm-audit-table tr.critical{border-left:3px solid var(--red) !important;background:rgba(239,68,68,.04)}
+
+/* Print mode — só a audit-table/timeline aparece */
+@media print{
+  body *{visibility:hidden !important}
+  #audit-print-area, #audit-print-area *{visibility:visible !important}
+  #audit-print-area{position:absolute;left:0;top:0;width:100%;padding:20px;background:#fff !important;color:#000 !important}
+  #audit-print-area *{background:#fff !important;color:#000 !important;border-color:#ddd !important}
+}
+
 /* Confiabilidade da IA (FASE M) */
 .eia-reliability{background:var(--s1);border:1px solid var(--br);border-radius:14px;padding:16px;margin-bottom:4px}
 .eia-rel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
@@ -5318,7 +5359,14 @@ function admCopyInvite(token){
 }
 
 // ── AUDIT SCREEN (FASE C) ─────────────────────────────────────────────
-let admAuditFilters = Object.assign({emp:'', actor:'', action:'', period:'30'}, (typeof filterGet==='function'?filterGet('auditoria'):{}));
+let admAuditFilters = Object.assign({emp:'', actor:'', action:'', period:'30', view:'table'}, (typeof filterGet==='function'?filterGet('auditoria'):{}));
+
+// Eventos considerados críticos (destaque no timeline/tabela)
+const AUDIT_CRITICAL = new Set([
+  'security.login_blocked','security.session_timeout',
+  'user.delete','empresa.delete','empresa.archive',
+  'invite.cancel','auth.login_fail'
+]);
 
 function admGetAuditLogs(){
   try{ return JSON.parse(localStorage.getItem('orion_audit_log')||'[]') }catch(e){ return [] }
@@ -5352,17 +5400,32 @@ function admApplyAuditFilters(logs){
 function renderAdminAudit(el){
   const all = admGetAuditLogs();
   const filtered = admApplyAuditFilters(all).slice().reverse();
-  const empresas = Object.values(EMPS).filter(e=>!e.id.startsWith('custom_')||true);
+  const critCount = filtered.filter(l=>AUDIT_CRITICAL.has(l.action)).length;
+  const view = admAuditFilters.view || 'table';
   el.innerHTML = `
     <div class="adm-listhead">
       <div>
         <div class="slbl" style="margin:0">Auditoria</div>
-        <div style="font-size:11px;color:var(--tx3);margin-top:4px">${filtered.length} evento(s) · ${all.length} total · armazenado em orion_audit_log</div>
+        <div style="font-size:11px;color:var(--tx3);margin-top:4px">${filtered.length} evento(s) · ${critCount} crítico(s) · ${all.length} total · armazenado em orion_audit_log</div>
       </div>
-      <div style="display:flex;gap:8px">
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <div class="adm-view-toggle">
+          <button class="${view==='table'?'active':''}" onclick="admAuditFilters.view='table';filterSet('auditoria',admAuditFilters);renderAdmin()">📋 Tabela</button>
+          <button class="${view==='timeline'?'active':''}" onclick="admAuditFilters.view='timeline';filterSet('auditoria',admAuditFilters);renderAdmin()">🕑 Timeline</button>
+        </div>
+        <button class="btn btn-ghost" onclick="window.print()">🖨 Imprimir</button>
         <button class="btn btn-ghost" onclick="admExportAuditCSV()">⬇ CSV</button>
-        <button class="btn btn-ghost" onclick="admClearAuditFilters()">↺ Limpar filtros</button>
+        <button class="btn btn-ghost" onclick="admClearAuditFilters()">↺ Limpar</button>
       </div>
+    </div>
+    <div class="filter-chips">
+      <span class="filter-chip ${!admAuditFilters.action?'active':''}" onclick="admAuditFilters.action='';filterSet('auditoria',admAuditFilters);renderAdmin()">Todas <span class="filter-chip-n">${all.length}</span></span>
+      <span class="filter-chip ${admAuditFilters.action==='security'?'active':''}" onclick="admAuditFilters.action='security';filterSet('auditoria',admAuditFilters);renderAdmin()">🔒 Segurança <span class="filter-chip-n">${all.filter(l=>admAuditActionGroup(l.action)==='security').length}</span></span>
+      <span class="filter-chip ${admAuditFilters.action==='auth'?'active':''}" onclick="admAuditFilters.action='auth';filterSet('auditoria',admAuditFilters);renderAdmin()">🔑 Auth <span class="filter-chip-n">${all.filter(l=>admAuditActionGroup(l.action)==='auth').length}</span></span>
+      <span class="filter-chip ${admAuditFilters.action==='users'?'active':''}" onclick="admAuditFilters.action='users';filterSet('auditoria',admAuditFilters);renderAdmin()">👥 Usuários <span class="filter-chip-n">${all.filter(l=>admAuditActionGroup(l.action)==='users').length}</span></span>
+      <span class="filter-chip ${admAuditFilters.action==='invites'?'active':''}" onclick="admAuditFilters.action='invites';filterSet('auditoria',admAuditFilters);renderAdmin()">📩 Convites <span class="filter-chip-n">${all.filter(l=>admAuditActionGroup(l.action)==='invites').length}</span></span>
+      <span class="filter-chip ${admAuditFilters.action==='extrato_ia'?'active':''}" onclick="admAuditFilters.action='extrato_ia';filterSet('auditoria',admAuditFilters);renderAdmin()">🤖 Extrato IA <span class="filter-chip-n">${all.filter(l=>admAuditActionGroup(l.action)==='extrato_ia').length}</span></span>
+      <span class="filter-chip ${admAuditFilters.action==='empresas'?'active':''}" onclick="admAuditFilters.action='empresas';filterSet('auditoria',admAuditFilters);renderAdmin()">🏢 Empresas <span class="filter-chip-n">${all.filter(l=>admAuditActionGroup(l.action)==='empresas').length}</span></span>
     </div>
     <div class="adm-audit-filters">
       <div><div class="lbl">Empresa</div>
@@ -5396,8 +5459,9 @@ function renderAdminAudit(el){
         </select>
       </div>
     </div>
-    ${filtered.length===0 ? `<div class="adm-empty">Nenhum evento no filtro atual.</div>` : `
-    <div style="overflow:auto;max-height:600px;border-radius:12px;border:1px solid var(--br)">
+    ${filtered.length===0 ? `<div class="adm-empty">Nenhum evento no filtro atual.</div>` :
+      view==='timeline' ? admAuditTimeline(filtered) : `
+    <div style="overflow:auto;max-height:600px;border-radius:12px;border:1px solid var(--br)" id="audit-print-area">
       <table class="adm-audit-table">
         <thead><tr>
           <th>Quando</th><th>Usuário</th><th>Empresa</th><th>Ação</th><th>Alvo</th><th>Antes → Depois</th>
@@ -5409,6 +5473,61 @@ function renderAdminAudit(el){
   `;
 }
 
+function admAuditTimeline(logs){
+  // Agrupa por dia (YYYY-MM-DD)
+  const byDay = {};
+  logs.forEach(l=>{
+    const k = (l.at||'').slice(0,10);
+    if(!byDay[k]) byDay[k] = [];
+    byDay[k].push(l);
+  });
+  const days = Object.keys(byDay).sort().reverse();
+  return `<div class="audit-timeline" id="audit-print-area">
+    ${days.map(day=>{
+      const dayEvents = byDay[day];
+      const dayDate = new Date(day+'T00:00:00');
+      const dayLabel = dayDate.toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric',weekday:'long'});
+      const critN = dayEvents.filter(l=>AUDIT_CRITICAL.has(l.action)).length;
+      return `<div class="aud-day">
+        <div class="aud-day-head">
+          <span class="aud-day-dot"></span>
+          <span class="aud-day-label">${escHtml(dayLabel)}</span>
+          <span class="aud-day-count">${dayEvents.length} evento(s)${critN?' · '+critN+' crítico(s)':''}</span>
+        </div>
+        <div class="aud-day-body">
+          ${dayEvents.map(l=>admAuditTimelineItem(l)).join('')}
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function admAuditTimelineItem(l){
+  const when = new Date(l.at).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  const emp = l.empresa && EMPS[l.empresa] ? EMPS[l.empresa] : null;
+  const isCrit = AUDIT_CRITICAL.has(l.action);
+  const grp = admAuditActionGroup(l.action);
+  const grpIcon = {auth:'🔑', users:'👥', invites:'📩', empresas:'🏢', extrato_ia:'🤖', permissoes:'🛡️', security:'🔒'}[grp]||'•';
+  const tgtText = l.target ? (l.target.label || l.target.id || '') : '';
+  const empHtml = emp ? `<span class="aud-emp" style="color:${emp.cor};border-color:${emp.cor}55">${escHtml(emp.sigla)}</span>` : '';
+  const changeHtml = (l.old||l.new) ? `<div class="aud-change">${l.old?'<span class="aud-old">'+escHtml(JSON.stringify(l.old).slice(0,50))+'</span>':''}${l.old&&l.new?' → ':''}${l.new?'<span class="aud-new">'+escHtml(JSON.stringify(l.new).slice(0,50))+'</span>':''}</div>` : '';
+  return `<div class="aud-item ${isCrit?'critical':''}">
+    <div class="aud-time">${when}</div>
+    <div class="aud-dot">${isCrit?'!':grpIcon}</div>
+    <div class="aud-body">
+      <div class="aud-head">
+        <span class="aud-action">${escHtml(l.action)}</span>
+        ${empHtml}
+      </div>
+      <div class="aud-meta">
+        <span class="aud-actor">${escHtml(l.actor||'—')}</span>
+        ${tgtText?`<span class="aud-target">· ${escHtml(tgtText)}</span>`:''}
+      </div>
+      ${changeHtml}
+    </div>
+  </div>`;
+}
+
 function admAuditRow(l){
   const when = new Date(l.at).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'});
   const emp = l.empresa && EMPS[l.empresa] ? EMPS[l.empresa].sigla : (l.empresa||'—');
@@ -5417,7 +5536,8 @@ function admAuditRow(l){
   const tgtType = l.target && l.target.type ? l.target.type : '';
   const oldJson = l.old ? JSON.stringify(l.old).slice(0,80) : '—';
   const newJson = l.new ? JSON.stringify(l.new).slice(0,80) : '—';
-  return `<tr>
+  const critCls = AUDIT_CRITICAL.has(l.action) ? 'critical' : '';
+  return `<tr class="${critCls}">
     <td class="adm-audit-when">${when}</td>
     <td class="adm-audit-actor">${escHtml(l.actor||'—')}</td>
     <td><span class="home-v2-badge home-v2-badge-escalar" style="background:${empColor}22;color:${empColor}">${escHtml(emp)}</span></td>

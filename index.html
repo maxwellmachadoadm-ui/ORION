@@ -2402,8 +2402,12 @@ function doLogin(){
   if(!e||!p){alert('Preencha e-mail e senha');return}
   const users=JSON.parse(LS('users')||'[]');
   const u=users.find(x=>x.email===e&&x.pass===btoa(p));
-  if(!u){alert('Usuário ou senha incorretos');return}
+  if(!u){
+    try{ if(typeof audit==='function') audit('auth.login_fail', {type:'auth', id:e, label:e}, null, {reason:'invalid_credentials'}); }catch(err){}
+    alert('Usuário ou senha incorretos');return;
+  }
   LS('session',JSON.stringify(u));
+  try{ if(typeof audit==='function') audit('auth.login_success', {type:'user', id:u.id, label:u.email}, null, null); }catch(err){}
   enterPlatform(u);
 }
 
@@ -4677,8 +4681,144 @@ function admCopyInvite(token){
   else { prompt('Copie o link:', link); }
 }
 
-// Stubs — implementados nas próximas fases
-function renderAdminAudit(el){ el.innerHTML = `<div class="adm-empty">Auditoria — implementada na FASE C</div>`; }
+// ── AUDIT SCREEN (FASE C) ─────────────────────────────────────────────
+let admAuditFilters = {emp:'', actor:'', action:'', period:'30'};
+
+function admGetAuditLogs(){
+  try{ return JSON.parse(localStorage.getItem('orion_audit_log')||'[]') }catch(e){ return [] }
+}
+
+function admAuditActionGroup(action){
+  if(!action) return 'outros';
+  if(action.startsWith('auth.'))    return 'auth';
+  if(action.startsWith('user.'))    return 'users';
+  if(action.startsWith('invite.'))  return 'invites';
+  if(action.startsWith('empresa.')) return 'empresas';
+  if(action.startsWith('eia.'))     return 'extrato_ia';
+  if(action.startsWith('perm.'))    return 'permissoes';
+  if(action.startsWith('security.'))return 'security';
+  return 'outros';
+}
+
+function admApplyAuditFilters(logs){
+  const f = admAuditFilters;
+  const now = Date.now();
+  const cutoff = f.period==='all' ? 0 : now - parseInt(f.period)*86400000;
+  return logs.filter(l=>{
+    if(cutoff && new Date(l.at).getTime() < cutoff) return false;
+    if(f.emp && l.empresa !== f.emp) return false;
+    if(f.actor && !((l.actor||'').toLowerCase().includes(f.actor.toLowerCase()))) return false;
+    if(f.action && admAuditActionGroup(l.action) !== f.action) return false;
+    return true;
+  });
+}
+
+function renderAdminAudit(el){
+  const all = admGetAuditLogs();
+  const filtered = admApplyAuditFilters(all).slice().reverse();
+  const empresas = Object.values(EMPS).filter(e=>!e.id.startsWith('custom_')||true);
+  el.innerHTML = `
+    <div class="adm-listhead">
+      <div>
+        <div class="slbl" style="margin:0">Auditoria</div>
+        <div style="font-size:11px;color:var(--tx3);margin-top:4px">${filtered.length} evento(s) · ${all.length} total · armazenado em orion_audit_log</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost" onclick="admExportAuditCSV()">⬇ CSV</button>
+        <button class="btn btn-ghost" onclick="admClearAuditFilters()">↺ Limpar filtros</button>
+      </div>
+    </div>
+    <div class="adm-audit-filters">
+      <div><div class="lbl">Empresa</div>
+        <select class="inp" onchange="admAuditFilters.emp=this.value;renderAdmin()">
+          <option value="">Todas</option>
+          ${Object.values(EMPS).map(e=>`<option value="${e.id}" ${admAuditFilters.emp===e.id?'selected':''}>${escHtml(e.nome)}</option>`).join('')}
+        </select>
+      </div>
+      <div><div class="lbl">Usuário (busca)</div>
+        <input class="inp" placeholder="nome ou e-mail..." value="${escHtml(admAuditFilters.actor)}" oninput="admAuditFilters.actor=this.value;renderAdmin()"/>
+      </div>
+      <div><div class="lbl">Tipo de ação</div>
+        <select class="inp" onchange="admAuditFilters.action=this.value;renderAdmin()">
+          <option value="" ${!admAuditFilters.action?'selected':''}>Todas</option>
+          <option value="auth" ${admAuditFilters.action==='auth'?'selected':''}>🔑 Autenticação</option>
+          <option value="users" ${admAuditFilters.action==='users'?'selected':''}>👥 Usuários</option>
+          <option value="invites" ${admAuditFilters.action==='invites'?'selected':''}>📩 Convites</option>
+          <option value="empresas" ${admAuditFilters.action==='empresas'?'selected':''}>🏢 Empresas</option>
+          <option value="extrato_ia" ${admAuditFilters.action==='extrato_ia'?'selected':''}>🤖 Extrato IA</option>
+          <option value="permissoes" ${admAuditFilters.action==='permissoes'?'selected':''}>🛡️ Permissões</option>
+          <option value="security" ${admAuditFilters.action==='security'?'selected':''}>🔒 Segurança</option>
+        </select>
+      </div>
+      <div><div class="lbl">Período</div>
+        <select class="inp" onchange="admAuditFilters.period=this.value;renderAdmin()">
+          <option value="1" ${admAuditFilters.period==='1'?'selected':''}>24h</option>
+          <option value="7" ${admAuditFilters.period==='7'?'selected':''}>7 dias</option>
+          <option value="30" ${admAuditFilters.period==='30'?'selected':''}>30 dias</option>
+          <option value="90" ${admAuditFilters.period==='90'?'selected':''}>90 dias</option>
+          <option value="all" ${admAuditFilters.period==='all'?'selected':''}>Tudo</option>
+        </select>
+      </div>
+    </div>
+    ${filtered.length===0 ? `<div class="adm-empty">Nenhum evento no filtro atual.</div>` : `
+    <div style="overflow:auto;max-height:600px;border-radius:12px;border:1px solid var(--br)">
+      <table class="adm-audit-table">
+        <thead><tr>
+          <th>Quando</th><th>Usuário</th><th>Empresa</th><th>Ação</th><th>Alvo</th><th>Antes → Depois</th>
+        </tr></thead>
+        <tbody>${filtered.map(l=>admAuditRow(l)).join('')}</tbody>
+      </table>
+    </div>
+    `}
+  `;
+}
+
+function admAuditRow(l){
+  const when = new Date(l.at).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'});
+  const emp = l.empresa && EMPS[l.empresa] ? EMPS[l.empresa].sigla : (l.empresa||'—');
+  const empColor = l.empresa && EMPS[l.empresa] ? EMPS[l.empresa].cor : 'var(--tx3)';
+  const tgt = l.target ? (l.target.label || l.target.id || JSON.stringify(l.target)) : '';
+  const tgtType = l.target && l.target.type ? l.target.type : '';
+  const oldJson = l.old ? JSON.stringify(l.old).slice(0,80) : '—';
+  const newJson = l.new ? JSON.stringify(l.new).slice(0,80) : '—';
+  return `<tr>
+    <td class="adm-audit-when">${when}</td>
+    <td class="adm-audit-actor">${escHtml(l.actor||'—')}</td>
+    <td><span class="home-v2-badge home-v2-badge-escalar" style="background:${empColor}22;color:${empColor}">${escHtml(emp)}</span></td>
+    <td class="adm-audit-action">${escHtml(l.action||'—')}</td>
+    <td class="adm-audit-target">${tgtType?'<span style="color:var(--tx3);font-size:10px">['+escHtml(tgtType)+']</span> ':''}${escHtml(String(tgt))}</td>
+    <td style="font-size:10.5px;color:var(--tx3);font-family:'Courier New',monospace">${escHtml(oldJson)} → ${escHtml(newJson)}</td>
+  </tr>`;
+}
+
+function admClearAuditFilters(){
+  admAuditFilters = {emp:'', actor:'', action:'', period:'30'};
+  renderAdmin();
+}
+
+function admExportAuditCSV(){
+  const logs = admApplyAuditFilters(admGetAuditLogs()).slice().reverse();
+  const rows = [['Quando','Usuário','Empresa','Ação','Alvo','Antes','Depois']];
+  logs.forEach(l=>{
+    rows.push([
+      new Date(l.at).toISOString(),
+      l.actor||'',
+      l.empresa||'',
+      l.action||'',
+      l.target?(l.target.label||l.target.id||''):'',
+      l.old?JSON.stringify(l.old):'',
+      l.new?JSON.stringify(l.new):''
+    ]);
+  });
+  const csv = rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(';')).join('\n');
+  const blob = new Blob(['\ufeff'+csv], {type:'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url; a.download='audit-log-'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
+  URL.revokeObjectURL(url);
+  showToast('CSV exportado');
+}
+
 function renderAdminSecurity(el){ el.innerHTML = `<div class="adm-empty">Segurança — implementada na FASE D</div>`; }
 
 // Helper central de auditoria (preparado p/ FASE C — usado já agora)
@@ -5691,18 +5831,17 @@ function eiaDownloadReport(){
 }
 
 function eiaLogAudit(action, item, extra){
+  // Delega ao helper central audit() (FASE C)
+  if(typeof audit==='function'){
+    const tgt = item ? {type:'eia_doc', id:item.id, label:item.name} : null;
+    audit('eia.'+action, tgt, null, extra||null);
+    return;
+  }
+  // fallback legado
   const logs = JSON.parse(localStorage.getItem('orion_audit_log')||'[]');
   const sess = JSON.parse(localStorage.getItem('orion_session')||'{}');
-  logs.push({
-    at:eiaNowIso(),
-    actor:sess.name||sess.email||'—',
-    action:'eia.'+action,
-    target:item?item.name:'',
-    targetId:item?item.id:'',
-    empresa:curEmp,
-    extra:extra||null
-  });
-  if(logs.length>500) logs.splice(0, logs.length-500);
+  logs.push({at:eiaNowIso(),actor:sess.name||sess.email||'—',action:'eia.'+action,target:item?item.name:'',targetId:item?item.id:'',empresa:curEmp,extra:extra||null});
+  if(logs.length>1000) logs.splice(0, logs.length-1000);
   localStorage.setItem('orion_audit_log', JSON.stringify(logs));
 }
 
@@ -7769,6 +7908,7 @@ function markAlertRead(id){
 
 // ── LOGOUT ──────────────────────────────────────────────────────────────────
 function doLogout(){
+  try{ if(typeof audit==='function'){ const u=currentUser(); audit('auth.logout', u?{type:'user',id:u.id,label:u.email}:null, null, null); } }catch(e){}
   localStorage.removeItem('orion_session');
   location.reload();
 }
@@ -7900,6 +8040,7 @@ function saveNewEmpresa(){
   const custom=JSON.parse(localStorage.getItem('orion_custom_emps')||'[]');
   custom.push(emp);
   localStorage.setItem('orion_custom_emps',JSON.stringify(custom));
+  try{ if(typeof audit==='function') audit('empresa.create', {type:'empresa',id, label:nome}, null, {nome, sigla, cor:newEmpColor}); }catch(e){}
   sbInsert('empresas',{id,nome,sigla,descricao:desc||'Nova empresa',cor:newEmpColor,rgb:hexToRgb(newEmpColor),score:50,status:'Novo',status_cor:newEmpColor,tipo:'custom'});
   // save selected modules
   const modChecks=document.querySelectorAll('#emp-modulos-picks input:checked');

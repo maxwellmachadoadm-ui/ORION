@@ -1074,6 +1074,124 @@ table.fc-table th,table.ceo-table th,table.vceo-table th{font-family:'DM Sans',s
   .eia-kpis{grid-template-columns:1fr 1fr}
   .eia-bottom{flex-direction:column;align-items:flex-start}
 }
+
+/* ── ADMIN PANEL (usa mesmo padrão home/ws) ───────────────────────── */
+#page-admin{padding:0}
+.adm-header{display:flex;justify-content:space-between;align-items:flex-end;padding:22px 28px 0;gap:18px;flex-wrap:wrap}
+.adm-greeting{color:var(--purple);letter-spacing:3px;font-size:11px;font-weight:700;text-transform:uppercase;margin-bottom:4px}
+.adm-title{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;margin:0;color:var(--tx);letter-spacing:-.5px}
+.adm-sub{font-size:12px;color:var(--tx3);margin-top:4px}
+.adm-tabs{display:flex;gap:4px;border-bottom:1px solid var(--br)}
+.adm-tab{background:transparent;color:var(--tx3);border:none;padding:10px 14px;font-size:12px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;transition:.12s;font-family:inherit}
+.adm-tab:hover{color:var(--tx)}
+.adm-tab.active{color:var(--blue3);border-bottom-color:var(--blue)}
+#adm-content{padding:20px 28px 32px}
+
+/* Listagem */
+.adm-listhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:12px;flex-wrap:wrap}
+.adm-search{flex:1;max-width:320px}
+.adm-empty{padding:40px 20px;text-align:center;color:var(--tx3);border:1px dashed var(--br);border-radius:12px;font-size:13px;background:rgba(255,255,255,.02)}
+
+/* Users table/grid */
+.adm-user-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.adm-user-card{background:var(--s1);border:1px solid var(--br);border-radius:12px;padding:14px;display:flex;gap:12px;align-items:center;transition:.15s;cursor:pointer}
+.adm-user-card:hover{border-color:rgba(59,130,246,.25);transform:translateY(-1px)}
+.adm-user-ava{width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,var(--blue2),var(--purple));display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;color:#fff;font-size:14px;overflow:hidden;flex-shrink:0}
+.adm-user-ava img{width:100%;height:100%;object-fit:cover}
+.adm-user-info{flex:1;min-width:0}
+.adm-user-name{font-size:13.5px;font-weight:700;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.adm-user-email{font-size:11.5px;color:var(--tx3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.adm-user-meta{display:flex;gap:6px;margin-top:4px;flex-wrap:wrap}
+.adm-user-actions{display:flex;gap:4px;flex-shrink:0}
+.adm-user-actions .eia-act-btn{width:28px;height:28px}
+
+/* Form layout 2-col */
+.adm-form-layout{display:grid;grid-template-columns:1fr 320px;gap:18px}
+.adm-form-main{display:flex;flex-direction:column;gap:14px;min-width:0}
+.adm-form-side{display:flex;flex-direction:column;gap:12px;min-width:0}
+.adm-panel{background:var(--s1);border:1px solid var(--br);border-radius:12px;padding:16px}
+.adm-panel-title{font-size:11px;color:var(--tx2);text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+
+/* Avatar picker */
+.adm-ava-row{display:flex;gap:14px;align-items:center;margin-bottom:14px}
+.adm-ava-big{width:72px;height:72px;border-radius:16px;background:linear-gradient(135deg,var(--blue2),var(--purple));display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;color:#fff;font-size:22px;overflow:hidden;flex-shrink:0;border:1px solid var(--br)}
+.adm-ava-big img{width:100%;height:100%;object-fit:cover}
+
+/* Empresas checkboxes */
+.adm-emp-list{display:flex;flex-direction:column;gap:0;border:1px solid var(--br);border-radius:10px;overflow:hidden;background:rgba(255,255,255,.02)}
+.adm-emp-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--br);cursor:pointer;transition:.12s}
+.adm-emp-row:last-child{border-bottom:none}
+.adm-emp-row:hover{background:rgba(59,130,246,.04)}
+.adm-emp-row input[type="checkbox"]{accent-color:var(--blue);width:16px;height:16px;flex-shrink:0}
+.adm-emp-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.adm-emp-name{font-size:13px;color:var(--tx);font-weight:600;flex:1}
+.adm-emp-toggle{display:flex;align-items:center;gap:4px;color:var(--tx3);font-size:11px;transition:.12s}
+.adm-emp-toggle:hover{color:var(--blue3)}
+
+/* Per-empresa permissions */
+.adm-perm-card{background:var(--s1);border:1px solid var(--br);border-radius:12px;margin-bottom:10px;overflow:hidden}
+.adm-perm-head{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;background:rgba(255,255,255,.015)}
+.adm-perm-head:hover{background:rgba(59,130,246,.04)}
+.adm-perm-head .adm-emp-dot{width:10px;height:10px}
+.adm-perm-title{flex:1;font-size:13px;font-weight:700;color:var(--tx)}
+.adm-perm-role-sel{background:var(--bg);border:1px solid var(--br);color:var(--tx);padding:6px 10px;border-radius:8px;font-size:12px;font-family:inherit;margin-right:8px}
+.adm-perm-arrow{color:var(--tx3);font-size:12px;transition:.15s}
+.adm-perm-card.expanded .adm-perm-arrow{transform:rotate(180deg)}
+.adm-perm-body{display:none;padding:0 14px 14px;border-top:1px solid var(--br)}
+.adm-perm-card.expanded .adm-perm-body{display:block}
+.adm-perm-table{width:100%;border-collapse:collapse;font-size:11.5px;margin-top:10px}
+.adm-perm-table th{text-align:center;padding:7px 4px;font-size:9.5px;text-transform:uppercase;letter-spacing:.08em;font-weight:700;color:var(--tx3);border-bottom:1px solid var(--br)}
+.adm-perm-table th:first-child{text-align:left;padding-left:6px;min-width:140px}
+.adm-perm-table td{padding:6px 4px;text-align:center;border-bottom:1px solid rgba(255,255,255,.03)}
+.adm-perm-table td:first-child{text-align:left;padding-left:6px;font-weight:600;color:var(--tx)}
+.adm-perm-table input[type="checkbox"]{accent-color:var(--blue);width:14px;height:14px;cursor:pointer}
+.adm-perm-eia{margin-top:14px;padding-top:12px;border-top:1px dashed var(--br)}
+.adm-perm-eia-title{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--purple);font-weight:700;margin-bottom:8px}
+.adm-perm-eia-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
+.adm-perm-eia-chk{display:flex;align-items:center;gap:6px;padding:6px 8px;background:rgba(255,255,255,.02);border:1px solid var(--br);border-radius:6px;font-size:11.5px;color:var(--tx);cursor:pointer;transition:.12s}
+.adm-perm-eia-chk:hover{border-color:rgba(167,139,250,.4);background:rgba(167,139,250,.04)}
+.adm-perm-eia-chk input[type="checkbox"]{accent-color:var(--purple);width:14px;height:14px}
+
+/* Side summary */
+.adm-summary-line{display:flex;justify-content:space-between;padding:6px 0;font-size:12px;color:var(--tx2);border-bottom:1px solid rgba(255,255,255,.03)}
+.adm-summary-line:last-child{border-bottom:none}
+.adm-summary-line b{color:var(--tx);font-family:'Syne',sans-serif;font-weight:700}
+.adm-side-hint{background:linear-gradient(145deg,rgba(167,139,250,.08),rgba(59,130,246,.04));border:1px solid rgba(167,139,250,.25);border-radius:10px;padding:12px;font-size:11.5px;color:var(--tx);line-height:1.45}
+.adm-side-actions{display:flex;flex-direction:column;gap:8px}
+.adm-side-actions button{width:100%}
+
+/* Status badges de convite */
+.adm-invite-status{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:6px;font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.adm-inv-pending{background:rgba(245,158,11,.15);color:var(--amber)}
+.adm-inv-sent{background:rgba(59,130,246,.15);color:var(--blue3)}
+.adm-inv-accepted{background:rgba(16,185,129,.15);color:var(--green)}
+.adm-inv-expired{background:rgba(239,68,68,.15);color:var(--red)}
+.adm-inv-cancelled{background:rgba(148,163,184,.15);color:var(--tx3)}
+
+/* Invites table */
+.adm-invite-table{width:100%;border-collapse:collapse;font-size:12.5px;background:var(--s1);border:1px solid var(--br);border-radius:12px;overflow:hidden}
+.adm-invite-table th{text-align:left;padding:11px 12px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--tx3);background:rgba(255,255,255,.02);border-bottom:1px solid var(--br);font-weight:700}
+.adm-invite-table td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.03);vertical-align:middle}
+.adm-invite-table tr:last-child td{border-bottom:none}
+.adm-invite-table tr:hover{background:rgba(59,130,246,.03)}
+
+/* Audit screen */
+.adm-audit-filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:14px}
+.adm-audit-table{width:100%;border-collapse:collapse;font-size:12px;background:var(--s1);border:1px solid var(--br);border-radius:12px;overflow:hidden}
+.adm-audit-table th{text-align:left;padding:10px 12px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--tx3);background:rgba(255,255,255,.02);border-bottom:1px solid var(--br);font-weight:700;position:sticky;top:0}
+.adm-audit-table td{padding:9px 12px;border-bottom:1px solid rgba(255,255,255,.03);vertical-align:middle}
+.adm-audit-when{color:var(--tx3);white-space:nowrap;font-size:11px;font-variant-numeric:tabular-nums}
+.adm-audit-action{color:var(--blue3);font-weight:600;font-family:'DM Sans',sans-serif}
+.adm-audit-actor{color:var(--tx)}
+.adm-audit-target{color:var(--tx2);font-size:11px}
+
+/* Security screen */
+.adm-sec-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+
+@media(max-width:1000px){
+  .adm-form-layout{grid-template-columns:1fr}
+  .adm-form-side{order:-1}
+}
 </style>
 </head>
 <body>
@@ -1221,6 +1339,7 @@ table.fc-table th,table.ceo-table th,table.vceo-table th{font-family:'DM Sans',s
     <div class="sb-item" id="nav-fin" onclick="showToast('Financeiro Consolidado — em breve')">💰 Financeiro Consolidado</div>
     <div class="sb-item" id="sb-gp" onclick="openEmp('gp')">👤 Gestão Pessoal</div>
     <div class="sb-item" id="nav-docs" onclick="openDrive()">📁 Documentos & Drive</div>
+    <div class="sb-item hidden" id="nav-admin" onclick="goAdmin()">🛡️ Administração</div>
   </div>
   <div class="sb-div"></div>
   <div class="sb-section">
@@ -1417,6 +1536,24 @@ table.fc-table th,table.ceo-table th,table.vceo-table th{font-family:'DM Sans',s
   <div class="ws-header" id="ws-header"></div>
   <div class="tabs" id="ws-tabs"></div>
   <div id="ws-content"></div>
+</div>
+
+<!-- ADMINISTRAÇÃO -->
+<div id="page-admin" class="hidden">
+  <div class="adm-header">
+    <div>
+      <div class="adm-greeting">ADMIN · SUPER ADMIN</div>
+      <h1 class="adm-title">Painel de Administração</h1>
+      <div class="adm-sub">Usuários, convites, RBAC, auditoria e segurança</div>
+    </div>
+    <div class="adm-tabs" id="adm-tabs">
+      <button class="adm-tab active" data-sub="users" onclick="setAdminSub('users')">👥 Usuários</button>
+      <button class="adm-tab" data-sub="invites" onclick="setAdminSub('invites')">📩 Convites</button>
+      <button class="adm-tab" data-sub="audit" onclick="setAdminSub('audit')">📋 Auditoria</button>
+      <button class="adm-tab" data-sub="security" onclick="setAdminSub('security')">🛡️ Segurança</button>
+    </div>
+  </div>
+  <div id="adm-content"></div>
 </div>
 
 </main>
@@ -2296,6 +2433,7 @@ function enterPlatform(u){
   const avatarHTML=u.avatar?'<img src="'+u.avatar+'"/>':initials;
   document.getElementById('user-avatar').innerHTML=avatarHTML;
   document.getElementById('user-avatar2').innerHTML=avatarHTML;
+  if(typeof updateAdminNavVisibility==='function') updateAdminNavVisibility();
   initPlatform();
 }
 
@@ -3036,7 +3174,7 @@ function exportCeoPDF(){
 
 // ── NAVEGAÇÃO ──────────────────────────────────────────────────────────────
 function showPage(pg){
-  ['home','ceo','ws','agenda'].forEach(p=>{
+  ['home','ceo','ws','agenda','admin'].forEach(p=>{
     const el=document.getElementById('page-'+p);
     if(el){el.classList.toggle('hidden',p!==pg);
     if(p===pg){el.classList.remove('page-enter');void el.offsetWidth;el.classList.add('page-enter')}}
@@ -3961,6 +4099,588 @@ function fsRent2ExportCSV(){
   a.href=url; a.download='rentabilidade-fs.csv'; a.click();
   URL.revokeObjectURL(url);
   showToast('CSV exportado');
+}
+
+// ── ADMIN PANEL ───────────────────────────────────────────────────────────
+// Gestão de usuários, convites, RBAC, auditoria e segurança.
+// Reaproveita orion_users, orion_invites, orion_audit_log, orion_session.
+const ADM_MODULES = [
+  {key:'dashboard',   label:'Dashboard'},
+  {key:'financeiro',  label:'Financeiro'},
+  {key:'analytics',   label:'Analytics'},
+  {key:'relatorios',  label:'Relatórios'},
+  {key:'documentos',  label:'Documentos'},
+  {key:'extrato_ia',  label:'Extrato IA'},
+  {key:'configuracoes', label:'Configurações'}
+];
+const ADM_ACTIONS = ['view','create','edit','approve','delete'];
+const ADM_ACTION_LABELS = {view:'Ver', create:'Criar', edit:'Editar', approve:'Aprovar', delete:'Excluir'};
+const EIA_PERMS = ['upload','view','editClass','approve','reprocess','retrain','export','delete'];
+const EIA_PERM_LABELS = {upload:'Upload', view:'Visualizar', editClass:'Editar classificação', approve:'Aprovar', reprocess:'Reprocessar', retrain:'Retreinar', export:'Exportar', delete:'Excluir'};
+const ADM_ROLES = [
+  {key:'super_admin', label:'Super Admin'},
+  {key:'ceo',         label:'CEO'},
+  {key:'director',    label:'Diretor'},
+  {key:'manager',     label:'Gerente'},
+  {key:'finance',     label:'Financeiro'},
+  {key:'assistant',   label:'Assistente'},
+  {key:'viewer',      label:'Viewer'}
+];
+const ADM_STATUSES = ['ativo','inativo','pendente'];
+let admSubTab = 'users';
+let admEditUserId = null;
+let admUserDraft = null;  // estado em memória do form em edição
+
+function admIsAdmin(u){
+  if(!u) return false;
+  const r = (u.role||'').toLowerCase();
+  return r==='admin' || r==='super_admin';
+}
+
+function admGetPermDefaults(roleKey){
+  // Modelo de permissões padrão por papel (preenchido ao mudar dropdown)
+  const full  = {view:1,create:1,edit:1,approve:1,delete:1};
+  const rw    = {view:1,create:1,edit:1,approve:0,delete:0};
+  const rview = {view:1,create:0,edit:0,approve:0,delete:0};
+  const empty = {view:0,create:0,edit:0,approve:0,delete:0};
+  const byRole = {
+    super_admin: m=>full,
+    ceo:         m=>full,
+    director:    m=>(m==='configuracoes'?rw:full),
+    manager:     m=>rw,
+    finance:     m=>(m==='financeiro'||m==='relatorios'||m==='extrato_ia'?full:m==='analytics'||m==='dashboard'?rview:empty),
+    assistant:   m=>(m==='configuracoes'?empty:rw),
+    viewer:      m=>rview
+  };
+  const eiaByRole = {
+    super_admin: {upload:1,view:1,editClass:1,approve:1,reprocess:1,retrain:1,export:1,delete:1},
+    ceo:         {upload:1,view:1,editClass:1,approve:1,reprocess:1,retrain:1,export:1,delete:0},
+    director:    {upload:1,view:1,editClass:1,approve:1,reprocess:1,retrain:0,export:1,delete:0},
+    manager:     {upload:1,view:1,editClass:1,approve:0,reprocess:0,retrain:0,export:1,delete:0},
+    finance:     {upload:1,view:1,editClass:1,approve:1,reprocess:1,retrain:1,export:1,delete:0},
+    assistant:   {upload:1,view:1,editClass:0,approve:0,reprocess:0,retrain:0,export:0,delete:0},
+    viewer:      {upload:0,view:1,editClass:0,approve:0,reprocess:0,retrain:0,export:0,delete:0}
+  };
+  const modules = {};
+  ADM_MODULES.forEach(m=>{ modules[m.key] = {...(byRole[roleKey]||byRole.viewer)(m.key)}; });
+  return {modules, eia:{...(eiaByRole[roleKey]||eiaByRole.viewer)}};
+}
+
+function admGetUsers(){ try{ return JSON.parse(localStorage.getItem('orion_users')||'[]') }catch(e){ return [] } }
+function admSaveUsers(list){ localStorage.setItem('orion_users', JSON.stringify(list)) }
+function admGetInvites(){ try{ return JSON.parse(localStorage.getItem('orion_invites')||'[]') }catch(e){ return [] } }
+function admSaveInvites(list){ localStorage.setItem('orion_invites', JSON.stringify(list)) }
+
+function goAdmin(){
+  const sess = JSON.parse(localStorage.getItem('orion_session')||'{}');
+  if(!admIsAdmin(sess)){
+    showToast('Acesso restrito — somente administradores');
+    return;
+  }
+  clearSb();
+  const nv = document.getElementById('nav-admin'); if(nv) nv.classList.add('active');
+  curEmp = null;
+  showPage('admin');
+  renderAdmin();
+}
+
+function setAdminSub(sub){
+  admSubTab = sub;
+  if(sub!=='users') admEditUserId = null;
+  document.querySelectorAll('.adm-tab').forEach(t=>t.classList.toggle('active', t.dataset.sub===sub));
+  renderAdmin();
+}
+
+function renderAdmin(){
+  const el = document.getElementById('adm-content');
+  if(!el) return;
+  if(admSubTab==='users')    return admEditUserId!==null ? renderAdminUserForm(el) : renderAdminUsersList(el);
+  if(admSubTab==='invites')  return renderAdminInvites(el);
+  if(admSubTab==='audit')    return renderAdminAudit(el);
+  if(admSubTab==='security') return renderAdminSecurity(el);
+}
+
+function renderAdminUsersList(el){
+  const users = admGetUsers();
+  const q = (document.getElementById('adm-users-q')||{}).value || '';
+  const list = users.filter(u=>{
+    if(!q) return true;
+    const s = (u.name+' '+u.email+' '+(u.phone||'')).toLowerCase();
+    return s.includes(q.toLowerCase());
+  });
+  el.innerHTML = `
+    <div class="adm-listhead">
+      <input class="inp adm-search" id="adm-users-q" placeholder="🔎 Buscar usuário..." value="${escHtml(q)}" oninput="renderAdmin()"/>
+      <button class="btn btn-ia" onclick="admOpenNewUser()">➕ Criar Novo Usuário</button>
+    </div>
+    ${list.length===0 ? `<div class="adm-empty">Nenhum usuário encontrado. Clique em <b>Criar Novo Usuário</b>.</div>` :
+      `<div class="adm-user-grid">${list.map(u=>admUserCardHtml(u)).join('')}</div>`}`;
+}
+
+function admUserCardHtml(u){
+  const initials = (u.name||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  const ava = u.avatar?`<img src="${u.avatar}"/>`:initials;
+  const nEmp = u.perms ? Object.keys(u.perms).length : (u.empresas?u.empresas.length:0);
+  const role = u.role||'viewer';
+  const roleLabel = (ADM_ROLES.find(r=>r.key===role)||{}).label || role;
+  const status = u.status||'ativo';
+  const statusCls = status==='ativo'?'home-v2-badge-crescimento':status==='inativo'?'home-v2-badge-ajustar':'home-v2-badge-escalar';
+  return `<div class="adm-user-card" onclick="admOpenEditUser(${u.id})">
+    <div class="adm-user-ava">${ava}</div>
+    <div class="adm-user-info">
+      <div class="adm-user-name">${escHtml(u.name||'—')}</div>
+      <div class="adm-user-email">${escHtml(u.email||'—')}</div>
+      <div class="adm-user-meta">
+        <span class="home-v2-badge home-v2-badge-escalar">${escHtml(roleLabel)}</span>
+        <span class="home-v2-badge ${statusCls}">${escHtml(status)}</span>
+        <span style="font-size:10px;color:var(--tx3)">· ${nEmp} empresa${nEmp===1?'':'s'}</span>
+      </div>
+    </div>
+    <div class="adm-user-actions">
+      <button class="eia-act-btn eia-act-edit" title="Editar" onclick="event.stopPropagation();admOpenEditUser(${u.id})">✎</button>
+      ${u.id!==1?`<button class="eia-act-btn eia-act-rej" title="Remover" onclick="event.stopPropagation();admDeleteUser(${u.id})">🗑</button>`:''}
+    </div>
+  </div>`;
+}
+
+function admOpenNewUser(){
+  admEditUserId = 0; // 0 = novo
+  admUserDraft = {
+    id: null, name:'', email:'', phone:'', avatar:'', status:'pendente',
+    role:'viewer', createdAt:new Date().toISOString(),
+    empresas:[], perms:{}  // perms[empId] = {role, modules, eia}
+  };
+  renderAdmin();
+}
+
+function admOpenEditUser(id){
+  const u = admGetUsers().find(x=>x.id===id);
+  if(!u){ showToast('Usuário não encontrado'); return; }
+  admEditUserId = id;
+  // Clona + garante estrutura perms
+  admUserDraft = JSON.parse(JSON.stringify(u));
+  admUserDraft.perms = admUserDraft.perms || {};
+  if(!admUserDraft.empresas) admUserDraft.empresas = Object.keys(admUserDraft.perms);
+  renderAdmin();
+}
+
+function admDeleteUser(id){
+  if(!confirm('Remover este usuário? A ação é registrada em auditoria.')) return;
+  const users = admGetUsers();
+  const victim = users.find(x=>x.id===id);
+  const kept = users.filter(x=>x.id!==id);
+  admSaveUsers(kept);
+  audit('user.delete', {type:'user', id:id, label:victim?victim.email:String(id)}, victim, null);
+  showToast('Usuário removido');
+  renderAdmin();
+}
+
+function admEnsureEmpPerm(empId){
+  if(!admUserDraft.perms[empId]){
+    admUserDraft.perms[empId] = {role:'viewer', ...admGetPermDefaults('viewer')};
+  }
+}
+
+function renderAdminUserForm(el){
+  const u = admUserDraft;
+  const isNew = !u.id;
+  const empresas = Object.values(EMPS).filter(e=>!e.id.startsWith('custom_'));
+  const initials = (u.name||'?').split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2) || '?';
+  const ava = u.avatar?`<img src="${u.avatar}"/>`:initials;
+  // Sincroniza empresas <-> perms
+  (u.empresas||[]).forEach(empId=>admEnsureEmpPerm(empId));
+  Object.keys(u.perms||{}).forEach(empId=>{ if(!(u.empresas||[]).includes(empId)) u.empresas.push(empId); });
+  el.innerHTML = `
+    <div class="adm-listhead">
+      <div style="display:flex;align-items:center;gap:10px">
+        <button class="btn btn-ghost" onclick="admEditUserId=null;renderAdmin()">← Voltar</button>
+        <div class="slbl" style="margin:0">${isNew?'Criar Novo Usuário':'Editar Usuário'}</div>
+      </div>
+    </div>
+    <div class="adm-form-layout">
+      <div class="adm-form-main">
+        <div class="adm-panel">
+          <div class="adm-panel-title">Dados do usuário</div>
+          <div class="adm-ava-row">
+            <div class="adm-ava-big" id="adm-ava-preview">${ava}</div>
+            <div>
+              <button class="btn btn-ghost" onclick="admPickAvatar()">📷 Enviar foto</button>
+              <div style="font-size:10px;color:var(--tx3);margin-top:4px">JPG/PNG · até 2MB</div>
+            </div>
+          </div>
+          <div class="g2">
+            <div><div class="lbl">Nome completo</div><input class="inp" id="adm-f-name" value="${escHtml(u.name||'')}" oninput="admFieldChange()"/></div>
+            <div><div class="lbl">E-mail</div><input class="inp" id="adm-f-email" type="email" value="${escHtml(u.email||'')}" oninput="admFieldChange()"/></div>
+            <div><div class="lbl">Telefone</div><input class="inp" id="adm-f-phone" value="${escHtml(u.phone||'')}" oninput="admFieldChange()"/></div>
+            <div><div class="lbl">Status</div><select class="inp" id="adm-f-status" onchange="admFieldChange()">
+              ${ADM_STATUSES.map(s=>`<option value="${s}" ${u.status===s?'selected':''}>${s}</option>`).join('')}
+            </select></div>
+          </div>
+          <div class="lbl" style="margin-top:8px">Papel geral (fallback)</div>
+          <select class="inp" id="adm-f-role" onchange="admFieldChange()">
+            ${ADM_ROLES.map(r=>`<option value="${r.key}" ${u.role===r.key?'selected':''}>${r.label}</option>`).join('')}
+          </select>
+        </div>
+
+        <div class="adm-panel">
+          <div class="adm-panel-title">Empresas vinculáveis</div>
+          <div class="adm-emp-list">
+            ${empresas.map(e=>{
+              const checked = (u.empresas||[]).includes(e.id)?'checked':'';
+              return `<label class="adm-emp-row">
+                <input type="checkbox" data-emp="${e.id}" ${checked} onchange="admToggleEmp('${e.id}',this.checked)"/>
+                <span class="adm-emp-dot" style="background:${e.cor}"></span>
+                <span class="adm-emp-name">${escHtml(e.nome)} <span style="color:var(--tx3);font-weight:500;font-size:11px">· ${escHtml(e.sigla)}</span></span>
+              </label>`;
+            }).join('')}
+          </div>
+        </div>
+
+        <div class="adm-panel">
+          <div class="adm-panel-title">Permissões por empresa</div>
+          ${(u.empresas||[]).length===0 ? `<div class="adm-empty" style="padding:20px">Selecione ao menos uma empresa acima para configurar permissões.</div>` :
+            (u.empresas||[]).map(empId=>admPermCardHtml(empId)).join('')
+          }
+        </div>
+      </div>
+
+      <div class="adm-form-side">
+        <div class="adm-panel">
+          <div class="adm-panel-title">Resumo</div>
+          <div class="adm-summary-line"><span>Nome</span><b>${escHtml(u.name||'—')}</b></div>
+          <div class="adm-summary-line"><span>E-mail</span><b>${escHtml(u.email||'—')}</b></div>
+          <div class="adm-summary-line"><span>Status</span><b>${escHtml(u.status||'—')}</b></div>
+          <div class="adm-summary-line"><span>Empresas</span><b>${(u.empresas||[]).length}</b></div>
+          <div class="adm-summary-line"><span>Total permissões ativas</span><b>${admCountActivePerms(u)}</b></div>
+        </div>
+
+        <div class="adm-panel">
+          <div class="adm-panel-title">Empresas vinculadas</div>
+          ${(u.empresas||[]).length===0 ? `<div style="font-size:11.5px;color:var(--tx3)">Nenhuma</div>` :
+            (u.empresas||[]).map(id=>{
+              const e = EMPS[id]; if(!e) return '';
+              const role = (u.perms[id]||{}).role||'viewer';
+              const roleLbl = (ADM_ROLES.find(r=>r.key===role)||{}).label||role;
+              return `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;font-size:12px">
+                <span class="adm-emp-dot" style="background:${e.cor}"></span>
+                <span style="flex:1;color:var(--tx);font-weight:600">${escHtml(e.sigla)}</span>
+                <span style="color:var(--tx3);font-size:11px">${escHtml(roleLbl)}</span>
+              </div>`;
+            }).join('')
+          }
+        </div>
+
+        <div class="adm-side-hint">
+          📩 <b>Convite será enviado ao salvar.</b><br/>Link válido por 72h com token de uso único.
+        </div>
+
+        <div class="adm-side-actions">
+          <button class="btn btn-ghost" onclick="admSaveUser(true)">💾 Salvar rascunho</button>
+          <button class="btn btn-ia" onclick="admSaveUser(false)">📩 Salvar e Enviar Convite</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function admPermCardHtml(empId){
+  const e = EMPS[empId]; if(!e) return '';
+  admEnsureEmpPerm(empId);
+  const p = admUserDraft.perms[empId];
+  return `<div class="adm-perm-card" data-emp="${empId}">
+    <div class="adm-perm-head" onclick="admTogglePermCard('${empId}')">
+      <span class="adm-emp-dot" style="background:${e.cor}"></span>
+      <div class="adm-perm-title">${escHtml(e.nome)}</div>
+      <select class="adm-perm-role-sel" onclick="event.stopPropagation()" onchange="admChangeRole('${empId}',this.value)">
+        ${ADM_ROLES.map(r=>`<option value="${r.key}" ${p.role===r.key?'selected':''}>${r.label}</option>`).join('')}
+      </select>
+      <span class="adm-perm-arrow">▼</span>
+    </div>
+    <div class="adm-perm-body">
+      <table class="adm-perm-table">
+        <thead><tr>
+          <th>Módulo</th>${ADM_ACTIONS.map(a=>`<th>${ADM_ACTION_LABELS[a]}</th>`).join('')}
+        </tr></thead>
+        <tbody>
+          ${ADM_MODULES.map(m=>`<tr>
+            <td>${escHtml(m.label)}</td>
+            ${ADM_ACTIONS.map(a=>`<td><input type="checkbox" data-mod="${m.key}" data-act="${a}" ${((p.modules[m.key]||{})[a])?'checked':''} onchange="admTogglePerm('${empId}','${m.key}','${a}',this.checked)"/></td>`).join('')}
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      <div class="adm-perm-eia">
+        <div class="adm-perm-eia-title">🤖 Permissões granulares — Extrato IA</div>
+        <div class="adm-perm-eia-grid">
+          ${EIA_PERMS.map(k=>`<label class="adm-perm-eia-chk">
+            <input type="checkbox" data-eia="${k}" ${p.eia[k]?'checked':''} onchange="admToggleEiaPerm('${empId}','${k}',this.checked)"/>
+            <span>${EIA_PERM_LABELS[k]}</span>
+          </label>`).join('')}
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function admTogglePermCard(empId){
+  const card = document.querySelector('.adm-perm-card[data-emp="'+empId+'"]');
+  if(card) card.classList.toggle('expanded');
+}
+
+function admFieldChange(){
+  const u = admUserDraft;
+  u.name = document.getElementById('adm-f-name').value;
+  u.email = document.getElementById('adm-f-email').value;
+  u.phone = document.getElementById('adm-f-phone').value;
+  u.status = document.getElementById('adm-f-status').value;
+  u.role = document.getElementById('adm-f-role').value;
+  // Atualiza somente o painel lateral para não reresetar o scroll
+  admUpdateSidePreview();
+}
+
+function admUpdateSidePreview(){
+  // Re-render side panel only (mantendo o main)
+  // Simples: re-render completo (aceitável para form)
+  renderAdmin();
+}
+
+function admToggleEmp(empId, checked){
+  const u = admUserDraft;
+  u.empresas = u.empresas || [];
+  if(checked){
+    if(!u.empresas.includes(empId)) u.empresas.push(empId);
+    admEnsureEmpPerm(empId);
+  } else {
+    u.empresas = u.empresas.filter(x=>x!==empId);
+    delete u.perms[empId];
+  }
+  renderAdmin();
+}
+
+function admChangeRole(empId, role){
+  admEnsureEmpPerm(empId);
+  const def = admGetPermDefaults(role);
+  admUserDraft.perms[empId].role = role;
+  admUserDraft.perms[empId].modules = def.modules;
+  admUserDraft.perms[empId].eia = def.eia;
+  renderAdmin();
+}
+
+function admTogglePerm(empId, mod, act, checked){
+  admEnsureEmpPerm(empId);
+  const p = admUserDraft.perms[empId];
+  p.modules[mod] = p.modules[mod] || {};
+  p.modules[mod][act] = checked?1:0;
+  admUpdateSidePreview();
+}
+
+function admToggleEiaPerm(empId, key, checked){
+  admEnsureEmpPerm(empId);
+  admUserDraft.perms[empId].eia[key] = checked?1:0;
+  admUpdateSidePreview();
+}
+
+function admCountActivePerms(u){
+  let n = 0;
+  Object.values(u.perms||{}).forEach(p=>{
+    Object.values(p.modules||{}).forEach(m=>{ Object.values(m).forEach(v=>{ if(v) n++; }); });
+    Object.values(p.eia||{}).forEach(v=>{ if(v) n++; });
+  });
+  return n;
+}
+
+function admPickAvatar(){
+  const inp = document.createElement('input');
+  inp.type='file'; inp.accept='image/*';
+  inp.onchange = ev=>{
+    const f = ev.target.files[0]; if(!f) return;
+    if(f.size > 2*1024*1024){ showToast('Máximo 2MB'); return; }
+    const r = new FileReader();
+    r.onload = e=>{
+      admUserDraft.avatar = e.target.result;
+      renderAdmin();
+    };
+    r.readAsDataURL(f);
+  };
+  inp.click();
+}
+
+function admSaveUser(asDraft){
+  const u = admUserDraft;
+  if(!u.name || !u.email){ showToast('Preencha nome e e-mail'); return; }
+  const users = admGetUsers();
+  const isNew = !u.id;
+  const old = isNew ? null : (users.find(x=>x.id===u.id) || null);
+  if(isNew){
+    u.id = Date.now();
+    if(asDraft) u.status = 'pendente';
+    users.push(u);
+  } else {
+    const idx = users.findIndex(x=>x.id===u.id);
+    if(idx>=0) users[idx] = u;
+  }
+  admSaveUsers(users);
+  audit(isNew?'user.create':'user.edit', {type:'user', id:u.id, label:u.email}, old, u);
+
+  if(!asDraft){
+    // Cria/atualiza invite reutilizando fluxo existente
+    admIssueInvite(u);
+    showToast('Usuário salvo · convite enviado (link 72h)');
+  } else {
+    showToast(isNew?'Rascunho salvo':'Usuário atualizado');
+  }
+  admEditUserId = null;
+  admUserDraft = null;
+  renderAdmin();
+}
+
+function admIssueInvite(user){
+  const invites = admGetInvites();
+  // Invalida tokens pendentes anteriores deste email
+  invites.forEach(inv=>{
+    if(inv.email===user.email && (inv.status==='pending'||inv.status==='sent')){
+      inv.status='cancelled';
+      inv.cancelledAt = new Date().toISOString();
+      inv.cancelReason = 'superseded';
+    }
+  });
+  const token = btoa(user.email+Date.now()+Math.random().toString(36).slice(2));
+  const expires = new Date(Date.now() + 72*3600*1000).toISOString();
+  const sess = JSON.parse(localStorage.getItem('orion_session')||'{}');
+  const invite = {
+    email: user.email,
+    role: user.role,
+    empresas: user.empresas||[],
+    perms: user.perms||{},
+    token, expires, status:'sent',
+    created: new Date().toISOString(),
+    senderId: sess.id||null,
+    lastSent: new Date().toISOString(),
+    sentCount: 1,
+    draftUserId: user.id
+  };
+  invites.push(invite);
+  admSaveInvites(invites);
+  audit('invite.create', {type:'invite', id:token, label:user.email}, null, {email:user.email, expires});
+  return invite;
+}
+
+function renderAdminInvites(el){
+  const invites = admGetInvites().slice().reverse();
+  el.innerHTML = `
+    <div class="adm-listhead">
+      <div>
+        <div class="slbl" style="margin:0">Convites</div>
+        <div style="font-size:11px;color:var(--tx3);margin-top:4px">${invites.length} convite(s) · links expiram em 72h</div>
+      </div>
+      <button class="btn btn-ia" onclick="admOpenNewUser()">➕ Novo Convite (Usuário)</button>
+    </div>
+    ${invites.length===0 ? `<div class="adm-empty">Nenhum convite ainda. Crie um usuário na aba Usuários.</div>` : `
+    <table class="adm-invite-table">
+      <thead><tr>
+        <th>E-mail</th><th>Papel</th><th>Empresas</th><th>Status</th><th>Enviado</th><th>Expira em</th><th>Ações</th>
+      </tr></thead>
+      <tbody>${invites.map(inv=>admInviteRow(inv)).join('')}</tbody>
+    </table>
+    `}`;
+}
+
+function admInviteRow(inv){
+  // Calcula status efetivo
+  let st = inv.status||'pending';
+  if(st==='pending' || st==='sent'){
+    if(inv.expires && new Date(inv.expires) < new Date()){ st = 'expired'; inv.status = 'expired'; admSaveInvites(admGetInvites()); }
+  }
+  const stLabel = {pending:'Pendente', sent:'Enviado', accepted:'Aceito', aceito:'Aceito', expired:'Expirado', cancelled:'Cancelado'}[st]||st;
+  const stCls = {pending:'adm-inv-pending', sent:'adm-inv-sent', accepted:'adm-inv-accepted', aceito:'adm-inv-accepted', expired:'adm-inv-expired', cancelled:'adm-inv-cancelled'}[st]||'adm-inv-pending';
+  const empLabels = (inv.empresas||[]).map(eid=>{ const e=EMPS[eid]; return e?e.sigla:eid; }).join(', ') || '—';
+  const sentWhen = inv.lastSent ? new Date(inv.lastSent).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
+  let expiresWhen = '—';
+  if(inv.expires){
+    try{
+      const ms = new Date(inv.expires).getTime() - Date.now();
+      if(ms>0){
+        const h = Math.floor(ms/3600000);
+        expiresWhen = h<24 ? h+'h' : Math.floor(h/24)+'d';
+      } else expiresWhen = 'expirado';
+    }catch(e){}
+  }
+  const canResend = (st==='pending'||st==='sent'||st==='expired');
+  const canCancel = (st==='pending'||st==='sent');
+  return `<tr>
+    <td>${escHtml(inv.email||'—')}</td>
+    <td><span class="home-v2-badge home-v2-badge-escalar">${escHtml(inv.role||'viewer')}</span></td>
+    <td style="font-size:11px;color:var(--tx2)">${escHtml(empLabels)}</td>
+    <td><span class="adm-invite-status ${stCls}">${stLabel}</span></td>
+    <td style="font-size:11px;color:var(--tx3)">${sentWhen}</td>
+    <td style="font-size:11px;color:${st==='expired'?'var(--red)':'var(--tx2)'}">${expiresWhen}</td>
+    <td style="white-space:nowrap">
+      ${canResend?`<button class="eia-act-btn eia-act-edit" title="Reenviar" onclick="admResendInvite('${inv.token}')">↻</button>`:''}
+      ${canCancel?`<button class="eia-act-btn eia-act-rej" title="Cancelar" onclick="admCancelInvite('${inv.token}')">✕</button>`:''}
+      <button class="eia-act-btn" title="Copiar link" onclick="admCopyInvite('${inv.token}')">📋</button>
+    </td>
+  </tr>`;
+}
+
+function admResendInvite(token){
+  const invites = admGetInvites();
+  const inv = invites.find(x=>x.token===token); if(!inv) return;
+  // Invalida token anterior e cria novo
+  const oldToken = inv.token;
+  inv.status = 'cancelled'; inv.cancelledAt = new Date().toISOString();
+  const newToken = btoa(inv.email+Date.now()+Math.random().toString(36).slice(2));
+  const expires = new Date(Date.now()+72*3600*1000).toISOString();
+  const newInv = {...inv, token:newToken, status:'sent', expires, lastSent:new Date().toISOString(), sentCount:(inv.sentCount||0)+1, cancelledAt:null, cancelReason:null};
+  invites.push(newInv);
+  admSaveInvites(invites);
+  audit('invite.resend', {type:'invite', id:newToken, label:inv.email}, {token:oldToken}, {token:newToken, expires});
+  showToast('Convite reenviado (novo link 72h)');
+  renderAdmin();
+}
+
+function admCancelInvite(token){
+  if(!confirm('Cancelar este convite?')) return;
+  const invites = admGetInvites();
+  const inv = invites.find(x=>x.token===token); if(!inv) return;
+  inv.status = 'cancelled'; inv.cancelledAt = new Date().toISOString();
+  admSaveInvites(invites);
+  audit('invite.cancel', {type:'invite', id:token, label:inv.email}, null, {cancelledAt:inv.cancelledAt});
+  showToast('Convite cancelado');
+  renderAdmin();
+}
+
+function admCopyInvite(token){
+  const link = location.origin + location.pathname + '?invite=' + encodeURIComponent(token);
+  if(navigator.clipboard){ navigator.clipboard.writeText(link); showToast('Link copiado'); }
+  else { prompt('Copie o link:', link); }
+}
+
+// Stubs — implementados nas próximas fases
+function renderAdminAudit(el){ el.innerHTML = `<div class="adm-empty">Auditoria — implementada na FASE C</div>`; }
+function renderAdminSecurity(el){ el.innerHTML = `<div class="adm-empty">Segurança — implementada na FASE D</div>`; }
+
+// Helper central de auditoria (preparado p/ FASE C — usado já agora)
+function audit(action, target, oldVal, newVal){
+  const logs = JSON.parse(localStorage.getItem('orion_audit_log')||'[]');
+  const sess = JSON.parse(localStorage.getItem('orion_session')||'{}');
+  logs.push({
+    at: new Date().toISOString(),
+    actor: sess.name||sess.email||'—',
+    actorId: sess.id||null,
+    empresa: curEmp||null,
+    action: action,
+    target: target||null,
+    old: oldVal||null,
+    new: newVal||null
+  });
+  if(logs.length>1000) logs.splice(0, logs.length-1000);
+  localStorage.setItem('orion_audit_log', JSON.stringify(logs));
+}
+
+// Exibe item "Administração" na sidebar apenas para admins
+function updateAdminNavVisibility(){
+  const sess = JSON.parse(localStorage.getItem('orion_session')||'{}');
+  const el = document.getElementById('nav-admin');
+  if(el) el.classList.toggle('hidden', !admIsAdmin(sess));
 }
 
 // ── EXTRATO IA v2 — executive document intelligence ───────────────────────

@@ -364,36 +364,7 @@ a{color:inherit;text-decoration:none}
 .vceo-funnel{display:flex;flex-direction:column;gap:4px}
 .vceo-funnel-row{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:var(--r2)}
 .vceo-funnel-bar{height:24px;border-radius:4px;display:flex;align-items:center;padding:0 10px;font-size:11px;font-weight:700;color:#fff;min-width:40px}
-/* VISÃO CONSOLIDADA */
-.vc-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
-.vc-kpi{background:var(--s1);border:1px solid var(--br);border-radius:var(--r);padding:20px;position:relative;overflow:hidden}
-.vc-kpi .vc-stripe{position:absolute;top:0;left:0;right:0;height:3px}
-.vc-kpi .vc-lbl{font-size:11px;font-weight:600;color:var(--tx3);display:flex;align-items:center;gap:6px;margin-bottom:8px}
-.vc-kpi .vc-val{font-family:'Syne',sans-serif;font-size:24px;font-weight:900;line-height:1.1}
-.vc-kpi .vc-delta{font-size:11px;margin-top:6px}
-.vc-chart-area{position:relative;height:200px;display:flex;align-items:flex-end;gap:6px;padding:24px 0 0}
-.vc-chart-area .vc-bar-group{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
-.vc-chart-area .vc-bars{display:flex;align-items:flex-end;gap:2px;height:160px;width:100%}
-.vc-chart-area .vc-bar{flex:1;border-radius:3px 3px 0 0;transition:height .4s;min-height:2px;position:relative}
-.vc-chart-area .vc-bar-lbl{font-size:10px;color:var(--tx3);text-align:center;white-space:nowrap}
-.vc-rank-item{display:flex;align-items:center;gap:12px;padding:12px;border-bottom:1px solid var(--br);transition:background .15s}
-.vc-rank-item:last-child{border-bottom:none}
-.vc-rank-item:hover{background:rgba(255,255,255,.02)}
-.vc-rank-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
-.vc-rank-info{flex:1}
-.vc-rank-name{font-size:13px;font-weight:600}
-.vc-rank-sub{font-size:11px;color:var(--tx3)}
-.vc-rank-val{text-align:right}
-.vc-rank-num{font-family:'Syne',sans-serif;font-size:15px;font-weight:800}
-.vc-rank-delta{font-size:11px}
-.vc-risk-item{padding:12px 14px;margin-bottom:8px;border-radius:var(--r2);background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.15);border-left:3px solid var(--red)}
-.vc-risk-title{font-size:13px;font-weight:700;margin-bottom:4px}
-.vc-risk-detail{font-size:12px;color:var(--tx2);line-height:1.5}
-.vc-opp-item{padding:10px 14px;margin-bottom:8px;border-radius:var(--r2);border-left:3px solid;font-size:12px;line-height:1.4}
-.vc-tooltip{position:absolute;top:-28px;left:50%;transform:translateX(-50%);background:var(--s1);border:1px solid var(--br);border-radius:6px;padding:3px 8px;font-size:10px;color:var(--tx);white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s;z-index:10}
-.vc-bar:hover .vc-tooltip{opacity:1}
 @media(max-width:768px){
-  .vc-kpis{grid-template-columns:1fr 1fr}
   .vceo-kpis{grid-template-columns:1fr 1fr}
   .vceo-table{font-size:11px}
   .vceo-table th,.vceo-table td{padding:6px 8px}
@@ -549,31 +520,6 @@ a{color:inherit;text-decoration:none}
   .topbar{padding:0 12px}
   .cmd-box{width:calc(100vw - 24px)}
 }
-/* PRINT */
-@media print{
-  body{background:#fff!important;color:#000!important;font-size:12px}
-  .sidebar,.topbar,.mx-drawer,.mx-backdrop,.mx-tb-btn,.tb-btn,.btn-sm,.btn-blue,.btn-ghost,.btn-red,.hamburger,.sb-maxxxi,.notif,.user-btn,.cmd-overlay,.overlay,.mx-quick,.mx-input{display:none!important}
-  .app{display:block!important;height:auto!important}
-  .main{display:block!important}
-  .content{padding:0!important;overflow:visible!important}
-  .card,.kpi-card,.vceo-kpi{border:1px solid #ccc!important;background:#fff!important;break-inside:avoid}
-  .vceo-table{font-size:11px}
-  .vceo-table th,.vceo-table td{border:1px solid #ccc!important;padding:6px 8px}
-  .val,.val-sm,.kpi-val,.ceo-v,.vceo-kpi .kpi-val{color:#000!important}
-  .lbl,.kpi-lbl,.slbl,.vceo-sub{color:#666!important}
-  #page-home,#page-ws{display:none!important}
-  #page-ceo{display:block!important}
-  .vceo-controls{display:none!important}
-  .pbar,.pfill{print-color-adjust:exact;-webkit-print-color-adjust:exact}
-  a{text-decoration:none!important}
-}
-body.fs-print-mode .sidebar,
-body.fs-print-mode .topbar,
-body.fs-print-mode .mx-drawer,
-body.fs-print-mode .mx-backdrop,
-body.fs-print-mode .mx-tb-btn,
-body.fs-print-mode .tb-btn,
-body.fs-print-mode .hamburger{display:none!important}
 </style>
 </head>
 <body>
@@ -678,8 +624,6 @@ body.fs-print-mode .hamburger{display:none!important}
         </div>
         <div class="dd-item" onclick="openProfileModal()">👤 Meu Perfil</div>
         <div class="dd-item" onclick="uploadAvatar()">📷 Alterar Foto</div>
-        <div class="dd-item" onclick="closeAllDd();openModal('modal-supabase');loadSupabaseConfig()">⚙️ Supabase</div>
-        <div class="dd-item" onclick="closeAllDd();openInviteModal()">📩 Convidar Usuário</div>
         <div class="dd-divider"></div>
         <div class="dd-item" onclick="doLogout()" style="color:var(--red)">🚪 Sair</div>
       </div>
@@ -693,9 +637,8 @@ body.fs-print-mode .hamburger{display:none!important}
 <nav class="sidebar" id="main-sidebar">
   <div class="sb-section">
     <div class="sb-lbl">Navegação</div>
-    <div class="sb-item active" id="nav-home" onclick="goHome()">📊 Visão Consolidada</div>
+    <div class="sb-item active" id="nav-home" onclick="goHome()">🏠 Home</div>
     <div class="sb-item" id="nav-ceo" onclick="goCEO()">📊 Visão CEO</div>
-    <div class="sb-item" id="nav-agenda" onclick="goAgenda()">📅 Agenda</div>
   </div>
   <div class="sb-div"></div>
   <div class="sb-section">
@@ -725,6 +668,16 @@ body.fs-print-mode .hamburger{display:none!important}
   <div class="sb-div"></div>
   <div class="sb-section">
     <div class="sb-item" id="sb-gp" onclick="openEmp('gp')">💰 Gestão Pessoal</div>
+  </div>
+  <div class="sb-maxxxi" style="cursor:pointer" onclick="toggleMXDrawer()">
+    <div class="maxxxi-pill">
+      <span style="font-size:20px">🤖</span>
+      <div>
+        <div class="maxxxi-name">MAXXXI</div>
+        <div class="maxxxi-status"><div class="pulse"></div> Online</div>
+      </div>
+      <span class="mx-badge" id="mx-badge-sb" style="position:static;border-color:var(--s1)"></span>
+    </div>
   </div>
 </nav>
 

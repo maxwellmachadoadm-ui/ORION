@@ -1294,6 +1294,9 @@ textarea:focus{
 /* Linhas flagged na tabela de EIA mantêm seu acento vermelho */
 .eia-table tr.eia-row-flagged{background:rgba(239,68,68,.08) !important}
 .eia-table tr.eia-row-flagged:hover{background:rgba(239,68,68,.14) !important}
+/* Linhas com confiança <60% ganham borda-left vermelha */
+.eia-table tr.eia-row-low td:first-child{box-shadow:inset 3px 0 0 var(--red)}
+.eia-table tr.eia-row-low{background:rgba(239,68,68,.05) !important}
 
 /* ── MODAIS / OVERLAYS (toda a plataforma) ────────────────────────── */
 .overlay{
@@ -5606,7 +5609,31 @@ let eiaSelectedDocId = null;
 
 function eiaStorageKey(empId){ return 'orion_extrato_ia_'+empId }
 function eiaGet(empId){ try{ return eiaMigrateDocs(JSON.parse(localStorage.getItem(eiaStorageKey(empId))||'[]')) }catch(e){ return [] } }
-function eiaSave(empId, list){ localStorage.setItem(eiaStorageKey(empId), JSON.stringify(list)) }
+function eiaSave(empId, list){
+  localStorage.setItem(eiaStorageKey(empId), JSON.stringify(list));
+  // Supabase sync (debounced) — tabela 'extrato_ia' se existir
+  try{ if(typeof eiaBulkSyncDebounced==='function') eiaBulkSyncDebounced(empId, list); }catch(e){}
+}
+let _eiaSyncTimer = null;
+function eiaBulkSyncDebounced(empId, list){
+  if(_eiaSyncTimer) clearTimeout(_eiaSyncTimer);
+  _eiaSyncTimer = setTimeout(()=>{
+    try{
+      if(typeof sb==='undefined' || !sb) return;
+      if(typeof sbConnected==='function' && !sbConnected()) return;
+      const payload = (list||[]).map(d=>({
+        id:d.id, empresa_id:empId, name:d.name, type:d.type, size:d.size||0,
+        status:eiaDocStatus(d), source:d.source||null, period:d.detectedPeriod||null,
+        value:d.detectedValue||null, uploaded_by:d.uploadedBy||null, uploaded_at:d.uploadedAt||null,
+        entries:d.entries||[], updated_at:new Date().toISOString()
+      }));
+      if(payload.length===0) return;
+      sb.from('extrato_ia').upsert(payload, {onConflict:'id'}).then(({error})=>{
+        if(error && error.code!=='42P01') console.warn('EIA sync supabase:', error.message);
+      });
+    }catch(e){}
+  }, 700);
+}
 function eiaNowIso(){ return new Date().toISOString() }
 function eiaFormatWhen(iso){ try{return new Date(iso).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}catch(e){return '—'} }
 function eiaFormatDate(iso){ try{return new Date(iso).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit'})}catch(e){return '—'} }
@@ -5791,10 +5818,12 @@ function eiaTypeIcon(t){ return t==='PDF'?'📕':t==='Excel'?'📗':t==='CSV'?'�
 
 function eiaStatusBadge(status){
   const map = {
-    'pending': {label:'Pendente', cls:'home-v2-badge-ajustar'},
-    'approved': {label:'Aprovado', cls:'home-v2-badge-crescimento'},
-    'rejected': {label:'Rejeitado', cls:'home-v2-badge-ajustar'},
-    'partial':  {label:'Parcial',   cls:'home-v2-badge-escalar'}
+    'processing':{label:'Processando', cls:'home-v2-badge-escalar'},
+    'pending':   {label:'Pendente',    cls:'home-v2-badge-ajustar'},
+    'approved':  {label:'Concluído',   cls:'home-v2-badge-crescimento'},
+    'rejected':  {label:'Rejeitado',   cls:'home-v2-badge-risco'},
+    'partial':   {label:'Parcial',     cls:'home-v2-badge-escalar'},
+    'error':     {label:'Erro',        cls:'home-v2-badge-risco'}
   };
   const m = map[status]||map['pending'];
   return `<span class="home-v2-badge ${m.cls}">${m.label}</span>`;
@@ -5930,7 +5959,8 @@ function renderExtratoIA(e,c,co){
         <div class="eia-bstat"><span class="eia-bstat-n" style="color:var(--purple)">${allConf}%</span><span class="eia-bstat-l">Confiança</span></div>
       </div>
       <div class="eia-bottom-actions">
-        ${(typeof hasEiaPerm!=='function' || hasEiaPerm('approve')) ? `<button class="btn btn-ghost" onclick="eiaApproveAllReviewed()">✓ Aprovar todos (≥70%)</button>` : ''}
+        ${(typeof hasEiaPerm!=='function' || hasEiaPerm('approve')) ? `<button class="btn btn-ghost" onclick="eiaApproveAllReviewed()">✓ Aprovar ≥70%</button>` : ''}
+        ${(typeof hasEiaPerm!=='function' || hasEiaPerm('approve')) ? `<button class="btn btn-ia" onclick="eiaApproveHighConf()">⚡ Auto-aprovar ≥85%</button>` : ''}
         ${(typeof hasEiaPerm!=='function' || hasEiaPerm('retrain')) ? `<button class="btn btn-ghost" onclick="eiaRetrainModel()">🧠 Retreinar Modelo</button>` : ''}
         ${(typeof hasEiaPerm!=='function' || hasEiaPerm('export')) ? `<button class="btn btn-ia" onclick="eiaGenerateReport()">📊 Gerar Relatório IA</button>` : ''}
       </div>
@@ -5950,6 +5980,7 @@ function eiaRenderEntriesTable(doc){
   if(entries.length===0) return `<div class="eia-empty">Documento sem lançamentos detectados.</div>`;
   const rows = entries.map(e=>{
     const flagged = (e.flags||[]).length>0;
+    const lowConf = (e.confidence||0) < 60 && e.status==='pending';
     const dup = (e.flags||[]).includes('duplicate');
     const inc = (e.flags||[]).includes('inconsistent');
     const mis = (e.flags||[]).includes('missing');
@@ -5957,7 +5988,7 @@ function eiaRenderEntriesTable(doc){
     const statusBadge = eiaStatusBadge(e.status);
     const amountCol = e.amount>=0?'pos':'neg';
     const flagTooltip = (e.flags||[]).join(', ');
-    return `<tr class="${flagged?'eia-row-flagged':''}" title="${flagTooltip||''}">
+    return `<tr class="${flagged?'eia-row-flagged':''} ${lowConf?'eia-row-low':''}" title="${flagTooltip||''}">
       <td class="eia-cell-flag">${dup?`<span class="eia-flag dup" title="Possível duplicata">⎘</span>`:''}${inc?`<span class="eia-flag inc" title="Baixa confiança">?</span>`:''}${mis?`<span class="eia-flag mis" title="Categoria ausente/genérica">◇</span>`:''}${out?`<span class="eia-flag out" title="Valor outlier">↑</span>`:''}</td>
       <td class="eia-cell-date">${eiaFormatDate(e.date)}</td>
       <td class="eia-cell-desc">${escHtml(e.description)}</td>
@@ -6035,28 +6066,39 @@ async function eiaIngestFiles(files){
   // Processa com micro-delay p/ permitir animação visível
   for(let i=0;i<files.length;i++){
     const f = files[i];
+    // Protótipo/placeholder — cria doc 'processing' antes das etapas
+    const procId = 'eia_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
+    const procDoc = {
+      id:procId, name:f.name, type:eiaTypeFromFile(f.name), size:f.size,
+      uploadedAt:eiaNowIso(), uploadedBy:reviewer,
+      status:'processing', confidence:0,
+      source:EIA_BANKS[Math.floor(Math.random()*EIA_BANKS.length)],
+      detectedCompany:EMPS[curEmp]?EMPS[curEmp].nome:'—',
+      detectedPeriod:period, detectedValue:null, detectedType:'extrato',
+      classification:null, reviewer:null, reviewedAt:null, notes:'',
+      entries:[]
+    };
+    list.push(procDoc);
     await eiaAnimateProgress(i, 'read', 25);
     const cls = eiaFakeClassify(f.name);
     await eiaAnimateProgress(i, 'ocr', 55);
+    // Simula erro ~3% (arquivo vazio ou tipo estranho)
+    const fail = (!f.size || f.size<10) && Math.random()<0.5;
+    if(fail){
+      procDoc.status = 'error';
+      procDoc.notes = 'Falha ao processar arquivo (formato ou conteúdo inválido)';
+      await eiaAnimateProgress(i, 'done', 100);
+      continue;
+    }
     const entries = eiaParseEntries(f.name, eiaTypeFromFile(f.name), f.size);
     await eiaAnimateProgress(i, 'classify', 85);
     const agg = entries.reduce((s,e)=>s+e.amount,0);
-    const doc = {
-      id:'eia_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),
-      name:f.name, type:eiaTypeFromFile(f.name), size:f.size,
-      uploadedAt:eiaNowIso(), uploadedBy:reviewer,
-      status:'pending', confidence:cls.conf,
-      source: EIA_BANKS[Math.floor(Math.random()*EIA_BANKS.length)],
-      detectedCompany:EMPS[curEmp]?EMPS[curEmp].nome:'—',
-      detectedPeriod:period,
-      detectedValue:agg,
-      detectedType:'extrato',
-      classification:cls.cat,
-      reviewer:null, reviewedAt:null, notes:'',
-      entries: entries
-    };
-    list.push(doc);
-    created.push(doc);
+    procDoc.status = 'pending';
+    procDoc.confidence = cls.conf;
+    procDoc.detectedValue = agg;
+    procDoc.classification = cls.cat;
+    procDoc.entries = entries;
+    created.push(procDoc);
     await eiaAnimateProgress(i, 'done', 100);
   }
   // Recalcula flags cross-doc
@@ -6167,6 +6209,7 @@ function eiaApplyEntryReclass(docId, entryId){
   renderTab();
 }
 function eiaApproveAllReviewed(){
+  if(typeof hasEiaPerm==='function' && !hasEiaPerm('approve')){ showToast('Sem permissão para aprovar'); return; }
   const list = eiaGet(curEmp);
   const doc = list.find(d=>d.id===eiaSelectedDocId);
   if(!doc){ showToast('Selecione um documento'); return; }
@@ -6177,9 +6220,55 @@ function eiaApproveAllReviewed(){
   pending.forEach(e=>{ e.status='approved'; e.correctedBy=reviewer; e.correctedAt=eiaNowIso(); });
   doc.status = eiaDocStatus(doc);
   eiaSave(curEmp, list);
-  eiaLogAudit('approve_batch', doc, {count:pending.length});
-  showToast(pending.length+' lançamento(s) aprovado(s) em lote');
+  eiaSyncDocSupabase(doc);
+  eiaLogAudit('approve_batch', doc, {count:pending.length, threshold:70});
+  showToast(pending.length+' lançamento(s) aprovado(s) em lote (≥70%)');
   renderTab();
+}
+// Aprovação automática estrita: ≥85% e sem qualquer flag
+function eiaApproveHighConf(){
+  if(typeof hasEiaPerm==='function' && !hasEiaPerm('approve')){ showToast('Sem permissão para aprovar'); return; }
+  const list = eiaGet(curEmp);
+  const doc = list.find(d=>d.id===eiaSelectedDocId);
+  if(!doc){ showToast('Selecione um documento'); return; }
+  const pending = (doc.entries||[]).filter(e=>e.status==='pending' && (e.confidence||0)>=85 && (e.flags||[]).length===0);
+  if(pending.length===0){ showToast('Sem lançamentos ≥85% sem flags'); return; }
+  const sess = JSON.parse(localStorage.getItem('orion_session')||'{}');
+  const reviewer = sess.name||sess.email||'usuário';
+  pending.forEach(e=>{ e.status='approved'; e.correctedBy=reviewer; e.correctedAt=eiaNowIso(); });
+  doc.status = eiaDocStatus(doc);
+  eiaSave(curEmp, list);
+  eiaSyncDocSupabase(doc);
+  eiaLogAudit('approve_batch_high', doc, {count:pending.length, threshold:85});
+  showToast(pending.length+' lançamento(s) aprovado(s) automaticamente (≥85%)');
+  renderTab();
+}
+
+// Sincronização com Supabase — usa tabela 'extrato_ia' se existir;
+// falha silenciosamente se não estiver conectado ou sem permissão.
+function eiaSyncDocSupabase(doc){
+  try{
+    if(typeof sb==='undefined' || !sb) return;
+    if(typeof sbConnected==='function' && !sbConnected()) return;
+    const payload = {
+      id: doc.id,
+      empresa_id: curEmp,
+      name: doc.name,
+      type: doc.type,
+      size: doc.size||0,
+      status: eiaDocStatus(doc),
+      source: doc.source||null,
+      period: doc.detectedPeriod||null,
+      value: doc.detectedValue||null,
+      uploaded_by: doc.uploadedBy||null,
+      uploaded_at: doc.uploadedAt||null,
+      entries: doc.entries||[],
+      updated_at: new Date().toISOString()
+    };
+    sb.from('extrato_ia').upsert(payload, {onConflict:'id'}).then(({error})=>{
+      if(error && error.code!=='42P01') console.warn('EIA sync supabase:', error.message);
+    });
+  }catch(e){ /* silencioso */ }
 }
 function eiaRetrainModel(){
   if(typeof hasEiaPerm==='function' && !hasEiaPerm('retrain')){ showToast('Sem permissão para retreinar'); return; }

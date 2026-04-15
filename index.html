@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -24,7 +24,7 @@
   --br:#1e2a45;--br2:rgba(59,130,246,0.3);
   --r:12px;--r2:8px;
 }
-body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;font-size:15px}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;font-size:14px;font-weight:400}
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-thumb{background:var(--s3);border-radius:2px}
 input,textarea,select,button{font-family:inherit;font-size:14px}
@@ -790,6 +790,9 @@ a{color:inherit;text-decoration:none}
 
 /* Sidebar additions */
 .sb-pill-new{background:var(--purple);color:#fff;font-size:9px;font-weight:800;padding:1px 7px;border-radius:4px;letter-spacing:.5px;margin-left:auto}
+.sb-sub{padding:4px 0 6px}
+.sb-sub-item{padding-left:28px !important;font-size:12.5px}
+.sb-sub-add{padding-left:28px !important}
 .sb-arrow{margin-left:auto;color:var(--tx3);font-size:12px}
 .sb-quick-item{display:flex;align-items:center;gap:7px;padding:7px 14px;font-size:12px;color:var(--tx2);cursor:pointer;transition:.12s;border-radius:0}
 .sb-quick-item:hover{color:var(--tx);background:rgba(255,255,255,.03)}
@@ -926,6 +929,29 @@ a{color:inherit;text-decoration:none}
     <div class="sb-item active" id="nav-home" onclick="goHome()">🏠 Home</div>
     <div class="sb-item" id="nav-orion-ai" onclick="toggleMXDrawer()">🤖 ORION (IA) <span class="sb-pill-new">Novo</span></div>
     <div class="sb-item" id="nav-ceo" onclick="goCEO()">🏢 Empresas <span class="sb-arrow">›</span></div>
+    <div class="sb-sub" id="sb-empresas-list">
+      <div class="sb-item sb-sub-item" id="sb-dw" onclick="openEmp('dw')">
+        <div class="sb-dot" style="background:#3b82f6"></div>
+        <span style="flex:1;font-size:13px">Doctor Wealth</span>
+        <span class="sb-score good">80</span>
+      </div>
+      <div class="sb-item sb-sub-item" id="sb-of" onclick="openEmp('of')">
+        <div class="sb-dot" style="background:#f59e0b"></div>
+        <span style="flex:1;font-size:13px">Original Foto.</span>
+        <span class="sb-score warn">52</span>
+      </div>
+      <div class="sb-item sb-sub-item" id="sb-fs" onclick="openEmp('fs')">
+        <div class="sb-dot" style="background:#a78bfa"></div>
+        <span style="flex:1;font-size:13px">Forme Seguro</span>
+        <span class="sb-score" style="color:var(--blue3)">65</span>
+      </div>
+      <div class="sb-item sb-sub-item" id="sb-cdl" onclick="openEmp('cdl')">
+        <div class="sb-dot" style="background:#10b981"></div>
+        <span style="flex:1;font-size:13px">CDL Divinópolis</span>
+        <span class="sb-score good">88</span>
+      </div>
+      <div class="sb-add sb-sub-add" onclick="addEmpresa()">+ Nova empresa</div>
+    </div>
     <div class="sb-item" id="nav-analytics" onclick="goCEO()">📈 Analytics</div>
     <div class="sb-item" id="nav-fin" onclick="showToast('Financeiro Consolidado — em breve')">💰 Financeiro Consolidado</div>
     <div class="sb-item" id="sb-gp" onclick="openEmp('gp')">👤 Gestão Pessoal</div>

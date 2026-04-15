@@ -793,6 +793,12 @@ a{color:inherit;text-decoration:none}
 .sb-sub{padding:4px 0 6px}
 .sb-sub-item{padding-left:28px !important;font-size:12.5px}
 .sb-sub-add{padding-left:28px !important}
+
+/* Sidebar — módulos da empresa ativa */
+.sb-module{gap:9px;padding:7px 14px;font-size:12.5px;color:var(--tx2)}
+.sb-module:hover{background:rgba(59,130,246,.06);color:var(--tx)}
+.sb-module.active{background:linear-gradient(90deg,rgba(59,130,246,.14),transparent);color:var(--tx);border-left:2px solid var(--blue);padding-left:12px !important}
+.sb-module-ico{width:18px;text-align:center;font-size:12px;flex-shrink:0}
 .sb-arrow{margin-left:auto;color:var(--tx3);font-size:12px}
 .sb-quick-item{display:flex;align-items:center;gap:7px;padding:7px 14px;font-size:12px;color:var(--tx2);cursor:pointer;transition:.12s;border-radius:0}
 .sb-quick-item:hover{color:var(--tx);background:rgba(255,255,255,.03)}
@@ -1105,6 +1111,11 @@ table.fc-table th,table.ceo-table th,table.vceo-table th{font-family:'DM Sans',s
     <div class="sb-quick-item" onclick="showToast('Relatório rápido — em breve')">📄 Relatório Rápido</div>
     <div class="sb-quick-item" onclick="showToast('Simulação — em breve')">⚡ Simular Cenário</div>
     <div class="sb-quick-item" onclick="toggleMXDrawer()">🤖 Perguntar ao ORION</div>
+  </div>
+  <div class="sb-div hidden" id="sb-modulos-div"></div>
+  <div class="sb-section hidden" id="sb-modulos-section">
+    <div class="sb-lbl">Módulos da Empresa</div>
+    <div id="sb-modulos-list"></div>
   </div>
   <div class="sb-maxxxi" style="cursor:pointer" onclick="toggleMXDrawer()">
     <div class="maxxxi-pill">
@@ -2942,6 +2953,7 @@ function goHome(){
   showPage('home');
   renderHomeV2();
   renderVisaoConsolidada();
+  if(typeof renderWSSidebarModules==='function') renderWSSidebarModules();
 }
 function goCEO(){
   clearSb();
@@ -2962,6 +2974,7 @@ function openEmp(id){
   curTab='KPIs';
   showPage('ws');
   renderWS();
+  if(typeof renderWSSidebarModules==='function') renderWSSidebarModules();
 }
 // ── LOGO EMPRESA ──────────────────────────────────────────────────────────
 window._empLogoData='';
@@ -3083,6 +3096,53 @@ function switchTab(t){
   curTab=t;
   document.querySelectorAll('.tab').forEach(el=>{el.classList.toggle('active',el.textContent===t)});
   renderTab();
+  if(typeof renderWSSidebarModules==='function') renderWSSidebarModules();
+}
+
+// Ícones por módulo — usados no sidebar contextual da empresa ativa
+const MODULE_ICONS = {
+  'KPIs':'📊', 'OKRs':'🎯', 'Tarefas':'✅', 'Financeiro':'💵',
+  'Extrato IA':'🤖', 'Pipeline':'🔗', 'Contratos':'📜', 'Riscos':'⚠️',
+  'Decisões':'⚖️', 'CRM':'👥', 'Notas':'📝', 'Arquivos':'📁',
+  'Fundos':'🏦', 'Projeções':'📈', 'Rentabilidade':'💎',
+  'Patrimônio':'💰', 'Investimentos':'📉', 'Pacientes':'🩺',
+  'Fluxo Pessoal':'🧭', 'Metas':'🎯', 'Compromissos':'📅',
+  'Honorários':'💼', 'Projetos':'🗂️', 'Equipe':'👤'
+};
+
+function renderWSSidebarModules(){
+  const div = document.getElementById('sb-modulos-div');
+  const sec = document.getElementById('sb-modulos-section');
+  const list = document.getElementById('sb-modulos-list');
+  if(!div||!sec||!list) return;
+  if(!curEmp || !EMPS[curEmp]){
+    div.classList.add('hidden');
+    sec.classList.add('hidden');
+    list.innerHTML='';
+    return;
+  }
+  const mods = (typeof getEmpModulos==='function') ? getEmpModulos(curEmp) : [];
+  const e = EMPS[curEmp];
+  div.classList.remove('hidden');
+  sec.classList.remove('hidden');
+  list.innerHTML = mods.map(m=>{
+    const ico = MODULE_ICONS[m]||'•';
+    const active = (curTab===m)?'active':'';
+    return `<div class="sb-item sb-module ${active}" onclick="switchTab('${m.replace(/'/g,"\\'")}')">
+      <span class="sb-module-ico">${ico}</span>
+      <span style="flex:1;font-size:12.5px">${escHtml(m)}</span>
+    </div>`;
+  }).join('') + `<div class="sb-item sb-module" onclick="showEmpSettings()" style="color:var(--tx3)">
+      <span class="sb-module-ico">⚙️</span>
+      <span style="flex:1;font-size:12px">Ativar/desativar módulos</span>
+    </div>`;
+  // visual hint: colorir o topo com a cor da empresa
+  sec.style.borderLeft = '2px solid '+e.cor;
+}
+
+function showEmpSettings(){
+  if(typeof openModulosModal==='function') openModulosModal();
+  else showToast('Abrir Configurações ›  Módulos');
 }
 
 function renderTab(){

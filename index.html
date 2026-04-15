@@ -923,38 +923,156 @@ table.fc-table th,table.ceo-table th,table.vceo-table th{font-family:'DM Sans',s
 #ws-tabs{position:relative;margin-bottom:18px}
 #ws-tabs::before{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:var(--br)}
 
-/* ── EXTRATO IA ─────────────────────────────────────────────────── */
-.eia-root{display:flex;flex-direction:column;gap:16px}
+/* ── EXTRATO IA v2 — executive intelligence ───────────────────────── */
+.eia-root{display:flex;flex-direction:column;gap:14px;padding-bottom:80px}
 .eia-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
 .eia-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--tx);letter-spacing:-.3px}
 .eia-sub{font-size:12px;color:var(--tx3);margin-top:4px}
-.eia-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
-.eia-drop{padding:36px 20px;text-align:center;cursor:pointer}
+
+/* KPIs — 5 cards */
+.eia-kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+.eia-kpi{padding:14px 16px}
+.eia-kpi .val-sm{font-size:20px;letter-spacing:-.3px;margin-top:2px}
+.eia-kpi-sub{font-size:10px;color:var(--tx3);margin-top:4px;font-weight:500}
+
+/* Drop zone */
+.eia-drop{padding:28px 20px;text-align:center;cursor:pointer;position:relative}
 .eia-drop-icon{font-size:36px;margin-bottom:8px;opacity:.7}
-.eia-drop-title{font-size:15px;font-weight:700;color:var(--tx);margin-bottom:4px}
+.eia-drop-title{font-size:15px;font-weight:700;color:var(--tx);margin-bottom:4px;font-family:'Syne',sans-serif}
 .eia-drop-sub{font-size:12px;color:var(--tx3)}
-.eia-section{margin-top:8px}
-.eia-empty{text-align:center;padding:32px 16px;color:var(--tx3);border:1px dashed var(--br);border-radius:12px;font-size:13px}
-.eia-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px}
-.eia-card{background:var(--s1);border:1px solid var(--br);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px;transition:.15s}
-.eia-card:hover{border-color:rgba(59,130,246,.25)}
-.eia-card-head{display:flex;align-items:center;gap:10px}
-.eia-file-icon{width:36px;height:36px;border-radius:8px;background:rgba(59,130,246,.1);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
-.eia-file-info{flex:1;min-width:0}
-.eia-file-name{font-size:13px;font-weight:600;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.eia-file-meta{font-size:10px;color:var(--tx3)}
-.eia-card-body{display:flex;flex-direction:column;gap:4px;padding:6px 0}
-.eia-field{display:flex;justify-content:space-between;font-size:12px;gap:8px}
-.eia-fl{color:var(--tx3);flex-shrink:0}
-.eia-fv{color:var(--tx);font-weight:500;text-align:right;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.eia-conf-row{display:flex;align-items:center;gap:8px;margin-top:4px}
-.eia-conf-bar{flex:1;height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden}
-.eia-conf-fill{height:100%;border-radius:3px;transition:width .3s}
-.eia-conf-val{font-family:'Syne',sans-serif;font-size:12px;font-weight:800;min-width:38px;text-align:right}
-.eia-card-actions{display:flex;gap:6px;justify-content:flex-end;padding-top:8px;border-top:1px solid var(--br);flex-wrap:wrap;align-items:center}
-.eia-card-actions .btn-sm{padding:5px 10px;font-size:11px}
-@media(max-width:900px){
+.eia-progress{margin-top:14px;padding:0 12px;text-align:left}
+.eia-progress-row{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:12px}
+.eia-progress-name{flex:1;color:var(--tx);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.eia-progress-bar{flex:0 0 140px;height:6px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden}
+.eia-progress-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--purple));border-radius:3px;transition:width .2s}
+.eia-progress-pct{flex:0 0 36px;text-align:right;color:var(--tx2);font-family:'Syne',sans-serif;font-weight:700;font-size:11px}
+
+/* Empty state */
+.eia-empty{text-align:center;padding:40px 20px;color:var(--tx3);border:1px dashed var(--br);border-radius:12px;font-size:13px;background:rgba(255,255,255,.015)}
+
+/* Layout 2 colunas */
+.eia-layout{display:grid;grid-template-columns:300px 1fr;gap:14px;margin-top:4px}
+.eia-left{display:flex;flex-direction:column;gap:14px;min-width:0}
+.eia-main{display:flex;flex-direction:column;gap:14px;min-width:0}
+
+/* Doc list (left column) */
+.eia-doc-list{display:flex;flex-direction:column;gap:6px;max-height:280px;overflow-y:auto;padding-right:4px}
+.eia-doc-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--s1);border:1px solid var(--br);border-radius:10px;cursor:pointer;transition:.15s;min-width:0}
+.eia-doc-item:hover{border-color:rgba(59,130,246,.25);background:rgba(59,130,246,.03)}
+.eia-doc-item.active{background:linear-gradient(90deg,rgba(59,130,246,.12),rgba(167,139,250,.06));border-color:rgba(59,130,246,.4);box-shadow:0 0 0 1px rgba(59,130,246,.15) inset}
+.eia-doc-icon{width:30px;height:30px;border-radius:7px;background:rgba(59,130,246,.1);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.eia-doc-icon-big{width:44px;height:44px;font-size:20px}
+.eia-doc-info{flex:1;min-width:0}
+.eia-doc-name{font-size:12.5px;font-weight:600;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.eia-doc-meta{font-size:10px;color:var(--tx3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.eia-doc-status{flex-shrink:0}
+
+/* Doc detail panel */
+.eia-doc-detail .eia-detail-card{background:var(--s1);border:1px solid var(--br);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:12px}
+.eia-detail-head{display:flex;align-items:center;gap:10px}
+.eia-detail-name{font-size:13px;font-weight:700;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.eia-detail-meta{font-size:10px;color:var(--tx3);margin-top:2px}
+.eia-detail-fields{display:flex;flex-direction:column;gap:6px;padding-top:4px;border-top:1px solid var(--br)}
+.eia-df{display:flex;justify-content:space-between;font-size:12px}
+.eia-df.total{border-top:1px solid var(--br);padding-top:8px;margin-top:4px;font-weight:700}
+.eia-dfl{color:var(--tx3)}
+.eia-dfv{color:var(--tx);font-weight:500;text-align:right;font-variant-numeric:tabular-nums}
+.eia-dfv.pos{color:var(--green)}
+.eia-dfv.neg{color:var(--red)}
+.eia-detail-actions{display:flex;justify-content:flex-end}
+
+/* Classification table */
+.eia-table-wrap{background:var(--s1);border:1px solid var(--br);border-radius:12px;overflow:hidden}
+.eia-table-head{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--br)}
+.eia-table-scroll{overflow-x:auto;max-height:560px;overflow-y:auto}
+.eia-table{width:100%;border-collapse:collapse;font-size:12.5px;min-width:860px}
+.eia-table th{text-align:left;padding:10px 10px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--tx3);background:var(--s1);border-bottom:1px solid var(--br);position:sticky;top:0;z-index:1}
+.eia-table th.num{text-align:right}
+.eia-table td{padding:10px 10px;border-bottom:1px solid rgba(255,255,255,.03);color:var(--tx);vertical-align:middle}
+.eia-table tr{transition:background .1s}
+.eia-table tbody tr:hover{background:rgba(59,130,246,.03)}
+.eia-table tr.eia-row-flagged{border-left:3px solid var(--red);background:rgba(239,68,68,.04)}
+.eia-table tr.eia-row-flagged td:first-child{border-left:none}
+.eia-th-flag{width:30px;padding:10px 6px !important}
+.eia-cell-flag{white-space:nowrap;width:30px}
+.eia-flag{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:4px;font-size:9px;font-weight:900;margin:0 1px;cursor:help}
+.eia-flag.dup{background:rgba(239,68,68,.15);color:var(--red)}
+.eia-flag.inc{background:rgba(245,158,11,.15);color:var(--amber)}
+.eia-flag.mis{background:rgba(167,139,250,.15);color:var(--purple)}
+.eia-flag.out{background:rgba(59,130,246,.15);color:var(--blue3)}
+.eia-cell-date{color:var(--tx2);white-space:nowrap;font-size:11.5px}
+.eia-cell-desc{color:var(--tx);max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.eia-cell-amount{font-family:'Syne',sans-serif;font-weight:700;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.eia-cell-amount.pos{color:var(--green)}
+.eia-cell-amount.neg{color:var(--red)}
+.eia-cat-pill{display:inline-block;padding:3px 8px;border-radius:6px;background:rgba(59,130,246,.1);color:var(--blue3);font-size:11px;font-weight:600;border:1px solid rgba(59,130,246,.2);white-space:nowrap}
+.eia-cat-corrected{margin-left:4px;color:var(--purple);font-size:11px;cursor:help}
+.eia-cell-conf{white-space:nowrap}
+.eia-cell-actions{white-space:nowrap;text-align:right}
+.eia-act-btn{width:26px;height:26px;border-radius:6px;border:1px solid var(--br);background:transparent;color:var(--tx2);cursor:pointer;transition:.12s;font-weight:700;margin-left:2px;font-size:12px;display:inline-flex;align-items:center;justify-content:center}
+.eia-act-btn:hover{transform:scale(1.08)}
+.eia-act-app{color:var(--green);border-color:rgba(16,185,129,.3)}
+.eia-act-app:hover{background:rgba(16,185,129,.12);border-color:var(--green)}
+.eia-act-edit{color:var(--blue3);border-color:rgba(59,130,246,.3)}
+.eia-act-edit:hover{background:rgba(59,130,246,.12);border-color:var(--blue3)}
+.eia-act-rej{color:var(--red);border-color:rgba(239,68,68,.3)}
+.eia-act-rej:hover{background:rgba(239,68,68,.12);border-color:var(--red)}
+
+/* Bottom bar */
+.eia-bottom{position:sticky;bottom:0;margin-top:18px;background:linear-gradient(180deg,transparent,var(--bg) 40%);padding:16px 0 8px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;border-top:1px solid var(--br)}
+.eia-bottom-stats{display:flex;gap:22px;flex-wrap:wrap}
+.eia-bstat{display:flex;flex-direction:column;gap:2px}
+.eia-bstat-n{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--tx);line-height:1;letter-spacing:-.3px}
+.eia-bstat-l{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--tx3);font-weight:600}
+.eia-bottom-actions{display:flex;gap:8px;flex-wrap:wrap}
+
+/* Insights + learning containers (preenchidos via JS) */
+.eia-insights-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:14px}
+.eia-insight{background:var(--s1);border:1px solid var(--br);border-left:3px solid var(--blue);border-radius:12px;padding:14px}
+.eia-insight.red{border-left-color:var(--red)}
+.eia-insight.amber{border-left-color:var(--amber)}
+.eia-insight.green{border-left-color:var(--green)}
+.eia-insight.purple{border-left-color:var(--purple)}
+.eia-insight-head{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.eia-insight-ico{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;background:rgba(59,130,246,.1)}
+.eia-insight.red .eia-insight-ico{background:rgba(239,68,68,.15)}
+.eia-insight.amber .eia-insight-ico{background:rgba(245,158,11,.15)}
+.eia-insight.green .eia-insight-ico{background:rgba(16,185,129,.15)}
+.eia-insight.purple .eia-insight-ico{background:rgba(167,139,250,.15)}
+.eia-insight-title{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--tx2)}
+.eia-insight-body{font-size:12px;color:var(--tx);line-height:1.45}
+.eia-insight-body b{font-family:'Syne',sans-serif;font-weight:800;color:var(--tx)}
+.eia-insight-list{margin-top:6px;font-size:11.5px;color:var(--tx2)}
+.eia-insight-list li{padding:3px 0;display:flex;justify-content:space-between;gap:8px}
+.eia-insight-list li span:last-child{font-family:'Syne',sans-serif;font-weight:700;white-space:nowrap;color:var(--tx)}
+
+.eia-summary{background:linear-gradient(145deg,rgba(59,130,246,.08),rgba(167,139,250,.06));border:1px solid rgba(167,139,250,.25);border-radius:14px;padding:18px;margin-top:14px}
+.eia-summary-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.eia-summary-ico{width:32px;height:32px;border-radius:8px;background:rgba(167,139,250,.2);color:var(--purple);display:flex;align-items:center;justify-content:center;font-size:16px}
+.eia-summary-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:800;color:var(--tx);letter-spacing:-.2px}
+.eia-summary-body{font-size:13px;color:var(--tx);line-height:1.55;white-space:pre-wrap}
+.eia-summary-body.loading{color:var(--tx3);font-style:italic}
+
+.eia-learning{background:var(--s1);border:1px solid var(--br);border-radius:12px;padding:14px;margin-top:14px}
+.eia-learning-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.eia-learning-stats{display:flex;gap:16px;margin-bottom:10px;flex-wrap:wrap}
+.eia-lstat{display:flex;flex-direction:column;gap:2px;background:rgba(255,255,255,.02);border:1px solid var(--br);border-radius:8px;padding:8px 12px}
+.eia-lstat-n{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:var(--tx)}
+.eia-lstat-l{font-size:10px;color:var(--tx3);letter-spacing:.05em}
+.eia-learning-list{max-height:220px;overflow-y:auto}
+.eia-learn-row{display:grid;grid-template-columns:1fr 140px 80px 80px;gap:10px;padding:7px 4px;font-size:11.5px;border-bottom:1px solid rgba(255,255,255,.03);align-items:center}
+.eia-learn-sample{color:var(--tx);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.eia-learn-cat{color:var(--blue3);font-weight:600}
+.eia-learn-by{color:var(--tx3)}
+.eia-learn-at{color:var(--tx3);text-align:right}
+
+@media(max-width:1200px){
+  .eia-kpis{grid-template-columns:repeat(3,1fr)}
+  .eia-layout{grid-template-columns:1fr}
+}
+@media(max-width:700px){
   .eia-kpis{grid-template-columns:1fr 1fr}
+  .eia-bottom{flex-direction:column;align-items:flex-start}
 }
 </style>
 </head>
@@ -4038,31 +4156,70 @@ function eiaMigrateDocs(docs){
   return docs;
 }
 
+// Cor e rótulo por confiança
+function eiaConfColor(c){ return c>=85?'var(--green)':c>=70?'var(--amber)':'var(--red)'; }
+function eiaConfBar(c, w){
+  const col = eiaConfColor(c||0); const width = w||70;
+  return `<svg width="${width}" height="10" viewBox="0 0 ${width} 10" style="vertical-align:middle;display:inline-block">
+    <rect x="0" y="3" width="${width}" height="4" rx="2" fill="rgba(255,255,255,.06)"/>
+    <rect x="0" y="3" width="${Math.max(2,(c||0)/100*width)}" height="4" rx="2" fill="${col}"/>
+  </svg>`;
+}
+
+function eiaTypeIcon(t){ return t==='PDF'?'📕':t==='Excel'?'📗':t==='CSV'?'📊':t==='Imagem'?'🖼️':'📄'; }
+
+function eiaStatusBadge(status){
+  const map = {
+    'pending': {label:'Pendente', cls:'home-v2-badge-ajustar'},
+    'approved': {label:'Aprovado', cls:'home-v2-badge-crescimento'},
+    'rejected': {label:'Rejeitado', cls:'home-v2-badge-ajustar'},
+    'partial':  {label:'Parcial',   cls:'home-v2-badge-escalar'}
+  };
+  const m = map[status]||map['pending'];
+  return `<span class="home-v2-badge ${m.cls}">${m.label}</span>`;
+}
+
 function renderExtratoIA(e,c,co){
   const list = eiaGet(e.id);
-  const pending = list.filter(x=>x.status==='pending');
-  const approved = list.filter(x=>x.status==='approved');
-  const rejected = list.filter(x=>x.status==='rejected');
-  const avgConf = pending.length? Math.round(pending.reduce((s,x)=>s+(x.confidence||0),0)/pending.length) : 0;
+  // Auto-seleciona primeiro doc se nenhum selecionado
+  if(!eiaSelectedDocId || !list.find(d=>d.id===eiaSelectedDocId)){
+    eiaSelectedDocId = list[0] ? list[0].id : null;
+  }
+  const doc = list.find(d=>d.id===eiaSelectedDocId) || null;
+  const allEntries = list.flatMap(d=>d.entries||[]);
+  const totDocs = list.length;
+  const totEntries = allEntries.length;
+  const pendEntries = allEntries.filter(x=>x.status==='pending').length;
+  const appEntries = allEntries.filter(x=>x.status==='approved').length;
+  const allConf = allEntries.length? Math.round(allEntries.reduce((s,x)=>s+(x.confidence||0),0)/allEntries.length) : 0;
+  const alertEntries = allEntries.filter(x=>(x.flags||[]).length>0).length;
+  const train = JSON.parse(localStorage.getItem('orion_extrato_ia_training')||'[]');
+  const lastTrainCount = train.length;
+  const corrTokens = Object.keys(JSON.parse(localStorage.getItem('orion_extrato_ia_corrections')||'{}')).length;
+  const lastTrainDelta = train.length ? '+'+train.filter(t=>{const dt=new Date(t.at);return (Date.now()-dt.getTime())<7*24*3600*1000;}).length+' nesta semana' : 'sem correções';
+
   c.innerHTML = `<div class="eia-root">
+    <!-- HEAD -->
     <div class="eia-head">
       <div>
         <div class="eia-title">Extrato IA</div>
-        <div class="eia-sub">Upload de documentos · Classificação automática · Revisão humana</div>
+        <div class="eia-sub">Análise de documentos financeiros · Classificação automática · Aprendizado contínuo</div>
       </div>
       <div class="flex aic gap8">
-        <span class="home-v2-badge home-v2-badge-escalar">${list.length} documento${list.length===1?'':'s'}</span>
-        <button class="btn btn-ia" onclick="eiaRunBatch()">🤖 Revisar em lote</button>
+        ${totDocs>0?`<span class="home-v2-badge home-v2-badge-escalar">${totDocs} doc${totDocs===1?'':'s'} · ${totEntries} lançamentos</span>`:''}
       </div>
     </div>
 
+    <!-- 5 KPI CARDS -->
     <div class="eia-kpis">
-      <div class="kpi-card"><div class="kpi-icon" style="background:rgba(59,130,246,.15)">📥</div><div class="lbl">Na Fila</div><div class="val-sm txt-blue">${pending.length}</div></div>
-      <div class="kpi-card"><div class="kpi-icon" style="background:rgba(16,185,129,.15)">✓</div><div class="lbl">Aprovados</div><div class="val-sm txt-green">${approved.length}</div></div>
-      <div class="kpi-card"><div class="kpi-icon" style="background:rgba(239,68,68,.15)">✕</div><div class="lbl">Rejeitados</div><div class="val-sm txt-red">${rejected.length}</div></div>
-      <div class="kpi-card"><div class="kpi-icon" style="background:rgba(167,139,250,.15)">🎯</div><div class="lbl">Confiança média</div><div class="val-sm" style="color:var(--purple)">${avgConf}%</div></div>
+      <div class="kpi-card eia-kpi"><div class="kpi-icon" style="background:rgba(59,130,246,.15)">📥</div><div class="lbl">Documentos Processados</div><div class="val-sm txt-blue">${totDocs}</div><div class="eia-kpi-sub">${totEntries} lançamentos</div></div>
+      <div class="kpi-card eia-kpi"><div class="kpi-icon" style="background:rgba(245,158,11,.15)">⏳</div><div class="lbl">Pendentes de Revisão</div><div class="val-sm txt-amber">${pendEntries}</div><div class="eia-kpi-sub">${appEntries} aprovados</div></div>
+      <div class="kpi-card eia-kpi"><div class="kpi-icon" style="background:rgba(167,139,250,.15)">🎯</div><div class="lbl">Confiança Média</div><div class="val-sm" style="color:var(--purple)">${allConf}%</div>${eiaConfBar(allConf, 90)}</div>
+      <div class="kpi-card eia-kpi"><div class="kpi-icon" style="background:rgba(239,68,68,.15)">⚠️</div><div class="lbl">Alertas Encontrados</div><div class="val-sm txt-red">${alertEntries}</div><div class="eia-kpi-sub">flags detectadas</div></div>
+      <div class="kpi-card eia-kpi"><div class="kpi-icon" style="background:rgba(16,185,129,.15)">🧠</div><div class="lbl">Aprendizado</div><div class="val-sm txt-green">${corrTokens} tokens</div><div class="eia-kpi-sub">${escHtml(lastTrainDelta)}</div></div>
     </div>
 
+    <!-- DROP ZONE -->
     <div class="file-zone eia-drop" id="eia-drop"
       ondragover="event.preventDefault();this.classList.add('dragover')"
       ondragleave="this.classList.remove('dragover')"
@@ -4070,65 +4227,156 @@ function renderExtratoIA(e,c,co){
       onclick="document.getElementById('eia-file').click()">
       <div class="eia-drop-icon">📄</div>
       <div class="eia-drop-title">Arraste e solte arquivos aqui</div>
-      <div class="eia-drop-sub">ou <b style="color:var(--blue3)">clique para selecionar</b> · PDF, Excel, CSV, imagens</div>
+      <div class="eia-drop-sub">ou <b style="color:var(--blue3)">clique para selecionar</b> · PDF, Excel, CSV, JPG, PNG</div>
       <input type="file" id="eia-file" hidden multiple accept=".pdf,.xlsx,.xls,.csv,.png,.jpg,.jpeg,.webp" onchange="eiaOnFile(event)"/>
+      <div id="eia-progress" class="eia-progress hidden"></div>
     </div>
 
-    <div class="eia-section">
-      <div class="slbl">Fila de revisão</div>
-      ${pending.length===0 ? `<div class="eia-empty">Sem documentos pendentes. Faça upload acima.</div>` :
-        `<div class="eia-grid">${pending.map(it=>eiaCardHtml(it,e)).join('')}</div>`}
+    ${totDocs===0 ? `
+      <div class="eia-empty">
+        <div style="font-size:40px;margin-bottom:8px">📂</div>
+        <div style="font-size:14px;color:var(--tx);font-weight:600;margin-bottom:4px">Nenhum documento ainda</div>
+        <div style="font-size:12px;color:var(--tx3)">Faça upload de extratos, notas fiscais, folhas ou relatórios para começar a análise.</div>
+      </div>
+    ` : `
+    <!-- LAYOUT 3 COLUNAS: LEFT (doc list + details) + MAIN (table + insights + learning) -->
+    <div class="eia-layout">
+      <!-- LEFT: lista de docs + detalhes do selecionado -->
+      <div class="eia-left">
+        <div class="slbl" style="margin-bottom:8px">Documentos (${totDocs})</div>
+        <div class="eia-doc-list">
+          ${list.map(d=>{
+            const agg = eiaDocAggregates(d);
+            const active = d.id===eiaSelectedDocId?'active':'';
+            const flags = (d.entries||[]).reduce((s,e)=>s+((e.flags||[]).length>0?1:0),0);
+            return `<div class="eia-doc-item ${active}" onclick="eiaSelectDoc('${d.id}')">
+              <div class="eia-doc-icon">${eiaTypeIcon(d.type)}</div>
+              <div class="eia-doc-info">
+                <div class="eia-doc-name" title="${escHtml(d.name)}">${escHtml(d.name)}</div>
+                <div class="eia-doc-meta">${escHtml(d.source||d.type)} · ${agg.count} lanç. ${flags>0?`· <span style="color:var(--red)">⚠ ${flags}</span>`:''}</div>
+              </div>
+              <div class="eia-doc-status">${eiaStatusBadge(eiaDocStatus(d))}</div>
+            </div>`;
+          }).join('')}
+        </div>
+
+        ${doc ? `
+        <!-- Painel de detalhes do doc selecionado -->
+        <div class="eia-doc-detail">
+          <div class="slbl" style="margin-top:4px">Detalhes do Documento</div>
+          <div class="eia-detail-card">
+            <div class="eia-detail-head">
+              <div class="eia-doc-icon eia-doc-icon-big">${eiaTypeIcon(doc.type)}</div>
+              <div style="flex:1;min-width:0">
+                <div class="eia-detail-name" title="${escHtml(doc.name)}">${escHtml(doc.name)}</div>
+                <div class="eia-detail-meta">${escHtml(doc.type)} · ${Math.round((doc.size||0)/1024)}KB · ${eiaFormatWhen(doc.uploadedAt)}</div>
+              </div>
+            </div>
+            <div class="eia-detail-fields">
+              <div class="eia-df"><span class="eia-dfl">Empresa</span><span class="eia-dfv">${escHtml(doc.detectedCompany||'—')}</span></div>
+              <div class="eia-df"><span class="eia-dfl">Fonte / Banco</span><span class="eia-dfv">${escHtml(doc.source||'—')}</span></div>
+              <div class="eia-df"><span class="eia-dfl">Período</span><span class="eia-dfv">${escHtml(doc.detectedPeriod||'—')}</span></div>
+              <div class="eia-df"><span class="eia-dfl">Tipo</span><span class="eia-dfv">${escHtml(doc.detectedType||'—')}</span></div>
+              <div class="eia-df"><span class="eia-dfl">Lançamentos</span><span class="eia-dfv">${(doc.entries||[]).length}</span></div>
+              <div class="eia-df"><span class="eia-dfl">Entradas</span><span class="eia-dfv pos">${FMT.brl(eiaDocAggregates(doc).income)}</span></div>
+              <div class="eia-df"><span class="eia-dfl">Saídas</span><span class="eia-dfv neg">${FMT.brl(eiaDocAggregates(doc).expense)}</span></div>
+              <div class="eia-df total"><span class="eia-dfl">Saldo Total</span><span class="eia-dfv ${eiaDocAggregates(doc).total>=0?'pos':'neg'}">${FMT.brl(eiaDocAggregates(doc).total)}</span></div>
+            </div>
+            <div class="eia-detail-actions">
+              <button class="btn-sm btn-red" onclick="eiaDelete('${doc.id}')">🗑 Remover doc</button>
+            </div>
+          </div>
+        </div>
+        ` : ''}
+      </div>
+
+      <!-- MAIN: table + insights + learning -->
+      <div class="eia-main">
+        ${doc ? eiaRenderEntriesTable(doc) : `<div class="eia-empty">Selecione um documento à esquerda.</div>`}
+        <div id="eia-insights-container"></div>
+        <div id="eia-learning-container"></div>
+      </div>
     </div>
 
-    ${approved.length>0 ? `
-    <div class="eia-section">
-      <div class="slbl">Aprovados recentemente</div>
-      <div class="eia-grid">${approved.slice(-6).reverse().map(it=>eiaCardHtml(it,e)).join('')}</div>
-    </div>`:''}
+    <!-- BOTTOM BAR -->
+    <div class="eia-bottom">
+      <div class="eia-bottom-stats">
+        <div class="eia-bstat"><span class="eia-bstat-n">${pendEntries}</span><span class="eia-bstat-l">Pendentes</span></div>
+        <div class="eia-bstat"><span class="eia-bstat-n txt-green">${appEntries}</span><span class="eia-bstat-l">Aprovados</span></div>
+        <div class="eia-bstat"><span class="eia-bstat-n txt-red">${alertEntries}</span><span class="eia-bstat-l">Alertas</span></div>
+        <div class="eia-bstat"><span class="eia-bstat-n" style="color:var(--purple)">${allConf}%</span><span class="eia-bstat-l">Confiança</span></div>
+      </div>
+      <div class="eia-bottom-actions">
+        <button class="btn btn-ghost" onclick="eiaApproveAllReviewed()">✓ Aprovar todos (≥70%)</button>
+        <button class="btn btn-ghost" onclick="eiaRetrainModel()">🧠 Retreinar Modelo</button>
+        <button class="btn btn-ia" onclick="eiaGenerateReport()">📊 Gerar Relatório IA</button>
+      </div>
+    </div>
+    `}
+  </div>`;
 
-    ${rejected.length>0 ? `
-    <div class="eia-section">
-      <div class="slbl">Rejeitados</div>
-      <div class="eia-grid">${rejected.slice(-6).reverse().map(it=>eiaCardHtml(it,e)).join('')}</div>
-    </div>`:''}
+  // Renderiza insights + learning fora do template principal para evitar template infinito
+  if(doc){
+    eiaRenderInsights(doc, list);
+    eiaRenderLearning();
+  }
+}
+
+function eiaRenderEntriesTable(doc){
+  const entries = doc.entries||[];
+  if(entries.length===0) return `<div class="eia-empty">Documento sem lançamentos detectados.</div>`;
+  const rows = entries.map(e=>{
+    const flagged = (e.flags||[]).length>0;
+    const dup = (e.flags||[]).includes('duplicate');
+    const inc = (e.flags||[]).includes('inconsistent');
+    const mis = (e.flags||[]).includes('missing');
+    const out = (e.flags||[]).includes('outlier');
+    const statusBadge = eiaStatusBadge(e.status);
+    const amountCol = e.amount>=0?'pos':'neg';
+    const flagTooltip = (e.flags||[]).join(', ');
+    return `<tr class="${flagged?'eia-row-flagged':''}" title="${flagTooltip||''}">
+      <td class="eia-cell-flag">${dup?`<span class="eia-flag dup" title="Possível duplicata">⎘</span>`:''}${inc?`<span class="eia-flag inc" title="Baixa confiança">?</span>`:''}${mis?`<span class="eia-flag mis" title="Categoria ausente/genérica">◇</span>`:''}${out?`<span class="eia-flag out" title="Valor outlier">↑</span>`:''}</td>
+      <td class="eia-cell-date">${eiaFormatDate(e.date)}</td>
+      <td class="eia-cell-desc">${escHtml(e.description)}</td>
+      <td class="eia-cell-amount num ${amountCol}">${e.amount>=0?'+':'−'} ${FMT.brl(Math.abs(e.amount))}</td>
+      <td class="eia-cell-cat"><span class="eia-cat-pill">${escHtml(e.suggestedCategory||'—')}</span>${e.correctedFrom?`<span class="eia-cat-corrected" title="Era: ${escHtml(e.correctedFrom)}">✎</span>`:''}</td>
+      <td class="eia-cell-conf">${eiaConfBar(e.confidence, 70)} <span style="color:${eiaConfColor(e.confidence)};font-family:'Syne',sans-serif;font-weight:800;font-size:11px;margin-left:4px">${e.confidence||0}%</span></td>
+      <td class="eia-cell-status">${statusBadge}</td>
+      <td class="eia-cell-actions">
+        ${e.status==='pending' ? `
+          <button class="eia-act-btn eia-act-app" title="Aprovar" onclick="eiaEntryApprove('${doc.id}','${e.id}')">✓</button>
+          <button class="eia-act-btn eia-act-edit" title="Reclassificar" onclick="eiaEntryReclassify('${doc.id}','${e.id}')">✎</button>
+          <button class="eia-act-btn eia-act-rej" title="Rejeitar" onclick="eiaEntryReject('${doc.id}','${e.id}')">✕</button>
+        ` : `<span style="color:var(--tx3);font-size:10px">${e.correctedBy?escHtml(e.correctedBy):''}${e.correctedAt?' · '+eiaFormatWhen(e.correctedAt):''}</span>`}
+      </td>
+    </tr>`;
+  }).join('');
+  return `<div class="eia-table-wrap">
+    <div class="eia-table-head">
+      <div class="slbl" style="margin:0">Classificações sugeridas</div>
+      <div style="font-size:11px;color:var(--tx3)">${entries.length} lançamento(s) neste documento</div>
+    </div>
+    <div class="eia-table-scroll">
+      <table class="eia-table">
+        <thead><tr>
+          <th class="eia-th-flag"></th>
+          <th>Data</th>
+          <th>Descrição</th>
+          <th class="num">Valor</th>
+          <th>Categoria sugerida</th>
+          <th>Confiança</th>
+          <th>Status</th>
+          <th></th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
   </div>`;
 }
 
-function eiaCardHtml(it,emp){
-  const confCol = it.confidence>=85?'var(--green)':it.confidence>=70?'var(--amber)':'var(--red)';
-  const statusLabel = it.status==='pending'?'Pendente':it.status==='approved'?'Aprovado':'Rejeitado';
-  const statusCls = it.status==='pending'?'home-v2-badge-ajustar':it.status==='approved'?'home-v2-badge-crescimento':'home-v2-badge-ajustar';
-  const typeIcon = it.type==='PDF'?'📕':it.type==='Excel'?'📗':it.type==='CSV'?'📊':it.type==='Imagem'?'🖼️':'📄';
-  const valueStr = it.detectedValue!=null ? FMT.brl(it.detectedValue) : '—';
-  return `<div class="eia-card" data-id="${it.id}">
-    <div class="eia-card-head">
-      <div class="eia-file-icon">${typeIcon}</div>
-      <div class="eia-file-info">
-        <div class="eia-file-name" title="${escHtml(it.name)}">${escHtml(it.name)}</div>
-        <div class="eia-file-meta">${escHtml(it.type)} · ${eiaFormatWhen(it.uploadedAt)}</div>
-      </div>
-      <span class="home-v2-badge ${statusCls}">${statusLabel}</span>
-    </div>
-    <div class="eia-card-body">
-      <div class="eia-field"><span class="eia-fl">Empresa detectada</span><span class="eia-fv">${escHtml(it.detectedCompany||emp.nome)}</span></div>
-      <div class="eia-field"><span class="eia-fl">Período</span><span class="eia-fv">${escHtml(it.detectedPeriod||'—')}</span></div>
-      <div class="eia-field"><span class="eia-fl">Valor</span><span class="eia-fv">${valueStr}</span></div>
-      <div class="eia-field"><span class="eia-fl">Classificação sugerida</span><span class="eia-fv" style="color:var(--blue3)">${escHtml(it.classification||'—')}</span></div>
-      <div class="eia-conf-row">
-        <span class="eia-fl">Confiança</span>
-        <div class="eia-conf-bar"><div class="eia-conf-fill" style="width:${it.confidence||0}%;background:${confCol}"></div></div>
-        <span class="eia-conf-val" style="color:${confCol}">${it.confidence||0}%</span>
-      </div>
-    </div>
-    ${it.status==='pending' ? `<div class="eia-card-actions">
-      <button class="btn-sm btn-blue" onclick="eiaApprove('${it.id}')">✓ Aprovar</button>
-      <button class="btn-sm btn-ghost" onclick="eiaReclassify('${it.id}')">✎ Reclassificar</button>
-      <button class="btn-sm btn-red" onclick="eiaReject('${it.id}')">✕ Rejeitar</button>
-    </div>`:`<div class="eia-card-actions">
-      <span style="font-size:10px;color:var(--tx3)">${it.reviewer?'Revisado por '+escHtml(it.reviewer):''}${it.reviewedAt?' · '+eiaFormatWhen(it.reviewedAt):''}</span>
-      <button class="btn-sm btn-ghost" onclick="eiaDelete('${it.id}')">🗑 Remover</button>
-    </div>`}
-  </div>`;
+function eiaSelectDoc(id){
+  eiaSelectedDocId = id;
+  renderTab();
 }
 
 function eiaOnFile(ev){
@@ -4284,92 +4532,18 @@ function eiaRetrainModel(){
   renderTab();
 }
 
-function eiaApprove(id){
-  const list = eiaGet(curEmp);
-  const it = list.find(x=>x.id===id); if(!it) return;
-  const sess = JSON.parse(localStorage.getItem('orion_session')||'{}');
-  it.status='approved'; it.reviewer=sess.name||sess.email||'usuário'; it.reviewedAt=eiaNowIso();
-  eiaSave(curEmp, list);
-  eiaLogAudit('approve', it);
-  showToast('Classificação aprovada');
-  renderTab();
-}
-function eiaReject(id){
-  const list = eiaGet(curEmp);
-  const it = list.find(x=>x.id===id); if(!it) return;
-  const sess = JSON.parse(localStorage.getItem('orion_session')||'{}');
-  it.status='rejected'; it.reviewer=sess.name||sess.email||'usuário'; it.reviewedAt=eiaNowIso();
-  eiaSave(curEmp, list);
-  eiaLogAudit('reject', it);
-  showToast('Documento rejeitado');
-  renderTab();
-}
-function eiaReclassify(id){
-  const list = eiaGet(curEmp);
-  const it = list.find(x=>x.id===id); if(!it) return;
-  const opts = EIA_CATS.map(c=>`<option ${c===it.classification?'selected':''}>${c}</option>`).join('');
-  const html = `<div class="fs-rent2-modal" style="width:460px">
-    <button class="fs-rent2-modal-close" onclick="document.getElementById('eia-modal').remove()">&times;</button>
-    <h2>Reclassificar documento</h2>
-    <div class="fs-rent2-lbl">Arquivo</div>
-    <div style="color:var(--tx2);font-size:12px;margin-bottom:10px">${escHtml(it.name)}</div>
-    <div class="fs-rent2-lbl">Nova categoria</div>
-    <select class="fs-rent2-sel" id="eia-new-cat">${opts}</select>
-    <div class="fs-rent2-lbl">Notas (opcional)</div>
-    <textarea class="fs-rent2-txt" id="eia-notes" placeholder="Observação para memorizar a correção">${escHtml(it.notes||'')}</textarea>
-    <div class="fs-rent2-modal-actions">
-      <button class="fs-rent2-btn" onclick="document.getElementById('eia-modal').remove()">Cancelar</button>
-      <button class="fs-rent2-btn fs-rent2-btn-primary" onclick="eiaApplyReclass('${id}')">Salvar e aprovar</button>
-    </div>
-  </div>`;
-  const el = document.createElement('div');
-  el.className='overlay'; el.id='eia-modal';
-  el.onclick=function(ev){ if(ev.target===el) el.remove(); };
-  el.innerHTML=html;
-  document.body.appendChild(el);
-}
-function eiaApplyReclass(id){
-  const list = eiaGet(curEmp);
-  const it = list.find(x=>x.id===id); if(!it) return;
-  const newCat = document.getElementById('eia-new-cat').value;
-  const notes = document.getElementById('eia-notes').value;
-  const sess = JSON.parse(localStorage.getItem('orion_session')||'{}');
-  const prevCat = it.classification;
-  it.classification = newCat;
-  it.notes = notes;
-  it.confidence = 100;
-  it.status = 'approved';
-  it.reviewer = sess.name||sess.email||'usuário';
-  it.reviewedAt = eiaNowIso();
-  eiaSave(curEmp, list);
-  eiaLearnFromCorrection(it.name, newCat);
-  eiaLogAudit('reclassify', it, {from:prevCat, to:newCat});
-  const m = document.getElementById('eia-modal'); if(m) m.remove();
-  showToast('Reclassificado e memorizado ('+newCat+')');
-  renderTab();
-}
 function eiaDelete(id){
-  if(!confirm('Remover este documento?')) return;
+  if(!confirm('Remover este documento e todos os lançamentos?')) return;
   const list = eiaGet(curEmp).filter(x=>x.id!==id);
   eiaSave(curEmp, list);
+  if(eiaSelectedDocId===id) eiaSelectedDocId = list[0]?list[0].id:null;
   renderTab();
 }
-function eiaRunBatch(){
-  const list = eiaGet(curEmp);
-  const pending = list.filter(x=>x.status==='pending');
-  const highConf = pending.filter(x=>x.confidence>=85);
-  if(highConf.length===0){ showToast('Nenhum documento pendente com confiança ≥85%'); return; }
-  if(!confirm('Aprovar em lote '+highConf.length+' documento(s) com confiança ≥85%?')) return;
-  const sess = JSON.parse(localStorage.getItem('orion_session')||'{}');
-  const reviewer = sess.name||sess.email||'usuário';
-  highConf.forEach(it=>{
-    it.status='approved'; it.reviewer=reviewer; it.reviewedAt=eiaNowIso();
-    eiaLogAudit('approve_batch', it);
-  });
-  eiaSave(curEmp, list);
-  showToast(highConf.length+' aprovado(s) em lote');
-  renderTab();
-}
+
+// Placeholders — implementados nos próximos blocos
+function eiaRenderInsights(doc, list){ const el=document.getElementById('eia-insights-container'); if(el) el.innerHTML=''; }
+function eiaRenderLearning(){ const el=document.getElementById('eia-learning-container'); if(el) el.innerHTML=''; }
+function eiaGenerateReport(){ showToast('Relatório IA — em breve'); }
 
 function eiaLogAudit(action, item, extra){
   const logs = JSON.parse(localStorage.getItem('orion_audit_log')||'[]');

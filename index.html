@@ -3881,11 +3881,13 @@ function addEmpresa(){
 function openDrive(){window.open(curEmp?EMPS[curEmp]?.drive:'https://drive.google.com','_blank')}
 
 // ── WORKSPACE ──────────────────────────────────────────────────────────────
-const WS_TABS_ALL=['KPIs','OKRs','Tarefas','Financeiro','Extrato IA','Documentos','Relatórios','Pipeline','Contratos','Riscos','Decisões','CRM','Notas'];
+// FASE 13 — ocultar temporariamente (Agenda/Pipeline/CRM) sem remover código
+const HIDDEN_TABS = new Set(['Pipeline','CRM']);
+const WS_TABS_ALL=['KPIs','OKRs','Tarefas','Financeiro','Extrato IA','Documentos','Relatórios','Contratos','Riscos','Decisões','Notas'];
 const GP_TABS_DEFAULT=['KPIs','Patrimônio','Investimentos','Fluxo Pessoal','Extrato IA','Documentos','Relatórios','Compromissos','Metas','Notas'];
-const FS_TABS_DEFAULT=['KPIs','OKRs','Tarefas','Financeiro','Extrato IA','Documentos','Relatórios','Fundos','Projeções','Rentabilidade','Pipeline','Contratos','CRM','Notas'];
-const DW_TABS_DEFAULT=['KPIs','OKRs','Tarefas','Financeiro','Extrato IA','Documentos','Relatórios','Pacientes','Honorários','Pipeline','Contratos','Riscos','Decisões','CRM','Notas'];
-const OF_TABS_DEFAULT=['KPIs','OKRs','Tarefas','Financeiro','Extrato IA','Documentos','Relatórios','Projetos','Equipe','Pipeline','Contratos','Riscos','CRM','Notas'];
+const FS_TABS_DEFAULT=['KPIs','OKRs','Tarefas','Financeiro','Extrato IA','Documentos','Relatórios','Fundos','Projeções','Rentabilidade','Contratos','Notas'];
+const DW_TABS_DEFAULT=['KPIs','OKRs','Tarefas','Financeiro','Extrato IA','Documentos','Relatórios','Pacientes','Honorários','Contratos','Riscos','Decisões','Notas'];
+const OF_TABS_DEFAULT=['KPIs','OKRs','Tarefas','Financeiro','Extrato IA','Documentos','Relatórios','Projetos','Equipe','Contratos','Riscos','Notas'];
 
 function getEmpModulos(empresaId){
   const stored=localStorage.getItem('orion_modulos_'+empresaId);
@@ -3942,9 +3944,11 @@ function renderWS(){
         <button class="btn btn-ia" onclick="toggleMXDrawer();mxAnalyzeActive()" title="Análise IA desta empresa">🤖 Análise IA</button>
       </div>
     </div>`;
-  // tabs (filtered by empresa modules + RBAC)
+  // tabs (filtered by empresa modules + RBAC + HIDDEN_TABS)
   const wt=document.getElementById('ws-tabs');
   let activeTabs=getEmpModulos(curEmp);
+  // FASE 13 — esconde abas temporariamente (código mantido)
+  if(typeof HIDDEN_TABS!=='undefined') activeTabs = activeTabs.filter(t=>!HIDDEN_TABS.has(t));
   if(typeof canSeeTab==='function'){
     activeTabs = activeTabs.filter(t=>canSeeTab(t, curEmp));
   }

@@ -637,6 +637,98 @@ a{color:inherit;text-decoration:none}
   .fs-proj-grid{grid-template-columns:1fr}
   .fs-proj-kpis{grid-template-columns:1fr 1fr}
 }
+/* ── RENTABILIDADE FS v2 ────────────────────────────────────────── */
+.fs-rent2-wrap{background:#0f172a;color:#f1f5f9;padding:20px;border-radius:12px;font-family:'DM Sans',sans-serif}
+.fs-rent2-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:12px}
+.fs-rent2-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;margin:0;color:#f1f5f9}
+.fs-rent2-subtabs{display:flex;gap:4px;border-bottom:1px solid rgba(255,255,255,0.1);margin-bottom:18px;overflow-x:auto;flex-wrap:nowrap}
+.fs-rent2-subtab{background:transparent;color:#94a3b8;border:none;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;transition:.15s;font-family:inherit;white-space:nowrap}
+.fs-rent2-subtab:hover{color:#f1f5f9}
+.fs-rent2-subtab.active{color:#3b82f6;border-bottom-color:#3b82f6}
+.fs-rent2-actions{display:flex;gap:8px;flex-wrap:wrap}
+.fs-rent2-btn{background:#1e293b;color:#f1f5f9;border:1px solid rgba(255,255,255,0.1);padding:8px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:.15s;font-family:inherit}
+.fs-rent2-btn:hover{background:#334155}
+.fs-rent2-btn-primary{background:#3b82f6;border-color:#3b82f6;color:#fff}
+.fs-rent2-btn-primary:hover{background:#2563eb}
+.fs-rent2-btn-green{background:#10b981;border-color:#10b981;color:#fff}
+.fs-rent2-btn-green:hover{background:#059669}
+.fs-rent2-btn-amber{background:#f59e0b;border-color:#f59e0b;color:#fff}
+.fs-rent2-btn-amber:hover{background:#d97706}
+.fs-rent2-btn-red{background:#ef4444;border-color:#ef4444;color:#fff}
+.fs-rent2-btn-red:hover{background:#dc2626}
+.fs-rent2-btn-sm{padding:6px 10px;font-size:12px}
+.fs-rent2-kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px}
+.fs-rent2-kpi{background:#1e293b;border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:14px}
+.fs-rent2-kpi-lbl{font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;font-weight:600}
+.fs-rent2-kpi-val{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;letter-spacing:-.3px}
+.fs-rent2-kpi-blue{color:#3b82f6}
+.fs-rent2-kpi-green{color:#10b981}
+.fs-rent2-kpi-red{color:#ef4444}
+.fs-rent2-kpi-amber{color:#f59e0b}
+.fs-rent2-kpi-cyan{color:#06b6d4}
+.fs-rent2-section-title{font-size:13px;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin:18px 0 10px;font-weight:700}
+.fs-rent2-panel{background:#1e293b;border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:18px;margin-bottom:12px}
+.fs-rent2-turma-card{background:#1e293b;border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:14px 16px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;cursor:pointer;transition:.15s}
+.fs-rent2-turma-card:hover{background:#273449;border-color:rgba(59,130,246,0.3)}
+.fs-rent2-turma-info{display:flex;flex-direction:column;gap:2px;flex:1;min-width:200px}
+.fs-rent2-turma-nome{font-size:15px;font-weight:700;color:#f1f5f9}
+.fs-rent2-turma-meta{font-size:11px;color:#94a3b8}
+.fs-rent2-turma-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.fs-rent2-turma-saldo{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:#10b981}
+.fs-rent2-tag{display:inline-block;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+.fs-rent2-tag-green{background:rgba(16,185,129,0.15);color:#10b981}
+.fs-rent2-tag-amber{background:rgba(245,158,11,0.15);color:#f59e0b}
+.fs-rent2-tag-gray{background:rgba(148,163,184,0.15);color:#94a3b8}
+.fs-rent2-table{width:100%;border-collapse:collapse;font-size:12px;min-width:720px}
+.fs-rent2-table th{text-align:left;padding:8px 6px;color:#94a3b8;font-weight:600;text-transform:uppercase;font-size:10px;letter-spacing:.4px;border-bottom:1px solid rgba(255,255,255,0.08);position:sticky;top:0;background:#1e293b;z-index:1}
+.fs-rent2-table td{padding:8px 6px;border-bottom:1px solid rgba(255,255,255,0.05);color:#f1f5f9}
+.fs-rent2-table .num{text-align:right;font-variant-numeric:tabular-nums}
+.fs-rent2-table .pos{color:#10b981}
+.fs-rent2-table .neg{color:#ef4444}
+.fs-rent2-table .rent{color:#3b82f6}
+.fs-rent2-table .hon{color:#f59e0b}
+.fs-rent2-table tfoot td{font-weight:700;border-top:2px solid rgba(255,255,255,0.15);background:#0f172a}
+.fs-rent2-table-wrap{background:#1e293b;border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:18px;overflow:auto;max-height:560px;margin-bottom:12px}
+.fs-rent2-empty{text-align:center;color:#94a3b8;padding:40px 20px;font-size:13px}
+.fs-rent2-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fs-rent2-form-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.fs-rent2-lbl{font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:.4px;margin:8px 0 4px;font-weight:600}
+.fs-rent2-inp,.fs-rent2-sel,.fs-rent2-txt{width:100%;background:#0f172a;color:#f1f5f9;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 12px;font-size:13px;font-family:inherit;box-sizing:border-box}
+.fs-rent2-inp:focus,.fs-rent2-sel:focus,.fs-rent2-txt:focus{outline:none;border-color:#3b82f6}
+.fs-rent2-txt{min-height:60px;resize:vertical}
+.fs-rent2-preview{background:#0f172a;border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:16px;margin-top:12px}
+.fs-rent2-preview-title{font-size:12px;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;font-weight:700}
+.fs-rent2-preview-row{display:flex;justify-content:space-between;padding:5px 0;font-size:13px;color:#f1f5f9}
+.fs-rent2-preview-row.total{border-top:1px solid rgba(255,255,255,0.08);margin-top:6px;padding-top:10px;font-weight:800;font-size:14px}
+.fs-rent2-checkbox-list{display:grid;grid-template-columns:1fr 1fr;gap:8px;max-height:260px;overflow-y:auto;background:#0f172a;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px}
+.fs-rent2-checkbox-row{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;cursor:pointer;font-size:13px}
+.fs-rent2-checkbox-row:hover{background:rgba(255,255,255,0.03)}
+.fs-rent2-checkbox-row input{accent-color:#3b82f6}
+.fs-rent2-modal{background:#1e293b;color:#f1f5f9;border-radius:12px;padding:24px;width:520px;max-width:94vw;max-height:90vh;overflow:auto;position:relative;border:1px solid rgba(255,255,255,0.1);border-left:3px solid #f59e0b}
+.fs-rent2-modal h2{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;margin:0 0 16px;color:#f1f5f9}
+.fs-rent2-modal-close{position:absolute;top:12px;right:14px;background:transparent;border:none;color:#94a3b8;font-size:24px;cursor:pointer;line-height:1}
+.fs-rent2-modal-close:hover{color:#f1f5f9}
+.fs-rent2-modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}
+.fs-rent2-rate-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.fs-rent2-rate-btn{background:#0f172a;color:#f1f5f9;border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 6px;font-size:11px;font-weight:600;cursor:pointer;text-align:center;transition:.15s;font-family:inherit}
+.fs-rent2-rate-btn:hover{border-color:#3b82f6}
+.fs-rent2-rate-btn.active{background:#3b82f6;border-color:#3b82f6;color:#fff}
+.fs-rent2-rate-btn b{display:block;font-size:13px;margin-bottom:2px}
+@media (max-width:900px){
+  .fs-rent2-kpis{grid-template-columns:repeat(2,1fr)}
+  .fs-rent2-form-grid,.fs-rent2-form-grid-3{grid-template-columns:1fr}
+  .fs-rent2-rate-grid{grid-template-columns:repeat(2,1fr)}
+  .fs-rent2-checkbox-list{grid-template-columns:1fr}
+}
+@media print{
+  body *{visibility:hidden}
+  #fs-rent2-print-area,#fs-rent2-print-area *{visibility:visible}
+  #fs-rent2-print-area{position:absolute;left:0;top:0;width:100%;background:#fff !important;color:#000 !important;padding:20px}
+  #fs-rent2-print-area .fs-rent2-panel,#fs-rent2-print-area .fs-rent2-kpi,#fs-rent2-print-area .fs-rent2-table-wrap,#fs-rent2-print-area .fs-rent2-turma-card{background:#fff !important;color:#000 !important;border:1px solid #ddd !important;break-inside:avoid}
+  #fs-rent2-print-area .fs-rent2-kpi-lbl,#fs-rent2-print-area .fs-rent2-turma-meta,#fs-rent2-print-area .fs-rent2-table th,#fs-rent2-print-area .fs-rent2-section-title,#fs-rent2-print-area .fs-rent2-preview-title{color:#333 !important}
+  #fs-rent2-print-area .fs-rent2-table td,#fs-rent2-print-area .fs-rent2-kpi-val,#fs-rent2-print-area .fs-rent2-turma-nome,#fs-rent2-print-area .fs-rent2-turma-saldo,#fs-rent2-print-area .fs-rent2-title,#fs-rent2-print-area .fs-rent2-preview-row{color:#000 !important}
+  .fs-rent2-actions,.fs-rent2-subtabs,.fs-rent2-modal-actions{display:none !important}
+}
 </style>
 </head>
 <body>
@@ -1280,6 +1372,43 @@ a{color:inherit;text-decoration:none}
     <div class="modal-actions">
       <button class="btn-sm btn-ghost" onclick="closeModal('modal-fs-turma')">Cancelar</button>
       <button class="btn-sm btn-blue" onclick="saveNewTurma()">Criar Turma</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL FS RENT v2 — NOVA/EDITAR TURMA -->
+<div class="overlay hidden" id="modal-fs-rent2-turma" onclick="if(event.target===this)closeModal('modal-fs-rent2-turma')">
+  <div class="fs-rent2-modal">
+    <button class="fs-rent2-modal-close" onclick="closeModal('modal-fs-rent2-turma')">&times;</button>
+    <h2 id="fs-rent2-turma-title">Nova Turma</h2>
+    <input type="hidden" id="fs-rent2-turma-id"/>
+    <div class="fs-rent2-lbl">Nome da Turma</div>
+    <input class="fs-rent2-inp" id="fs-rent2-turma-nome" placeholder="Ex.: Medicina Veterinária UVV 2026.2"/>
+    <div class="fs-rent2-lbl">Curso</div>
+    <input class="fs-rent2-inp" id="fs-rent2-turma-curso" placeholder="Ex.: Med. Veterinária — UVV"/>
+    <div class="fs-rent2-form-grid">
+      <div>
+        <div class="fs-rent2-lbl">Data de Início</div>
+        <input class="fs-rent2-inp" id="fs-rent2-turma-inicio" type="month"/>
+      </div>
+      <div>
+        <div class="fs-rent2-lbl">Previsão Formatura</div>
+        <input class="fs-rent2-inp" id="fs-rent2-turma-prev" type="month"/>
+      </div>
+    </div>
+    <div class="fs-rent2-form-grid">
+      <div>
+        <div class="fs-rent2-lbl">Representante</div>
+        <input class="fs-rent2-inp" id="fs-rent2-turma-rep" placeholder="Nome do representante"/>
+      </div>
+      <div>
+        <div class="fs-rent2-lbl">Nº de Formandos</div>
+        <input class="fs-rent2-inp" id="fs-rent2-turma-alunos" type="number" min="0" placeholder="Ex.: 60"/>
+      </div>
+    </div>
+    <div class="fs-rent2-modal-actions">
+      <button class="fs-rent2-btn" onclick="closeModal('modal-fs-rent2-turma')">Cancelar</button>
+      <button class="fs-rent2-btn fs-rent2-btn-primary" onclick="fsRent2SaveTurma()">Salvar</button>
     </div>
   </div>
 </div>

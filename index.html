@@ -1649,6 +1649,24 @@ textarea:focus{
 .home-v2-emp-card,
 .home-v2-side-card{border-radius:14px !important}
 
+/* ── RELATÓRIOS ───────────────────────────────────────────────────── */
+.rel-root{display:flex;flex-direction:column;gap:14px}
+.rel-cat-list{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+.rel-cat-row{display:grid;grid-template-columns:130px 1fr 100px;gap:10px;align-items:center;font-size:12px}
+.rel-cat-name{color:var(--tx)}
+.rel-cat-bar{height:8px;background:rgba(255,255,255,.05);border-radius:4px;overflow:hidden}
+.rel-cat-fill{height:100%;background:linear-gradient(90deg,var(--red),var(--amber));border-radius:4px;transition:width .3s}
+.rel-cat-val{font-family:'Syne',sans-serif;font-weight:700;font-size:11.5px;text-align:right;color:var(--red)}
+@media print{
+  body *{visibility:hidden !important}
+  #rel-root, #rel-root *{visibility:visible !important}
+  #rel-root{position:absolute;left:0;top:0;padding:20px;background:#fff !important;color:#000 !important}
+  #rel-root .card,#rel-root .kpi-card,#rel-root .eia-kpi{background:#fff !important;color:#000 !important;border:1px solid #ddd !important;box-shadow:none !important}
+  #rel-root .slbl,#rel-root .lbl,#rel-root .eia-kpi-sub{color:#333 !important}
+  #rel-root .val-sm,#rel-root .eia-title,#rel-root .rel-cat-name,#rel-root .rel-cat-val{color:#000 !important}
+  .btn,.btn-ia,#rel-root button{display:none !important}
+}
+
 /* ── DOCUMENTOS ───────────────────────────────────────────────────── */
 .doc-root{display:flex;flex-direction:column;gap:14px}
 .doc-cat-bar{display:flex;flex-wrap:wrap;gap:6px}
@@ -6831,9 +6849,137 @@ function docAnalyzeORION(id){
   renderWS();
 }
 
-// ── RELATÓRIOS — FASE G (placeholder até a fase) ────────────────
+// ── RELATÓRIOS — FASE G ──────────────────────────────────────────────
+function relAggregate(empId){
+  const eiaList = eiaGet(empId);
+  const entries = eiaList.flatMap(d=>d.entries||[]);
+  const receita = entries.filter(e=>e.amount>0 && e.status==='approved').reduce((s,e)=>s+e.amount,0);
+  const despesas = entries.filter(e=>e.amount<0 && e.status==='approved').reduce((s,e)=>s+Math.abs(e.amount),0);
+  const saldo = receita - despesas;
+  // Resultado operacional = empresa.result (quando houver) || saldo
+  const emp = EMPS[empId];
+  const resultado = (emp && typeof emp.result==='number' && emp.result!==0) ? emp.result : saldo;
+  // Por mês
+  const byMonth = {};
+  entries.forEach(e=>{
+    const m = (e.date||'').slice(0,7); if(!m) return;
+    if(!byMonth[m]) byMonth[m] = {in:0, out:0};
+    if(e.amount>=0) byMonth[m].in += e.amount;
+    else byMonth[m].out += Math.abs(e.amount);
+  });
+  // Por categoria (despesas)
+  const byCat = {};
+  entries.filter(e=>e.amount<0).forEach(e=>{
+    const k = e.suggestedCategory||'Outros';
+    byCat[k] = (byCat[k]||0)+Math.abs(e.amount);
+  });
+  const pend = entries.filter(e=>e.status==='pending');
+  return {receita, despesas, saldo, resultado, byMonth, byCat, entries, pend, eiaList};
+}
+
+function relBarChartSVG(months){
+  // months: [{label, inV, outV}]
+  const w = 720, h = 220, pad=40;
+  if(months.length===0) return '<div class="adm-empty" style="padding:20px">Sem dados mensais.</div>';
+  const maxV = Math.max(1, ...months.flatMap(m=>[m.inV, m.outV]));
+  const bw = (w - pad*2) / months.length;
+  const barW = Math.max(6, bw*0.35);
+  let svg = `<svg width="100%" viewBox="0 0 ${w} ${h}" preserveAspectRatio="xMidYMid meet" style="display:block">`;
+  // grid
+  for(let i=0;i<=4;i++){
+    const y = pad + (h-pad*1.5)*(i/4);
+    svg += `<line x1="${pad}" y1="${y}" x2="${w-pad/2}" y2="${y}" stroke="rgba(255,255,255,.04)" stroke-width="1"/>`;
+  }
+  months.forEach((m,idx)=>{
+    const x = pad + bw*idx + bw/2;
+    const hIn = (m.inV/maxV)*(h-pad*2);
+    const hOut = (m.outV/maxV)*(h-pad*2);
+    svg += `<rect x="${x - barW - 1}" y="${h-pad/2 - hIn}" width="${barW}" height="${hIn}" rx="3" fill="#10b981"/>`;
+    svg += `<rect x="${x + 1}" y="${h-pad/2 - hOut}" width="${barW}" height="${hOut}" rx="3" fill="#ef4444"/>`;
+    svg += `<text x="${x}" y="${h-pad/2 + 14}" text-anchor="middle" fill="#94a3b8" font-size="10" font-family="DM Sans">${m.label}</text>`;
+  });
+  svg += `<g transform="translate(${pad},14)">
+    <rect x="0" y="0" width="10" height="10" rx="2" fill="#10b981"/>
+    <text x="16" y="9" fill="#f1f5f9" font-size="10" font-family="DM Sans">Entradas</text>
+    <rect x="88" y="0" width="10" height="10" rx="2" fill="#ef4444"/>
+    <text x="104" y="9" fill="#f1f5f9" font-size="10" font-family="DM Sans">Saídas</text>
+  </g>`;
+  svg += '</svg>';
+  return svg;
+}
+
+function relCategoryBarsSVG(byCat){
+  const entries = Object.entries(byCat).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  if(entries.length===0) return '<div class="adm-empty" style="padding:20px">Sem despesas categorizadas.</div>';
+  const max = Math.max(...entries.map(e=>e[1]));
+  return `<div class="rel-cat-list">${entries.map(([cat,v])=>{
+    const pct = (v/max)*100;
+    return `<div class="rel-cat-row">
+      <div class="rel-cat-name">${escHtml(cat)}</div>
+      <div class="rel-cat-bar"><div class="rel-cat-fill" style="width:${pct}%"></div></div>
+      <div class="rel-cat-val">${FMT.brl(v)}</div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
 function renderRelatorios(e,c,co){
-  c.innerHTML = `<div class="adm-empty" style="padding:40px 20px">Relatórios — implementado na FASE G</div>`;
+  const a = relAggregate(e.id);
+  const monthsKeys = Object.keys(a.byMonth).sort().slice(-8);
+  const monthsData = monthsKeys.map(k=>({
+    label: k.slice(5)+'/'+k.slice(2,4),
+    inV: a.byMonth[k].in,
+    outV: a.byMonth[k].out
+  }));
+  c.innerHTML = `<div class="rel-root" id="rel-root">
+    <div class="eia-head">
+      <div>
+        <div class="eia-title">Relatórios Executivos</div>
+        <div class="eia-sub">${escHtml(e.nome)} · consolidado a partir do Extrato IA aprovado</div>
+      </div>
+      <button class="btn btn-ia" onclick="relPrintPDF()">📄 Exportar PDF</button>
+    </div>
+
+    <div class="eia-kpis">
+      <div class="kpi-card eia-kpi"><div class="kpi-icon" style="background:rgba(16,185,129,.15)">💵</div><div class="lbl">Receita Total</div><div class="val-sm txt-green">${FMT.brl(a.receita)}</div><div class="eia-kpi-sub">${a.entries.filter(e=>e.amount>0).length} lançamento(s)</div></div>
+      <div class="kpi-card eia-kpi"><div class="kpi-icon" style="background:rgba(239,68,68,.15)">📉</div><div class="lbl">Despesas Totais</div><div class="val-sm txt-red">${FMT.brl(a.despesas)}</div><div class="eia-kpi-sub">${a.entries.filter(e=>e.amount<0).length} lançamento(s)</div></div>
+      <div class="kpi-card eia-kpi"><div class="kpi-icon" style="background:rgba(59,130,246,.15)">⚖️</div><div class="lbl">Saldo (EIA)</div><div class="val-sm" style="color:${a.saldo>=0?'var(--green)':'var(--red)'}">${FMT.brl(a.saldo)}</div><div class="eia-kpi-sub">Aprovados</div></div>
+      <div class="kpi-card eia-kpi"><div class="kpi-icon" style="background:rgba(167,139,250,.15)">📈</div><div class="lbl">Resultado</div><div class="val-sm" style="color:${a.resultado>=0?'var(--green)':'var(--red)'}">${FMT.brl(a.resultado)}</div><div class="eia-kpi-sub">Resultado operacional</div></div>
+    </div>
+
+    <div class="g2">
+      <div class="card">
+        <div class="slbl">Sumário mensal (últimos ${monthsData.length} meses)</div>
+        ${relBarChartSVG(monthsData)}
+      </div>
+      <div class="card">
+        <div class="slbl">Despesas por categoria</div>
+        ${relCategoryBarsSVG(a.byCat)}
+      </div>
+    </div>
+
+    <div class="card mb">
+      <div class="slbl">Pendências do Extrato IA</div>
+      ${a.pend.length===0 ? `<div style="font-size:12px;color:var(--tx3)">Nenhum lançamento pendente de revisão. 🎉</div>` : `
+        <div style="font-size:12px;color:var(--tx2);margin-bottom:10px"><b style="color:var(--amber);font-family:'Syne'">${a.pend.length}</b> lançamento(s) aguardando revisão humana em <b>${a.eiaList.filter(d=>eiaDocStatus(d)!=='approved'&&eiaDocStatus(d)!=='rejected').length}</b> documento(s).</div>
+        <div style="max-height:280px;overflow:auto">
+          <table class="eia-table">
+            <thead><tr><th>Data</th><th>Descrição</th><th class="num">Valor</th><th>Categoria</th><th>Confiança</th></tr></thead>
+            <tbody>${a.pend.slice(0,30).map(e=>`<tr>
+              <td>${eiaFormatDate(e.date)}</td>
+              <td>${escHtml(e.description)}</td>
+              <td class="num ${e.amount>=0?'pos':'neg'}">${FMT.brl(e.amount)}</td>
+              <td><span class="eia-cat-pill">${escHtml(e.suggestedCategory||'—')}</span></td>
+              <td>${eiaConfBar(e.confidence, 70)} <span style="font-family:'Syne';font-weight:700;font-size:11px;color:${eiaConfColor(e.confidence)}">${e.confidence||0}%</span></td>
+            </tr>`).join('')}</tbody>
+          </table>
+        </div>
+      `}
+    </div>
+  </div>`;
+}
+
+function relPrintPDF(){
+  window.print();
 }
 
 // ── RENTABILIDADE v2: render functions ────────────────────────────────────

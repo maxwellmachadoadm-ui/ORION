@@ -3845,55 +3845,198 @@ function fsRent2ExportCSV(){
   showToast('CSV exportado');
 }
 
-// ── EXTRATO IA — document intelligence ────────────────────────────────────
-// Storage: localStorage 'orion_extrato_ia_<empresaId>'
-// Entry shape: {id, name, type, size, uploadedAt, uploadedBy, status, confidence,
-//               detectedCompany, detectedPeriod, detectedValue, detectedType, classification, reviewer, reviewedAt, notes}
+// ── EXTRATO IA v2 — executive document intelligence ───────────────────────
+// Storage keys:
+//   orion_extrato_ia_<empId>        → docs por empresa
+//   orion_extrato_ia_corrections    → vocabulário global (tokens → cat)
+//   orion_extrato_ia_training       → histórico de correções (audit)
+//   orion_audit_log                 → log genérico cross-módulo
+//
+// Document shape v2:
+// {id, name, type, size, uploadedAt, uploadedBy, status,
+//  confidence, source, detectedCompany, detectedPeriod,
+//  detectedValue, detectedType, reviewer, reviewedAt, notes,
+//  entries:[
+//    {id, date, description, amount, suggestedCategory, confidence,
+//     status:'pending'|'approved'|'rejected', flags:['duplicate'|'inconsistent'|'missing'|'outlier'],
+//     correctedFrom, correctedAt, correctedBy}
+//  ]}
 const EIA_CATS = ['Receita','Despesa Operacional','Despesa Administrativa','Marketing','Folha','Impostos','Investimento','Transferência','Outros'];
+const EIA_BANKS = ['Banco do Brasil','Itaú','Bradesco','Nubank','Santander','Caixa','Inter','BTG','PicPay'];
+let eiaSelectedDocId = null;
 
 function eiaStorageKey(empId){ return 'orion_extrato_ia_'+empId }
-function eiaGet(empId){ try{ return JSON.parse(localStorage.getItem(eiaStorageKey(empId))||'[]') }catch(e){ return [] } }
+function eiaGet(empId){ try{ return eiaMigrateDocs(JSON.parse(localStorage.getItem(eiaStorageKey(empId))||'[]')) }catch(e){ return [] } }
 function eiaSave(empId, list){ localStorage.setItem(eiaStorageKey(empId), JSON.stringify(list)) }
+function eiaNowIso(){ return new Date().toISOString() }
+function eiaFormatWhen(iso){ try{return new Date(iso).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}catch(e){return '—'} }
+function eiaFormatDate(iso){ try{return new Date(iso).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit'})}catch(e){return '—'} }
 
 function eiaTypeFromFile(name){
   const ext = (name||'').split('.').pop().toLowerCase();
-  if(['pdf'].includes(ext)) return 'PDF';
+  if(ext==='pdf') return 'PDF';
   if(['xlsx','xls'].includes(ext)) return 'Excel';
-  if(['csv'].includes(ext)) return 'CSV';
+  if(ext==='csv') return 'CSV';
   if(['png','jpg','jpeg','webp','heic'].includes(ext)) return 'Imagem';
-  return ext.toUpperCase()||'Outro';
+  return (ext||'outro').toUpperCase();
 }
 
-function eiaFakeClassify(name){
-  // Heurística simples + aprende das correções salvas
-  const lower = (name||'').toLowerCase();
+function eiaFakeClassify(text){
+  // Heurística + vocabulário aprendido (token matching)
+  const lower = (text||'').toLowerCase();
   const corrections = JSON.parse(localStorage.getItem('orion_extrato_ia_corrections')||'{}');
-  // Se alguma correção bate com um token do filename, usa ela com alta confiança
   for(const [kw, data] of Object.entries(corrections)){
     if(lower.includes(kw)) return {cat:data.cat, conf:Math.min(99, 75+(data.count||1)*3)};
   }
-  if(lower.match(/nota|nfe|fatura|receita/)) return {cat:'Receita', conf:72};
-  if(lower.match(/folha|sal[aá]rio|fgts|inss/)) return {cat:'Folha', conf:80};
-  if(lower.match(/imposto|das|iss|icms|pis|cofins/)) return {cat:'Impostos', conf:86};
-  if(lower.match(/market|trafego|ads|facebook|google/)) return {cat:'Marketing', conf:74};
-  if(lower.match(/extrato|banc[aá]rio|ofx/)) return {cat:'Transferência', conf:65};
-  if(lower.match(/compra|fornec|material/)) return {cat:'Despesa Operacional', conf:69};
-  return {cat:'Outros', conf:52};
+  if(lower.match(/nota|nfe|nfc|fatura|receita|venda|pagamento recebido|pix recebido|dep[oó]sito/)) return {cat:'Receita', conf:Math.floor(72+Math.random()*18)};
+  if(lower.match(/folha|sal[aá]rio|sal[aá]rios|fgts|inss|13[oº]|f[eé]rias|pro-?labore/)) return {cat:'Folha', conf:Math.floor(80+Math.random()*15)};
+  if(lower.match(/das|darf|iss|icms|pis|cofins|iptu|ipva|imposto|taxa|tarifa banc/)) return {cat:'Impostos', conf:Math.floor(85+Math.random()*12)};
+  if(lower.match(/market|tr[aá]fego|ads|facebook|google|meta|instagram|bid/)) return {cat:'Marketing', conf:Math.floor(72+Math.random()*20)};
+  if(lower.match(/transferencia|ted|doc|pix enviado|p2p|entre contas/)) return {cat:'Transferência', conf:Math.floor(60+Math.random()*20)};
+  if(lower.match(/investimento|cdb|lci|tesouro|renda fixa|a[cç][oõ]es|bolsa/)) return {cat:'Investimento', conf:Math.floor(72+Math.random()*18)};
+  if(lower.match(/compra|fornec|material|insumo|mercadoria/)) return {cat:'Despesa Operacional', conf:Math.floor(65+Math.random()*20)};
+  if(lower.match(/aluguel|condom|energia|[aá]gua|internet|telefone|escrit/)) return {cat:'Despesa Administrativa', conf:Math.floor(72+Math.random()*18)};
+  return {cat:'Outros', conf:Math.floor(40+Math.random()*25)};
 }
 
-function eiaLearnFromCorrection(filename, cat){
-  const lower = (filename||'').toLowerCase();
-  const tokens = lower.split(/[^a-z0-9]+/).filter(t=>t.length>=4);
+function eiaLearnFromCorrection(text, cat){
+  const lower = (text||'').toLowerCase();
+  const tokens = lower.split(/[^a-zà-ú0-9]+/).filter(t=>t.length>=4);
   const corrections = JSON.parse(localStorage.getItem('orion_extrato_ia_corrections')||'{}');
   tokens.forEach(t=>{
     if(corrections[t] && corrections[t].cat===cat){ corrections[t].count=(corrections[t].count||1)+1; }
     else corrections[t]={cat, count:1};
   });
   localStorage.setItem('orion_extrato_ia_corrections', JSON.stringify(corrections));
+  // Registra no histórico de treinamento
+  const train = JSON.parse(localStorage.getItem('orion_extrato_ia_training')||'[]');
+  const sess = JSON.parse(localStorage.getItem('orion_session')||'{}');
+  train.push({at:eiaNowIso(), sample:(text||'').slice(0,80), cat, by:sess.name||sess.email||'—'});
+  if(train.length>300) train.splice(0, train.length-300);
+  localStorage.setItem('orion_extrato_ia_training', JSON.stringify(train));
 }
 
-function eiaNowIso(){ return new Date().toISOString() }
-function eiaFormatWhen(iso){ try{return new Date(iso).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}catch(e){return '—'} }
+// ── Geração sintética de lançamentos por documento ──────────────────────
+const EIA_MOCK_DESCS = {
+  receita: ['Pagamento recebido - Cliente','PIX recebido','Transferência recebida','Nota Fiscal','Venda à vista','Depósito','Recebimento boleto'],
+  folha: ['Folha de pagamento','Pró-labore','Salário - colaborador','FGTS','INSS - empresa','13º salário'],
+  imposto: ['DAS - Simples Nacional','DARF IRRF','IPTU','ISS - município','Tarifa bancária mensal'],
+  marketing: ['Google Ads','Meta Ads - Facebook','Meta Ads - Instagram','Anúncio tráfego pago','Agência marketing'],
+  operacional: ['Compra fornecedor','Material de consumo','Insumos','Mercadoria','Combustível'],
+  admin: ['Aluguel escritório','Condomínio','Energia elétrica','Internet fibra','Telefone','Papelaria'],
+  transferencia: ['Transferência entre contas','PIX enviado','DOC - conta poupança','TED próprio'],
+  investimento: ['Aplicação CDB','Resgate Tesouro','Compra ações','Rendimento renda fixa']
+};
+
+function eiaPickDesc(bucket){
+  const arr = EIA_MOCK_DESCS[bucket]||EIA_MOCK_DESCS.operacional;
+  return arr[Math.floor(Math.random()*arr.length)];
+}
+
+function eiaParseEntries(name, type, seedSize){
+  // Deriva nº de lançamentos e um mix realista a partir do nome do arquivo
+  const lower = (name||'').toLowerCase();
+  const n = 3 + Math.floor(Math.random()*6); // 3 a 8
+  const isExtrato = /extrato|bancario|ofx|banco|nubank|itau|bradesco|caixa|santander|inter|btg/.test(lower);
+  const isFolha = /folha|salario|sal[aá]rio|rh/.test(lower);
+  const isImposto = /imposto|das|darf|iss|icms/.test(lower);
+  const isNF = /nota|nfe|nfc|fatura/.test(lower);
+  const buckets = isFolha ? ['folha','folha','folha','imposto'] :
+                   isImposto ? ['imposto','imposto','imposto','admin'] :
+                   isNF ? ['receita','receita','receita','imposto'] :
+                   isExtrato ? ['receita','operacional','admin','marketing','transferencia','imposto','investimento','folha'] :
+                   ['receita','operacional','admin','marketing','folha','imposto'];
+  const entries = [];
+  const baseDate = new Date();
+  baseDate.setDate(1);
+  for(let i=0;i<n;i++){
+    const bucket = buckets[Math.floor(Math.random()*buckets.length)];
+    const desc = eiaPickDesc(bucket);
+    const sign = bucket==='receita' ? 1 : -1;
+    // Valores realistas por bucket
+    const base = {receita:2500, folha:3200, imposto:850, marketing:1400, operacional:1800, admin:900, transferencia:5000, investimento:3000}[bucket]||1000;
+    const amount = sign * Math.round((base + Math.random()*base*2)*100)/100;
+    const day = 1 + Math.floor(Math.random()*27);
+    const d = new Date(baseDate.getFullYear(), baseDate.getMonth(), day);
+    const cls = eiaFakeClassify(desc);
+    entries.push({
+      id:'ent_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,6)+'_'+i,
+      date: d.toISOString().slice(0,10),
+      description: desc,
+      amount,
+      suggestedCategory: cls.cat,
+      confidence: cls.conf,
+      status: 'pending',
+      flags: [],
+      correctedFrom: null,
+      correctedAt: null,
+      correctedBy: null
+    });
+  }
+  return entries;
+}
+
+function eiaDetectFlags(doc, allDocs){
+  // Flags por lançamento: duplicate, inconsistent, missing, outlier
+  if(!doc.entries) return;
+  // Construir índice de outros lançamentos aprovados/pendentes de outros docs
+  const otherEntries = [];
+  (allDocs||[]).forEach(d=>{
+    if(d.id===doc.id) return;
+    (d.entries||[]).forEach(en=> otherEntries.push(en));
+  });
+  const amounts = (doc.entries||[]).map(e=>Math.abs(e.amount)).filter(v=>v>0);
+  const mean = amounts.length ? amounts.reduce((s,v)=>s+v,0)/amounts.length : 0;
+  doc.entries.forEach(e=>{
+    const flags = new Set();
+    // Duplicate: mesmo valor+mês em outro doc
+    const month = (e.date||'').slice(0,7);
+    const hit = otherEntries.find(o=> Math.abs(o.amount-e.amount)<0.01 && (o.date||'').slice(0,7)===month);
+    if(hit) flags.add('duplicate');
+    // Inconsistent: confiança < 50
+    if((e.confidence||0) < 50) flags.add('inconsistent');
+    // Missing: sem categoria ou categoria 'Outros' com amount alto
+    if(!e.suggestedCategory || (e.suggestedCategory==='Outros' && Math.abs(e.amount)>1500)) flags.add('missing');
+    // Outlier: amount 3x acima da média do doc
+    if(mean>0 && Math.abs(e.amount) > 3*mean) flags.add('outlier');
+    e.flags = [...flags];
+  });
+}
+
+function eiaDocStatus(doc){
+  if(!doc.entries||doc.entries.length===0) return doc.status||'pending';
+  const app = doc.entries.filter(e=>e.status==='approved').length;
+  const rej = doc.entries.filter(e=>e.status==='rejected').length;
+  const tot = doc.entries.length;
+  if(app===tot) return 'approved';
+  if(rej===tot) return 'rejected';
+  if(app+rej>0 && app+rej<tot) return 'partial';
+  return 'pending';
+}
+
+function eiaDocAggregates(doc){
+  const ent = doc.entries||[];
+  const total = ent.reduce((s,e)=>s+e.amount,0);
+  const income = ent.filter(e=>e.amount>0).reduce((s,e)=>s+e.amount,0);
+  const expense = ent.filter(e=>e.amount<0).reduce((s,e)=>s+Math.abs(e.amount),0);
+  const avgConf = ent.length ? Math.round(ent.reduce((s,e)=>s+(e.confidence||0),0)/ent.length) : 0;
+  return {total, income, expense, avgConf, count:ent.length};
+}
+
+function eiaMigrateDocs(docs){
+  // Adiciona entries[] para documentos criados na v1
+  let changed = false;
+  (docs||[]).forEach(d=>{
+    if(!d.entries){
+      d.entries = eiaParseEntries(d.name, d.type, d.size);
+      changed = true;
+    }
+    if(!d.source) d.source = EIA_BANKS[Math.floor(Math.random()*EIA_BANKS.length)];
+  });
+  // Recalcula flags sempre
+  (docs||[]).forEach(d=>eiaDetectFlags(d, docs));
+  return docs;
+}
 
 function renderExtratoIA(e,c,co){
   const list = eiaGet(e.id);
@@ -4006,25 +4149,138 @@ function eiaIngestFiles(files){
   const sess = JSON.parse(localStorage.getItem('orion_session')||'{}');
   const reviewer = sess.name||sess.email||'usuário';
   const period = new Date().toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+  const created = [];
   files.forEach(f=>{
     const cls = eiaFakeClassify(f.name);
-    // valor aleatório simulado proporcional ao tamanho
-    const val = Math.round((f.size/1024)*(1+Math.random()*2))/100*100;
-    list.push({
+    const entries = eiaParseEntries(f.name, eiaTypeFromFile(f.name), f.size);
+    const agg = entries.reduce((s,e)=>s+e.amount,0);
+    const doc = {
       id:'eia_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),
       name:f.name, type:eiaTypeFromFile(f.name), size:f.size,
       uploadedAt:eiaNowIso(), uploadedBy:reviewer,
       status:'pending', confidence:cls.conf,
+      source: EIA_BANKS[Math.floor(Math.random()*EIA_BANKS.length)],
       detectedCompany:EMPS[curEmp]?EMPS[curEmp].nome:'—',
       detectedPeriod:period,
-      detectedValue:val||null,
+      detectedValue:agg,
       detectedType:'extrato',
       classification:cls.cat,
-      reviewer:null, reviewedAt:null, notes:''
-    });
+      reviewer:null, reviewedAt:null, notes:'',
+      entries: entries
+    };
+    list.push(doc);
+    created.push(doc);
   });
+  eiaDetectFlags(list[list.length-1], list);
+  // Recalcula flags em todos (cruzamento cross-doc)
+  list.forEach(d=>eiaDetectFlags(d, list));
   eiaSave(curEmp, list);
-  showToast(files.length+' arquivo(s) na fila para revisão');
+  if(created.length>0){
+    eiaSelectedDocId = created[0].id; // Auto-seleciona o primeiro
+    eiaLogAudit('upload', created[0], {count:files.length});
+  }
+  showToast(files.length+' arquivo(s) processado(s) — '+(created.reduce((s,d)=>s+d.entries.length,0))+' lançamentos extraídos');
+  renderTab();
+}
+
+// ── Ações em LANÇAMENTOS (linha) ───────────────────────────────────────
+function eiaEntryApprove(docId, entryId){
+  const list = eiaGet(curEmp);
+  const doc = list.find(d=>d.id===docId); if(!doc) return;
+  const e = (doc.entries||[]).find(x=>x.id===entryId); if(!e) return;
+  const sess = JSON.parse(localStorage.getItem('orion_session')||'{}');
+  e.status = 'approved';
+  e.correctedBy = sess.name||sess.email||'usuário';
+  e.correctedAt = eiaNowIso();
+  doc.status = eiaDocStatus(doc);
+  eiaSave(curEmp, list);
+  eiaLogAudit('entry_approve', doc, {entryId, category:e.suggestedCategory});
+  renderTab();
+}
+function eiaEntryReject(docId, entryId){
+  const list = eiaGet(curEmp);
+  const doc = list.find(d=>d.id===docId); if(!doc) return;
+  const e = (doc.entries||[]).find(x=>x.id===entryId); if(!e) return;
+  const sess = JSON.parse(localStorage.getItem('orion_session')||'{}');
+  e.status = 'rejected';
+  e.correctedBy = sess.name||sess.email||'usuário';
+  e.correctedAt = eiaNowIso();
+  doc.status = eiaDocStatus(doc);
+  eiaSave(curEmp, list);
+  eiaLogAudit('entry_reject', doc, {entryId});
+  renderTab();
+}
+function eiaEntryReclassify(docId, entryId){
+  const list = eiaGet(curEmp);
+  const doc = list.find(d=>d.id===docId); if(!doc) return;
+  const e = (doc.entries||[]).find(x=>x.id===entryId); if(!e) return;
+  const opts = EIA_CATS.map(c=>`<option ${c===e.suggestedCategory?'selected':''}>${c}</option>`).join('');
+  const html = `<div class="fs-rent2-modal" style="width:480px">
+    <button class="fs-rent2-modal-close" onclick="document.getElementById('eia-modal').remove()">&times;</button>
+    <h2>Reclassificar lançamento</h2>
+    <div class="fs-rent2-lbl">Descrição</div>
+    <div style="color:var(--tx2);font-size:13px;margin-bottom:6px">${escHtml(e.description)}</div>
+    <div style="color:var(--tx3);font-size:11px;margin-bottom:10px">${eiaFormatDate(e.date)} · ${FMT.brl(e.amount)}</div>
+    <div class="fs-rent2-lbl">Nova categoria</div>
+    <select class="fs-rent2-sel" id="eia-new-cat">${opts}</select>
+    <div class="fs-rent2-lbl">Notas (opcional)</div>
+    <textarea class="fs-rent2-txt" id="eia-notes" placeholder="Observação que ajude o modelo a aprender"></textarea>
+    <div class="fs-rent2-modal-actions">
+      <button class="fs-rent2-btn" onclick="document.getElementById('eia-modal').remove()">Cancelar</button>
+      <button class="fs-rent2-btn fs-rent2-btn-primary" onclick="eiaApplyEntryReclass('${docId}','${entryId}')">Salvar e aprovar</button>
+    </div>
+  </div>`;
+  const el = document.createElement('div');
+  el.className='overlay'; el.id='eia-modal';
+  el.onclick=function(ev){ if(ev.target===el) el.remove(); };
+  el.innerHTML=html;
+  document.body.appendChild(el);
+}
+function eiaApplyEntryReclass(docId, entryId){
+  const list = eiaGet(curEmp);
+  const doc = list.find(d=>d.id===docId); if(!doc) return;
+  const e = (doc.entries||[]).find(x=>x.id===entryId); if(!e) return;
+  const newCat = document.getElementById('eia-new-cat').value;
+  const notes = document.getElementById('eia-notes').value;
+  const sess = JSON.parse(localStorage.getItem('orion_session')||'{}');
+  const prev = e.suggestedCategory;
+  e.correctedFrom = prev;
+  e.suggestedCategory = newCat;
+  e.confidence = 100;
+  e.status = 'approved';
+  e.correctedBy = sess.name||sess.email||'usuário';
+  e.correctedAt = eiaNowIso();
+  e.notes = notes;
+  doc.status = eiaDocStatus(doc);
+  eiaSave(curEmp, list);
+  eiaLearnFromCorrection(e.description, newCat);
+  eiaLogAudit('entry_reclassify', doc, {entryId, from:prev, to:newCat});
+  const m = document.getElementById('eia-modal'); if(m) m.remove();
+  showToast('Reclassificado e memorizado ('+newCat+')');
+  renderTab();
+}
+function eiaApproveAllReviewed(){
+  const list = eiaGet(curEmp);
+  const doc = list.find(d=>d.id===eiaSelectedDocId);
+  if(!doc){ showToast('Selecione um documento'); return; }
+  const pending = (doc.entries||[]).filter(e=>e.status==='pending' && (e.confidence||0)>=70 && !(e.flags||[]).includes('duplicate'));
+  if(pending.length===0){ showToast('Sem lançamentos elegíveis (conf ≥ 70% e sem duplicata)'); return; }
+  const sess = JSON.parse(localStorage.getItem('orion_session')||'{}');
+  const reviewer = sess.name||sess.email||'usuário';
+  pending.forEach(e=>{ e.status='approved'; e.correctedBy=reviewer; e.correctedAt=eiaNowIso(); });
+  doc.status = eiaDocStatus(doc);
+  eiaSave(curEmp, list);
+  eiaLogAudit('approve_batch', doc, {count:pending.length});
+  showToast(pending.length+' lançamento(s) aprovado(s) em lote');
+  renderTab();
+}
+function eiaRetrainModel(){
+  // "Retreinar" = consolidar vocabulário a partir das correções aprovadas e limpar ruído (count<1)
+  const corrections = JSON.parse(localStorage.getItem('orion_extrato_ia_corrections')||'{}');
+  const tokens = Object.keys(corrections);
+  const strong = tokens.filter(t=>corrections[t].count>=2).length;
+  const train = JSON.parse(localStorage.getItem('orion_extrato_ia_training')||'[]');
+  showToast('Modelo atualizado · '+tokens.length+' tokens · '+strong+' com alta confiança · '+train.length+' correções históricas');
   renderTab();
 }
 

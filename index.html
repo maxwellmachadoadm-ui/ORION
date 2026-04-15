@@ -5305,7 +5305,7 @@ function admCopyInvite(token){
 }
 
 // ── AUDIT SCREEN (FASE C) ─────────────────────────────────────────────
-let admAuditFilters = {emp:'', actor:'', action:'', period:'30'};
+let admAuditFilters = Object.assign({emp:'', actor:'', action:'', period:'30'}, (typeof filterGet==='function'?filterGet('auditoria'):{}));
 
 function admGetAuditLogs(){
   try{ return JSON.parse(localStorage.getItem('orion_audit_log')||'[]') }catch(e){ return [] }
@@ -5353,16 +5353,16 @@ function renderAdminAudit(el){
     </div>
     <div class="adm-audit-filters">
       <div><div class="lbl">Empresa</div>
-        <select class="inp" onchange="admAuditFilters.emp=this.value;renderAdmin()">
+        <select class="inp" onchange="admAuditFilters.emp=this.value;filterSet('auditoria',admAuditFilters);renderAdmin()">
           <option value="">Todas</option>
           ${Object.values(EMPS).map(e=>`<option value="${e.id}" ${admAuditFilters.emp===e.id?'selected':''}>${escHtml(e.nome)}</option>`).join('')}
         </select>
       </div>
       <div><div class="lbl">Usuário (busca)</div>
-        <input class="inp" placeholder="nome ou e-mail..." value="${escHtml(admAuditFilters.actor)}" oninput="admAuditFilters.actor=this.value;renderAdmin()"/>
+        <input class="inp" placeholder="nome ou e-mail..." value="${escHtml(admAuditFilters.actor)}" oninput="admAuditFilters.actor=this.value;filterSet('auditoria',admAuditFilters);renderAdmin()"/>
       </div>
       <div><div class="lbl">Tipo de ação</div>
-        <select class="inp" onchange="admAuditFilters.action=this.value;renderAdmin()">
+        <select class="inp" onchange="admAuditFilters.action=this.value;filterSet('auditoria',admAuditFilters);renderAdmin()">
           <option value="" ${!admAuditFilters.action?'selected':''}>Todas</option>
           <option value="auth" ${admAuditFilters.action==='auth'?'selected':''}>🔑 Autenticação</option>
           <option value="users" ${admAuditFilters.action==='users'?'selected':''}>👥 Usuários</option>
@@ -5374,7 +5374,7 @@ function renderAdminAudit(el){
         </select>
       </div>
       <div><div class="lbl">Período</div>
-        <select class="inp" onchange="admAuditFilters.period=this.value;renderAdmin()">
+        <select class="inp" onchange="admAuditFilters.period=this.value;filterSet('auditoria',admAuditFilters);renderAdmin()">
           <option value="1" ${admAuditFilters.period==='1'?'selected':''}>24h</option>
           <option value="7" ${admAuditFilters.period==='7'?'selected':''}>7 dias</option>
           <option value="30" ${admAuditFilters.period==='30'?'selected':''}>30 dias</option>
@@ -5416,6 +5416,7 @@ function admAuditRow(l){
 
 function admClearAuditFilters(){
   admAuditFilters = {emp:'', actor:'', action:'', period:'30'};
+  filterClear('auditoria');
   renderAdmin();
 }
 
@@ -6795,11 +6796,22 @@ function eiaLogAudit(action, item, extra){
   localStorage.setItem('orion_audit_log', JSON.stringify(logs));
 }
 
+// ── FILTROS PERSISTENTES (FASE K) ───────────────────────────────────────
+// Storage: orion_filters_<module> → { ...filter state }
+function filterGet(mod){ try{ return JSON.parse(localStorage.getItem('orion_filters_'+mod)||'{}') }catch(e){ return {} } }
+function filterSet(mod, patch){
+  const cur = filterGet(mod);
+  const next = Object.assign({}, cur, patch||{});
+  localStorage.setItem('orion_filters_'+mod, JSON.stringify(next));
+  return next;
+}
+function filterClear(mod){ localStorage.removeItem('orion_filters_'+mod); }
+
 // ── DOCUMENTOS — FASE F ────────────────────────────────────────────────
 // Storage: orion_docs_<empId> = [{id,name,size,type,category,uploadedAt,uploadedBy,dataUrl?,notes}]
 // Evolui o antigo orion_files_<empId> (lidos em conjunto, categoria='Outros' legado)
 const DOC_CATEGORIES = ['Extratos','Contratos','Relatórios','Fiscal','Outros'];
-let docFilter = {category:'', q:''};
+let docFilter = Object.assign({category:'', q:''}, filterGet('documentos'));
 
 function docGet(empId){
   try{
@@ -6858,14 +6870,14 @@ function renderDocumentos(e,c,co){
     <div class="doc-cat-bar">
       ${['Todas',...DOC_CATEGORIES].map(k=>{
         const active = (k==='Todas' && !docFilter.category) || k===docFilter.category;
-        return `<button class="doc-cat ${active?'active':''}" onclick="docFilter.category=${k==='Todas'?"''":"'"+k+"'"};renderTab()">
+        return `<button class="doc-cat ${active?'active':''}" onclick="docFilter.category=${k==='Todas'?"''":"'"+k+"'"};filterSet('documentos',docFilter);renderTab()">
           ${escHtml(k)} <span class="doc-cat-n">${categoryCounts[k]||0}</span>
         </button>`;
       }).join('')}
     </div>
 
     <div class="doc-toolbar">
-      <input class="inp" style="flex:1;max-width:360px" placeholder="🔎 Buscar por nome, categoria ou nota..." value="${escHtml(docFilter.q)}" oninput="docFilter.q=this.value;renderTab()"/>
+      <input class="inp" style="flex:1;max-width:360px" placeholder="🔎 Buscar por nome, categoria ou nota..." value="${escHtml(docFilter.q)}" oninput="docFilter.q=this.value;filterSet('documentos',docFilter);renderTab()"/>
       <button class="btn btn-ia" onclick="document.getElementById('doc-file-inp').click()">📤 Upload</button>
       <input type="file" id="doc-file-inp" hidden multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.jpg,.jpeg,.png,.webp" onchange="docUpload(event)"/>
     </div>
@@ -9415,29 +9427,67 @@ function filterCmd(){
   const customEmps=JSON.parse(localStorage.getItem('orion_custom_emps')||'[]');
   const dynItems=customEmps.map(e=>({icon:'🏢',label:e.nome,hint:'Empresa',action:()=>{openEmp(e.id);closeCmdPalette()}}));
   const all=[...CMD_ITEMS,...dynItems];
-  // Global search: search in tarefas, contratos, notas, pipeline
+  // Busca global (FASE K): empresas · usuários · documentos · relatórios
+  // · tarefas · contratos · notas (Pipeline/CRM ocultos conforme FASE 13)
   const searchResults=[];
   if(q&&q.length>=2){
+    // Empresas (core + custom) — por nome ou sigla
+    Object.values(EMPS).forEach(e=>{
+      const s = (e.nome+' '+e.sigla+' '+(e.desc||'')).toLowerCase();
+      if(s.includes(q)){
+        searchResults.push({icon:'🏢',label:e.nome,hint:'Empresa · '+e.sigla,action:()=>{openEmp(e.id);closeCmdPalette()}});
+      }
+    });
+    // Usuários (orion_users)
+    try{
+      const users = JSON.parse(localStorage.getItem('orion_users')||'[]');
+      users.forEach(u=>{
+        const s = ((u.name||'')+' '+(u.email||'')+' '+(u.role||'')).toLowerCase();
+        if(s.includes(q)){
+          searchResults.push({icon:'👤',label:u.name||u.email,hint:'Usuário · '+(u.role||'viewer'),action:()=>{admEditUserId=u.id;admSubTab='users';admUserDraft=JSON.parse(JSON.stringify(u));admUserDraft.perms=admUserDraft.perms||{};admUserDraft.empresas=admUserDraft.empresas||Object.keys(admUserDraft.perms);goAdmin();closeCmdPalette()}});
+        }
+      });
+    }catch(e){}
+    // Tarefas + Contratos + Notas + Documentos + Extrato IA por empresa
     Object.values(EMPS).forEach(e=>{
       (e.tarefas||[]).forEach(t=>{
         if(t.t&&t.t.toLowerCase().includes(q)) searchResults.push({icon:'✅',label:t.t,hint:e.sigla+' · Tarefa',action:()=>{openEmp(e.id);curTab='Tarefas';renderTab();closeCmdPalette()}});
       });
-      (e.crm||[]).forEach(f=>f.itens.forEach(it=>{
-        if(it.n&&it.n.toLowerCase().includes(q)) searchResults.push({icon:'👤',label:it.n,hint:e.sigla+' · CRM · '+f.fase,action:()=>{openEmp(e.id);curTab='CRM';renderTab();closeCmdPalette()}});
-      }));
       const nota=localStorage.getItem('orion_notas_'+e.id)||'';
       if(nota.toLowerCase().includes(q)) searchResults.push({icon:'📝',label:'Nota: "...'+nota.substring(Math.max(0,nota.toLowerCase().indexOf(q)-15),nota.toLowerCase().indexOf(q)+30)+'..."',hint:e.sigla+' · Notas',action:()=>{openEmp(e.id);curTab='Notas';renderTab();closeCmdPalette()}});
-      getContratos(e.id).forEach(ct=>{
-        if((ct.cliente||ct.n||'').toLowerCase().includes(q)) searchResults.push({icon:'📄',label:ct.cliente||ct.n,hint:e.sigla+' · Contrato',action:()=>{openEmp(e.id);curTab='Contratos';renderTab();closeCmdPalette()}});
-      });
-      getPipeline(e.id).forEach(p=>{
-        if(p.nome.toLowerCase().includes(q)) searchResults.push({icon:'🎯',label:p.nome,hint:e.sigla+' · Pipeline · '+p.stage,action:()=>{openEmp(e.id);curTab='Pipeline';renderTab();closeCmdPalette()}});
-      });
+      try{
+        (getContratos?getContratos(e.id):[]).forEach(ct=>{
+          if((ct.cliente||ct.n||'').toLowerCase().includes(q)) searchResults.push({icon:'📄',label:ct.cliente||ct.n,hint:e.sigla+' · Contrato',action:()=>{openEmp(e.id);curTab='Contratos';renderTab();closeCmdPalette()}});
+        });
+      }catch(err){}
+      // Documentos (FASE F)
+      try{
+        (typeof docGet==='function'?docGet(e.id):[]).forEach(d=>{
+          const s=(d.name+' '+(d.category||'')+' '+(d.notes||'')).toLowerCase();
+          if(s.includes(q)) searchResults.push({icon:'📁',label:d.name,hint:e.sigla+' · Documento · '+(d.category||'—'),action:()=>{openEmp(e.id);curTab='Documentos';renderTab();closeCmdPalette()}});
+        });
+      }catch(err){}
+      // Extrato IA docs (FASE E)
+      try{
+        (typeof eiaGet==='function'?eiaGet(e.id):[]).forEach(d=>{
+          if((d.name||'').toLowerCase().includes(q)) searchResults.push({icon:'🤖',label:d.name,hint:e.sigla+' · Extrato IA · '+(d.status||'pending'),action:()=>{openEmp(e.id);curTab='Extrato IA';eiaSelectedDocId=d.id;renderTab();closeCmdPalette()}});
+        });
+      }catch(err){}
     });
+    // Shortcuts de Relatórios
+    Object.values(EMPS).forEach(e=>{
+      if(('relatório relatorios '+e.nome).toLowerCase().includes(q)){
+        searchResults.push({icon:'📊',label:'Relatórios · '+e.nome,hint:'Ir para relatórios',action:()=>{openEmp(e.id);curTab='Relatórios';renderTab();closeCmdPalette()}});
+      }
+    });
+    // Auditoria
+    if('auditoria audit logs'.includes(q)){
+      searchResults.push({icon:'📋',label:'Auditoria',hint:'Painel Admin',action:()=>{if(typeof navOpenAdmin==='function')navOpenAdmin('audit');else goAdmin();closeCmdPalette()}});
+    }
   }
   const filtered=q?[...all.filter(i=>i.label.toLowerCase().includes(q)||i.hint.toLowerCase().includes(q)),...searchResults]:all;
   const el=document.getElementById('cmd-results');
-  el.innerHTML=filtered.slice(0,20).map((it,i)=>`
+  el.innerHTML=filtered.slice(0,24).map((it,i)=>`
     <div class="cmd-item ${i===0?'active':''}" onclick="CMD_FILTERED[${i}].action()">
       <span class="cmd-icon">${it.icon}</span>
       <span class="cmd-lbl">${it.label}</span>

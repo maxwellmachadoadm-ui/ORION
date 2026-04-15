@@ -4390,7 +4390,7 @@ function eiaOnDrop(ev){
   const files = Array.from(ev.dataTransfer.files||[]);
   eiaIngestFiles(files);
 }
-function eiaIngestFiles(files){
+async function eiaIngestFiles(files){
   if(!curEmp) return;
   if(files.length===0) return;
   const list = eiaGet(curEmp);
@@ -4398,9 +4398,24 @@ function eiaIngestFiles(files){
   const reviewer = sess.name||sess.email||'usuário';
   const period = new Date().toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
   const created = [];
-  files.forEach(f=>{
+  // Inicializa UI de progresso
+  const prog = document.getElementById('eia-progress');
+  if(prog){
+    prog.classList.remove('hidden');
+    prog.innerHTML = files.map((f,i)=>`<div class="eia-progress-row" data-idx="${i}">
+      <span class="eia-progress-name">${escHtml(f.name)}</span>
+      <div class="eia-progress-bar"><div class="eia-progress-fill" style="width:0%"></div></div>
+      <span class="eia-progress-pct">0%</span>
+    </div>`).join('');
+  }
+  // Processa com micro-delay p/ permitir animação visível
+  for(let i=0;i<files.length;i++){
+    const f = files[i];
+    await eiaAnimateProgress(i, 'read', 25);
     const cls = eiaFakeClassify(f.name);
+    await eiaAnimateProgress(i, 'ocr', 55);
     const entries = eiaParseEntries(f.name, eiaTypeFromFile(f.name), f.size);
+    await eiaAnimateProgress(i, 'classify', 85);
     const agg = entries.reduce((s,e)=>s+e.amount,0);
     const doc = {
       id:'eia_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),
@@ -4418,17 +4433,34 @@ function eiaIngestFiles(files){
     };
     list.push(doc);
     created.push(doc);
-  });
-  eiaDetectFlags(list[list.length-1], list);
-  // Recalcula flags em todos (cruzamento cross-doc)
+    await eiaAnimateProgress(i, 'done', 100);
+  }
+  // Recalcula flags cross-doc
   list.forEach(d=>eiaDetectFlags(d, list));
   eiaSave(curEmp, list);
   if(created.length>0){
-    eiaSelectedDocId = created[0].id; // Auto-seleciona o primeiro
+    eiaSelectedDocId = created[0].id;
     eiaLogAudit('upload', created[0], {count:files.length});
   }
   showToast(files.length+' arquivo(s) processado(s) — '+(created.reduce((s,d)=>s+d.entries.length,0))+' lançamentos extraídos');
-  renderTab();
+  setTimeout(()=>{ if(prog){prog.classList.add('hidden');prog.innerHTML='';} renderTab(); }, 350);
+}
+
+function eiaAnimateProgress(idx, step, pct){
+  return new Promise(r=>{
+    const row = document.querySelector('.eia-progress-row[data-idx="'+idx+'"]');
+    if(!row){ return r(); }
+    const fill = row.querySelector('.eia-progress-fill');
+    const pctEl = row.querySelector('.eia-progress-pct');
+    if(fill) fill.style.width = pct+'%';
+    if(pctEl) pctEl.textContent = pct+'%';
+    const stepLbl = step==='read'?'lendo…':step==='ocr'?'extraindo…':step==='classify'?'classificando…':'✓ pronto';
+    const name = row.querySelector('.eia-progress-name');
+    if(name && step!=='done' && !name.dataset.origName){ name.dataset.origName = name.textContent; }
+    if(name && step!=='done') name.textContent = (name.dataset.origName||name.textContent)+' · '+stepLbl;
+    if(name && step==='done') name.textContent = (name.dataset.origName||name.textContent);
+    setTimeout(r, 140);
+  });
 }
 
 // ── Ações em LANÇAMENTOS (linha) ───────────────────────────────────────
@@ -4540,10 +4572,295 @@ function eiaDelete(id){
   renderTab();
 }
 
-// Placeholders — implementados nos próximos blocos
-function eiaRenderInsights(doc, list){ const el=document.getElementById('eia-insights-container'); if(el) el.innerHTML=''; }
-function eiaRenderLearning(){ const el=document.getElementById('eia-learning-container'); if(el) el.innerHTML=''; }
-function eiaGenerateReport(){ showToast('Relatório IA — em breve'); }
+// ── INSIGHTS EXECUTIVOS ────────────────────────────────────────────────
+function eiaComputeInsights(doc, list){
+  const entries = doc.entries||[];
+  // Top expenses
+  const expenses = entries.filter(e=>e.amount<0)
+    .slice().sort((a,b)=>a.amount-b.amount).slice(0,5)
+    .map(e=>({desc:e.description, amount:Math.abs(e.amount), cat:e.suggestedCategory}));
+  // Unusual: outliers + duplicates
+  const unusual = entries.filter(e=>(e.flags||[]).includes('outlier') || (e.flags||[]).includes('inconsistent'))
+    .slice(0,5).map(e=>({desc:e.description, amount:e.amount, flags:e.flags}));
+  // Possible duplicates
+  const dups = entries.filter(e=>(e.flags||[]).includes('duplicate'))
+    .slice(0,5).map(e=>({desc:e.description, amount:e.amount, date:e.date}));
+  // Missing categorization
+  const missing = entries.filter(e=>(e.flags||[]).includes('missing'))
+    .slice(0,5).map(e=>({desc:e.description, amount:e.amount}));
+  // Categoria totals
+  const byCat = {};
+  entries.forEach(e=>{
+    const k = e.suggestedCategory||'Outros';
+    byCat[k] = (byCat[k]||0) + Math.abs(e.amount);
+  });
+  return {expenses, unusual, dups, missing, byCat};
+}
+
+function eiaRenderInsights(doc, list){
+  const el = document.getElementById('eia-insights-container');
+  if(!el) return;
+  if(!doc){ el.innerHTML=''; return; }
+  const ins = eiaComputeInsights(doc, list);
+  const agg = eiaDocAggregates(doc);
+
+  const expHtml = ins.expenses.length
+    ? `<ul class="eia-insight-list">${ins.expenses.map(x=>`<li><span>${escHtml((x.desc||'').slice(0,28))}</span><span class="neg">${FMT.brl(x.amount)}</span></li>`).join('')}</ul>`
+    : `<div style="font-size:11px;color:var(--tx3);margin-top:6px">Sem despesas neste documento.</div>`;
+
+  const unusHtml = ins.unusual.length
+    ? `<ul class="eia-insight-list">${ins.unusual.map(x=>`<li><span>${escHtml((x.desc||'').slice(0,28))}</span><span>${FMT.brl(Math.abs(x.amount))}</span></li>`).join('')}</ul>`
+    : `<div style="font-size:11px;color:var(--tx3);margin-top:6px">Nenhuma transação fora do padrão.</div>`;
+
+  const dupHtml = ins.dups.length
+    ? `<ul class="eia-insight-list">${ins.dups.map(x=>`<li><span>${escHtml((x.desc||'').slice(0,28))}</span><span>${FMT.brl(Math.abs(x.amount))}</span></li>`).join('')}</ul>`
+    : `<div style="font-size:11px;color:var(--tx3);margin-top:6px">Nenhuma duplicata detectada.</div>`;
+
+  const misHtml = ins.missing.length
+    ? `<ul class="eia-insight-list">${ins.missing.map(x=>`<li><span>${escHtml((x.desc||'').slice(0,28))}</span><span>${FMT.brl(Math.abs(x.amount))}</span></li>`).join('')}</ul>`
+    : `<div style="font-size:11px;color:var(--tx3);margin-top:6px">Todas as linhas categorizadas.</div>`;
+
+  el.innerHTML = `
+    <div class="slbl" style="margin-top:4px">Insights Executivos</div>
+    <div class="eia-insights-grid">
+      <div class="eia-insight red">
+        <div class="eia-insight-head"><div class="eia-insight-ico">📉</div><div class="eia-insight-title">Top Despesas</div></div>
+        <div class="eia-insight-body"><b>${ins.expenses.length}</b> despesas identificadas</div>
+        ${expHtml}
+      </div>
+      <div class="eia-insight amber">
+        <div class="eia-insight-head"><div class="eia-insight-ico">⚠️</div><div class="eia-insight-title">Transações Incomuns</div></div>
+        <div class="eia-insight-body"><b>${ins.unusual.length}</b> outliers / baixa confiança</div>
+        ${unusHtml}
+      </div>
+      <div class="eia-insight purple">
+        <div class="eia-insight-head"><div class="eia-insight-ico">⎘</div><div class="eia-insight-title">Possíveis Duplicatas</div></div>
+        <div class="eia-insight-body"><b>${ins.dups.length}</b> cobranças duplicadas</div>
+        ${dupHtml}
+      </div>
+      <div class="eia-insight green">
+        <div class="eia-insight-head"><div class="eia-insight-ico">◇</div><div class="eia-insight-title">Sem Categorização</div></div>
+        <div class="eia-insight-body"><b>${ins.missing.length}</b> lançamentos para revisar</div>
+        ${misHtml}
+      </div>
+    </div>
+
+    <div class="eia-summary">
+      <div class="eia-summary-head">
+        <div class="eia-summary-ico">🤖</div>
+        <div style="flex:1">
+          <div class="eia-summary-title">Resumo Executivo IA</div>
+          <div style="font-size:10px;color:var(--tx3);letter-spacing:.08em">Análise consolidada do documento "${escHtml(doc.name)}"</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="eiaGenerateSummary()">🔄 Gerar</button>
+      </div>
+      <div class="eia-summary-body loading" id="eia-summary-body">Clique em "Gerar" para produzir o resumo executivo via IA.</div>
+    </div>
+  `;
+}
+
+// ── AI SUMMARY (chat API com fallback) ─────────────────────────────────
+function eiaBuildSummaryFallback(doc, list){
+  const agg = eiaDocAggregates(doc);
+  const ins = eiaComputeInsights(doc, list);
+  const byCatSorted = Object.entries(ins.byCat).sort((a,b)=>b[1]-a[1]).slice(0,3);
+  const topCat = byCatSorted[0] ? byCatSorted[0][0]+' (R$ '+byCatSorted[0][1].toFixed(2)+')' : 'N/D';
+  const saldo = agg.total>=0 ? 'positivo' : 'negativo';
+  const confLvl = agg.avgConf>=85?'alta':agg.avgConf>=70?'moderada':'baixa';
+  const lines = [];
+  lines.push(`📊 **Documento:** ${doc.name} (${doc.type}) · fonte ${doc.source||'—'} · ${agg.count} lançamentos.`);
+  lines.push(`💵 **Movimentação:** entradas R$ ${agg.income.toFixed(2)} · saídas R$ ${agg.expense.toFixed(2)} · saldo ${saldo} de R$ ${agg.total.toFixed(2)}.`);
+  lines.push(`🎯 **Confiança IA:** ${agg.avgConf}% (${confLvl}).`);
+  if(byCatSorted.length) lines.push(`🏷️ **Principal categoria:** ${topCat}.`);
+  if(ins.unusual.length) lines.push(`⚠️ **${ins.unusual.length} transação(ões) fora do padrão** exigem revisão manual.`);
+  if(ins.dups.length) lines.push(`⎘ **${ins.dups.length} possível(is) duplicata(s)** detectada(s) — verifique cobrança em ${new Set(ins.dups.map(d=>String(d.date).slice(0,7))).size} mês(es).`);
+  if(ins.missing.length) lines.push(`◇ **${ins.missing.length} lançamento(s) sem categorização precisa** — use Reclassificar para memorizar.`);
+  if(ins.expenses.length) lines.push(`📉 **Maior despesa:** ${ins.expenses[0].desc} (R$ ${ins.expenses[0].amount.toFixed(2)}) na categoria ${ins.expenses[0].cat}.`);
+  lines.push(``);
+  lines.push(`➡️ **Próxima ação sugerida:** revisar os ${ins.unusual.length+ins.dups.length+ins.missing.length} alertas, aprovar os demais em lote e gerar relatório executivo.`);
+  return lines.join('\n');
+}
+
+async function eiaGenerateSummary(){
+  const body = document.getElementById('eia-summary-body');
+  if(!body) return;
+  const list = eiaGet(curEmp);
+  const doc = list.find(d=>d.id===eiaSelectedDocId);
+  if(!doc){ body.textContent = 'Selecione um documento.'; return; }
+  body.classList.add('loading');
+  body.textContent = 'Analisando documento via IA…';
+  const apiKey = localStorage.getItem('orion_api_key')||'';
+  if(!apiKey){
+    body.classList.remove('loading');
+    body.textContent = eiaBuildSummaryFallback(doc, list);
+    return;
+  }
+  try{
+    const agg = eiaDocAggregates(doc);
+    const ins = eiaComputeInsights(doc, list);
+    const context = `Empresa: ${doc.detectedCompany||curEmp}
+Documento: ${doc.name} (${doc.type})
+Fonte: ${doc.source||'—'} · Período: ${doc.detectedPeriod||'—'}
+Total de lançamentos: ${agg.count}
+Entradas: R$ ${agg.income.toFixed(2)}
+Saídas: R$ ${agg.expense.toFixed(2)}
+Saldo: R$ ${agg.total.toFixed(2)}
+Confiança média IA: ${agg.avgConf}%
+Alertas: ${ins.dups.length} duplicatas, ${ins.unusual.length} incomuns, ${ins.missing.length} sem categorização
+Top 5 despesas: ${ins.expenses.map(e=>e.desc+' R$'+e.amount.toFixed(2)).join(' | ')||'—'}
+
+Escreva um resumo executivo em 4 a 6 linhas em português, com foco em riscos, oportunidades e próximas ações. Use emojis moderadamente.`;
+    const res = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,messages:[{role:'user',content:context}]})
+    });
+    const d = await res.json();
+    const text = (d.content && d.content[0] && d.content[0].text) || '';
+    body.classList.remove('loading');
+    body.textContent = text.trim() || eiaBuildSummaryFallback(doc, list);
+  }catch(err){
+    console.warn('EIA summary failed:', err);
+    body.classList.remove('loading');
+    body.textContent = eiaBuildSummaryFallback(doc, list);
+  }
+}
+
+// ── LEARNING PANEL ─────────────────────────────────────────────────────
+function eiaRenderLearning(){
+  const el = document.getElementById('eia-learning-container');
+  if(!el) return;
+  const corrections = JSON.parse(localStorage.getItem('orion_extrato_ia_corrections')||'{}');
+  const train = JSON.parse(localStorage.getItem('orion_extrato_ia_training')||'[]');
+  const tokens = Object.keys(corrections);
+  const strong = tokens.filter(t=>corrections[t].count>=2).length;
+  const last = train.length ? new Date(train[train.length-1].at).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
+  const recent = train.slice().reverse().slice(0,8);
+  el.innerHTML = `
+    <div class="eia-learning">
+      <div class="eia-learning-head">
+        <div class="slbl" style="margin:0">Aprendizado e Revisão</div>
+        <div style="font-size:11px;color:var(--tx3)">O modelo aprende a cada reclassificação humana.</div>
+      </div>
+      <div class="eia-learning-stats">
+        <div class="eia-lstat"><span class="eia-lstat-n">${tokens.length}</span><span class="eia-lstat-l">Tokens no vocabulário</span></div>
+        <div class="eia-lstat"><span class="eia-lstat-n" style="color:var(--green)">${strong}</span><span class="eia-lstat-l">Tokens fortes (≥2 usos)</span></div>
+        <div class="eia-lstat"><span class="eia-lstat-n" style="color:var(--purple)">${train.length}</span><span class="eia-lstat-l">Correções memorizadas</span></div>
+        <div class="eia-lstat"><span class="eia-lstat-n" style="font-size:13px;font-family:'DM Sans',sans-serif;font-weight:600">${escHtml(last)}</span><span class="eia-lstat-l">Última correção</span></div>
+      </div>
+      ${recent.length===0 ? `<div class="eia-empty" style="padding:20px">Nenhuma correção registrada ainda. Use o botão ✎ na tabela para reclassificar e ensinar o modelo.</div>` :
+        `<div class="eia-learning-list">${recent.map(r=>`<div class="eia-learn-row">
+          <span class="eia-learn-sample">${escHtml(r.sample||'—')}</span>
+          <span class="eia-learn-cat">→ ${escHtml(r.cat||'—')}</span>
+          <span class="eia-learn-by">${escHtml(r.by||'—')}</span>
+          <span class="eia-learn-at">${eiaFormatWhen(r.at)}</span>
+        </div>`).join('')}</div>`
+      }
+    </div>
+  `;
+}
+
+// ── GERAR RELATÓRIO IA ─────────────────────────────────────────────────
+async function eiaGenerateReport(){
+  const list = eiaGet(curEmp);
+  if(list.length===0){ showToast('Nenhum documento processado ainda'); return; }
+  const empresa = EMPS[curEmp];
+  // Agrega por categoria
+  const allEntries = list.flatMap(d=>d.entries||[]);
+  const byCat = {};
+  allEntries.forEach(e=>{
+    const k = e.suggestedCategory||'Outros';
+    byCat[k] = (byCat[k]||0) + Math.abs(e.amount);
+  });
+  const totIn = allEntries.filter(e=>e.amount>0).reduce((s,e)=>s+e.amount,0);
+  const totOut = allEntries.filter(e=>e.amount<0).reduce((s,e)=>s+Math.abs(e.amount),0);
+  const alerts = allEntries.filter(e=>(e.flags||[]).length>0).length;
+  const apr = allEntries.filter(e=>e.status==='approved').length;
+  const pen = allEntries.filter(e=>e.status==='pending').length;
+  const corrections = JSON.parse(localStorage.getItem('orion_extrato_ia_corrections')||'{}');
+  const tokensN = Object.keys(corrections).length;
+
+  const body = document.getElementById('eia-summary-body');
+  if(body){ body.classList.add('loading'); body.textContent='Gerando relatório executivo IA…'; }
+
+  const fallback = () => {
+    const top = Object.entries(byCat).sort((a,b)=>b[1]-a[1]).slice(0,5);
+    return [
+      `📈 **Relatório Executivo — ${empresa?empresa.nome:'Empresa'}**`,
+      ``,
+      `📄 ${list.length} documento(s) processado(s) · ${allEntries.length} lançamentos · ${apr} aprovados · ${pen} pendentes.`,
+      `💵 Entradas: R$ ${totIn.toFixed(2)} · Saídas: R$ ${totOut.toFixed(2)} · Saldo: R$ ${(totIn-totOut).toFixed(2)}.`,
+      `⚠️ ${alerts} alerta(s) (duplicatas / outliers / sem categoria).`,
+      `🧠 Vocabulário aprendido: ${tokensN} tokens.`,
+      ``,
+      `🏷️ **Top categorias:**`,
+      ...top.map(([k,v],i)=>`${i+1}. ${k}: R$ ${v.toFixed(2)}`),
+      ``,
+      `✅ **Próximos passos:** aprovar pendentes de alta confiança, revisar alertas manualmente, retreinar modelo.`
+    ].join('\n');
+  };
+
+  const apiKey = localStorage.getItem('orion_api_key')||'';
+  let text = '';
+  if(apiKey){
+    try{
+      const top = Object.entries(byCat).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([k,v])=>`${k}: R$${v.toFixed(2)}`).join(', ');
+      const prompt = `Gere um relatório executivo em português para a empresa ${empresa?empresa.nome:'—'} baseado nos dados abaixo.
+
+- Documentos processados: ${list.length}
+- Lançamentos totais: ${allEntries.length}
+- Aprovados: ${apr} · Pendentes: ${pen}
+- Entradas: R$ ${totIn.toFixed(2)}
+- Saídas: R$ ${totOut.toFixed(2)}
+- Saldo: R$ ${(totIn-totOut).toFixed(2)}
+- Alertas (duplicatas/outliers/sem categorização): ${alerts}
+- Top categorias: ${top}
+
+Escreva em 6 a 10 linhas, estrutura:
+1) Visão geral
+2) Principais categorias
+3) Riscos e alertas
+4) Recomendação executiva
+Use emojis moderadamente e destaque em **negrito** os números-chave.`;
+      const res = await fetch('https://api.anthropic.com/v1/messages',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+        body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1200,messages:[{role:'user',content:prompt}]})
+      });
+      const d = await res.json();
+      text = (d.content && d.content[0] && d.content[0].text) || '';
+    }catch(err){ console.warn('EIA report failed:', err); }
+  }
+  if(!text) text = fallback();
+
+  if(body){ body.classList.remove('loading'); body.textContent = text; }
+  // Abre modal com resultado para download
+  const modal = document.createElement('div');
+  modal.className='overlay'; modal.id='eia-report-modal';
+  modal.onclick = function(ev){ if(ev.target===modal) modal.remove(); };
+  modal.innerHTML = `<div class="fs-rent2-modal" style="width:640px;max-width:94vw">
+    <button class="fs-rent2-modal-close" onclick="document.getElementById('eia-report-modal').remove()">&times;</button>
+    <h2>Relatório Executivo IA</h2>
+    <div style="font-size:12px;color:var(--tx3);margin-bottom:10px">${empresa?escHtml(empresa.nome):'—'} · ${new Date().toLocaleDateString('pt-BR')}</div>
+    <div class="eia-summary-body" style="background:var(--bg);padding:14px;border-radius:10px;border:1px solid var(--br);max-height:50vh;overflow:auto">${escHtml(text)}</div>
+    <div class="fs-rent2-modal-actions">
+      <button class="fs-rent2-btn" onclick="navigator.clipboard.writeText(document.querySelector('#eia-report-modal .eia-summary-body').textContent);showToast('Copiado para a área de transferência')">📋 Copiar</button>
+      <button class="fs-rent2-btn fs-rent2-btn-primary" onclick="eiaDownloadReport()">💾 Baixar .txt</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+  window._eiaLastReport = text;
+  eiaLogAudit('report_generated', null, {docs:list.length, entries:allEntries.length});
+}
+function eiaDownloadReport(){
+  const text = window._eiaLastReport||'';
+  const blob = new Blob([text],{type:'text/plain;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url; a.download='relatorio-extrato-ia-'+curEmp+'-'+new Date().toISOString().slice(0,10)+'.txt';
+  a.click(); URL.revokeObjectURL(url);
+  showToast('Relatório baixado');
+}
 
 function eiaLogAudit(action, item, extra){
   const logs = JSON.parse(localStorage.getItem('orion_audit_log')||'[]');

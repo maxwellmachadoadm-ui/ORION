@@ -3396,21 +3396,18 @@ function forgotPassword(){
     alert('Informe seu e-mail no campo acima e clique novamente em "Esqueci minha senha".');
     return;
   }
-  const users = JSON.parse(localStorage.getItem('orion_users')||'[]');
-  const u = users.find(x=>x.email===email);
-  if(!u){
-    alert('E-mail não encontrado. Verifique se digitou corretamente ou crie uma conta.');
-    return;
-  }
-  const token = btoa(email+':'+Date.now()+':'+Math.random().toString(36).slice(2));
-  const expires = new Date(Date.now() + 60*60*1000).toISOString();
-  const resets = JSON.parse(localStorage.getItem('orion_password_resets')||'[]');
-  resets.push({email, token, expires, createdAt:new Date().toISOString(), used:false});
-  localStorage.setItem('orion_password_resets', JSON.stringify(resets));
-  const link = location.origin + location.pathname + '?reset=' + encodeURIComponent(token);
-  try{ if(typeof audit==='function') audit('auth.password_reset_request', {type:'auth',id:email,label:email}, null, {expires}); }catch(e){}
-  const copied = (function(){ try{ navigator.clipboard.writeText(link); return true; }catch(e){ return false; } })();
-  alert('Link de redefinição gerado (válido por 1 hora):\n\n'+link+(copied?'\n\n✓ Copiado para a área de transferência.':''));
+  try{ if(typeof audit==='function') audit('auth.password_reset_request', {type:'auth',id:email,label:email}, null, {}); }catch(e){}
+  fetch('/api/reset-password', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ email })
+  })
+  .then(r => r.json())
+  .then(d => {
+    if(d.ok) showToast('Link enviado! Verifique seu email.')
+    else showToast('Erro ao enviar. Tente novamente.')
+  })
+  .catch(() => showToast('Erro ao enviar. Tente novamente.'));
 }
 
 function doLogin(){

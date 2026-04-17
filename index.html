@@ -2417,6 +2417,14 @@ html body { font-size: 12px !important; }
       <button class="btn-primary" onclick="doRegister()">Criar conta</button>
       <div class="login-switch">Já tem conta? <span onclick="showLogin()">Entrar</span></div>
     </div>
+    <div id="reset-form" class="hidden">
+      <div class="login-title">Definir nova senha</div>
+      <div class="login-sub">Digite e confirme sua nova senha</div>
+      <input class="inp" id="reset-pass" type="password" placeholder="Nova senha (mínimo 8 caracteres)"/>
+      <input class="inp" id="reset-pass2" type="password" placeholder="Confirmar nova senha"/>
+      <button class="btn-primary" onclick="doResetPassword()">Atualizar senha</button>
+      <div class="login-switch"><span onclick="showLogin()">← Voltar ao login</span></div>
+    </div>
   </div>
 </div>
 
@@ -3231,7 +3239,13 @@ function criarLancamento(dados){
 function calcularDRE(empresaId, mes){
   const lancs = getLancamentos(empresaId);
   const e = EMPS[empresaId];
-  const filtered = lancs.filter(l => l.data && l.data.startsWith(mes));
+  // FASE 2 — só entram no mês: aprovados (ou sem status = compat com dados antigos) e NÃO excluídos/rejeitados
+  const isContable = (l)=>{
+    if(l.deleted) return false;
+    const s = l.status || '';
+    return !['rejeitado','rejected','excluído','excluido'].includes(String(s).toLowerCase());
+  };
+  const filtered = lancs.filter(l => l.data && l.data.startsWith(mes) && isContable(l));
   let receita=0, despesa=0;
   const despPorCat = {};
   filtered.forEach(l => {
@@ -3244,6 +3258,26 @@ function calcularDRE(empresaId, mes){
       despPorCat[cat] = (despPorCat[cat]||0) + v;
     }
   });
+  // FASE 2 — agrega lançamentos EIA APROVADOS do mês (fonte IA)
+  try{
+    const docs = (typeof eiaGet==='function') ? eiaGet(empresaId) : [];
+    (docs||[]).forEach(d=>{
+      (d.entries||[]).forEach(en=>{
+        if(en.deleted) return;
+        if(en.status!=='approved') return;
+        const dt = en.date||'';
+        if(!dt.startsWith(mes)) return;
+        const v = Math.abs(FMT.num(en.amount));
+        if((en.amount||0)>=0 || en.type==='entrada'){
+          receita += v;
+        } else {
+          despesa += v;
+          const cat = en.suggestedCategory || 'Outras Despesas';
+          despPorCat[cat] = (despPorCat[cat]||0) + v;
+        }
+      });
+    });
+  }catch(err){}
   // Fallback: sem lançamentos reais → usar dados do EMPS (demoData)
   const temLancamentos = filtered.length > 0 && (receita > 0 || despesa > 0);
   if(!temLancamentos && e){
@@ -3268,14 +3302,27 @@ function calcularFluxoCaixa(empresaId, numMeses){
       year: d.getFullYear()
     });
   }
+  // FASE 2 — considera apenas lançamentos contábeis (não excluídos/rejeitados) + EIA aprovados
+  const isContable = (l)=>{ if(l.deleted) return false; const s=(l.status||'').toLowerCase(); return !['rejeitado','rejected','excluído','excluido'].includes(s); };
+  let eiaDocs = [];
+  try{ eiaDocs = (typeof eiaGet==='function') ? eiaGet(empresaId) : []; }catch(e){}
   let acumulado = 0;
   return months.map(m => {
-    const ml = lancs.filter(l => l.data && l.data.startsWith(m.key));
+    const ml = lancs.filter(l => l.data && l.data.startsWith(m.key) && isContable(l));
     let entradas = 0, saidas = 0;
     ml.forEach(l => {
       const v = FMT.num(l.valor);
       if(l.type==='income') entradas += v;
       else if(l.type==='expense') saidas += v;
+    });
+    // EIA approved no mês
+    (eiaDocs||[]).forEach(d=>{
+      (d.entries||[]).forEach(en=>{
+        if(en.deleted || en.status!=='approved') return;
+        if(!(en.date||'').startsWith(m.key)) return;
+        const v = Math.abs(FMT.num(en.amount));
+        if((en.amount||0)>=0 || en.type==='entrada') entradas += v; else saidas += v;
+      });
     });
     if(entradas===0 && saidas===0 && e) {
       const baseFat = FMT.num(e.fat) / (1 + Math.random()*0.15 - 0.075);
@@ -3582,10 +3629,69 @@ function disconnectSupabase(){
 function showLogin(){
   document.getElementById('login-form').classList.remove('hidden');
   document.getElementById('register-form').classList.add('hidden');
+  const rf = document.getElementById('reset-form'); if(rf) rf.classList.add('hidden');
 }
 function showRegister(){
   document.getElementById('login-form').classList.add('hidden');
   document.getElementById('register-form').classList.remove('hidden');
+  const rf = document.getElementById('reset-form'); if(rf) rf.classList.add('hidden');
+}
+function showResetForm(){
+  document.getElementById('login-form').classList.add('hidden');
+  document.getElementById('register-form').classList.add('hidden');
+  const rf = document.getElementById('reset-form'); if(rf) rf.classList.remove('hidden');
+}
+
+// FASE 2B — redefinir senha via Supabase Auth (updateUser)
+async function doResetPassword(){
+  const p1 = document.getElementById('reset-pass').value;
+  const p2 = document.getElementById('reset-pass2').value;
+  if(!p1 || p1.length < 8){ showToast('Senha muito curta (mínimo 8 caracteres)'); return; }
+  if(p1 !== p2){ showToast('As senhas não coincidem'); return; }
+  try{ if(typeof initSupabase==='function' && !sb) initSupabase(); }catch(e){}
+  if(!(typeof sb!=='undefined' && sb && sb.auth && typeof sb.auth.updateUser==='function')){
+    showToast('Supabase não configurado — não é possível atualizar a senha pelo fluxo oficial.');
+    return;
+  }
+  try{
+    const { data, error } = await sb.auth.updateUser({password: p1});
+    if(error){
+      showToast('Erro: '+(error.message||'link expirado ou inválido'));
+      return;
+    }
+    // Atualiza senha local também (compat com login de fallback)
+    if(data && data.user){
+      const users = JSON.parse(LS('users')||'[]');
+      const u = users.find(x=>x.email===data.user.email);
+      if(u){ u.pass = btoa(p1); LS('users', JSON.stringify(users)); }
+    }
+    showToast('Senha atualizada com sucesso — faça login com a nova senha.');
+    // Limpa hash e volta ao login
+    if(history && history.replaceState) history.replaceState(null, '', window.location.pathname);
+    showLogin();
+  }catch(err){
+    showToast('Erro de rede. Tente novamente.');
+  }
+}
+
+// Detecta link de recuperação do Supabase: hash contém type=recovery
+async function authDetectRecovery(){
+  try{
+    const h = window.location.hash || '';
+    // Supabase envia: #access_token=...&type=recovery&...
+    if(h.indexOf('type=recovery')>=0 || h==='#recover'){
+      if(typeof initSupabase==='function' && !sb) initSupabase();
+      if(typeof sb!=='undefined' && sb && sb.auth && typeof sb.auth.getSession==='function'){
+        // Supabase trata o hash automaticamente e expõe session
+        try{ await sb.auth.getSession(); }catch(e){}
+      }
+      document.getElementById('login-screen').classList.remove('hidden');
+      document.getElementById('platform').classList.add('hidden');
+      showResetForm();
+      return true;
+    }
+  }catch(e){}
+  return false;
 }
 function forgotPassword(){
   const email = (document.getElementById('login-email')||{}).value || '';
@@ -3593,7 +3699,29 @@ function forgotPassword(){
     alert('Informe seu e-mail no campo acima e clique novamente em "Esqueci minha senha".');
     return;
   }
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+    showToast('E-mail inválido');
+    return;
+  }
   try{ if(typeof audit==='function') audit('auth.password_reset_request', {type:'auth',id:email,label:email}, null, {}); }catch(e){}
+  // FASE 2B — fluxo oficial Supabase Auth (sem mecanismo paralelo quando configurado)
+  try{ if(typeof initSupabase==='function' && !sb) initSupabase(); }catch(e){}
+  if(typeof sb!=='undefined' && sb && sb.auth && typeof sb.auth.resetPasswordForEmail==='function'){
+    const redirectTo = window.location.origin + window.location.pathname + '#recover';
+    sb.auth.resetPasswordForEmail(email, {redirectTo}).then(({error})=>{
+      if(error){
+        showToast('Erro Supabase Auth: '+(error.message||'verifique sua configuração')+' — usando fallback local');
+        fallbackResendEmail(email);
+      } else {
+        showToast('Link enviado via Supabase Auth. Verifique seu e-mail.');
+      }
+    }).catch(()=>{ fallbackResendEmail(email); });
+    return;
+  }
+  // Fallback: endpoint Resend existente (compat)
+  fallbackResendEmail(email);
+}
+function fallbackResendEmail(email){
   fetch('/api/reset-password', {
     method: 'POST',
     headers: {'Content-Type':'application/json'},
@@ -3601,16 +3729,20 @@ function forgotPassword(){
   })
   .then(r => r.json())
   .then(d => {
-    if(d.ok) showToast('Link enviado! Verifique seu email.')
-    else showToast('Erro ao enviar. Tente novamente.')
+    if(d.ok) showToast('Link enviado! Verifique seu email.');
+    else showToast('Erro ao enviar. Tente novamente.');
   })
-  .catch(() => showToast('Erro ao enviar. Tente novamente.'));
+  .catch(() => showToast('Erro de rede. Tente novamente.'));
 }
 
-function doLogin(){
+async function doLogin(){
   const e=document.getElementById('login-email').value.trim();
   const p=document.getElementById('login-pass').value;
   if(!e||!p){alert('Preencha e-mail e senha');return}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)){
+    alert('E-mail em formato inválido');
+    return;
+  }
   // Rate-limit (FASE D)
   if(typeof secIsBlocked==='function'){
     const bl = secIsBlocked(e);
@@ -3619,6 +3751,45 @@ function doLogin(){
       return;
     }
   }
+  // FASE 2B — tenta Supabase Auth quando configurado; fallback p/ auth local
+  try{ if(typeof initSupabase==='function' && !sb) initSupabase(); }catch(err){}
+  if(typeof sb!=='undefined' && sb && sb.auth && typeof sb.auth.signInWithPassword==='function'){
+    try{
+      const { data, error } = await sb.auth.signInWithPassword({email:e, password:p});
+      if(!error && data && data.user){
+        // Busca ou cria o usuário local correspondente p/ manter roles/perms
+        const users=JSON.parse(LS('users')||'[]');
+        let u = users.find(x=>x.email===e);
+        if(!u){
+          const isFirst = users.length===0;
+          u = {
+            id: Date.now(),
+            name: (data.user.user_metadata && data.user.user_metadata.name) || e.split('@')[0],
+            email: e, pass: btoa(p),
+            role: isFirst ? 'admin' : (users.length===0?'admin':'viewer'),
+            avatar: '', sbId: data.user.id
+          };
+          users.push(u);
+          LS('users', JSON.stringify(users));
+        } else {
+          u.sbId = data.user.id; u.pass = btoa(p);
+          LS('users', JSON.stringify(users));
+        }
+        if(typeof secClearAttempts==='function') secClearAttempts(e);
+        LS('session', JSON.stringify(u));
+        try{ if(typeof audit==='function') audit('auth.login_success', {type:'user', id:u.id, label:u.email}, null, {via:'supabase'}); }catch(err){}
+        enterPlatform(u);
+        return;
+      }
+      // Supabase falhou — registra e cai no fallback local
+      if(error){
+        console.warn('SB auth falhou, tentando login local:', error.message);
+      }
+    }catch(err){
+      console.warn('SB auth erro de rede, tentando login local:', err && err.message);
+    }
+  }
+  // FALLBACK — login local (compat)
   const users=JSON.parse(LS('users')||'[]');
   const u=users.find(x=>x.email===e&&x.pass===btoa(p));
   if(!u){
@@ -3635,7 +3806,7 @@ function doLogin(){
   }
   if(typeof secClearAttempts==='function') secClearAttempts(e);
   LS('session',JSON.stringify(u));
-  try{ if(typeof audit==='function') audit('auth.login_success', {type:'user', id:u.id, label:u.email}, null, null); }catch(err){}
+  try{ if(typeof audit==='function') audit('auth.login_success', {type:'user', id:u.id, label:u.email}, null, {via:'local'}); }catch(err){}
   enterPlatform(u);
 }
 
@@ -4526,11 +4697,11 @@ function openDrive(){window.open(curEmp?EMPS[curEmp]?.drive:'https://drive.googl
 // ── WORKSPACE ──────────────────────────────────────────────────────────────
 // FASE 13 — ocultar temporariamente (Agenda/Pipeline/CRM) sem remover código
 const HIDDEN_TABS = new Set(['Pipeline','CRM']);
-const WS_TABS_ALL=['KPIs','Tarefas','Financeiro','Extrato IA','Documentos','Relatórios','Notas'];
-const GP_TABS_DEFAULT=['KPIs','Tarefas','Financeiro','Extrato IA','Documentos','Relatórios','Notas'];
-const FS_TABS_DEFAULT=['KPIs','Tarefas','Financeiro','Extrato IA','Documentos','Relatórios','Notas'];
-const DW_TABS_DEFAULT=['KPIs','Tarefas','Financeiro','Extrato IA','Documentos','Relatórios','Notas'];
-const OF_TABS_DEFAULT=['KPIs','Tarefas','Financeiro','Extrato IA','Documentos','Relatórios','Notas'];
+const WS_TABS_ALL=['KPIs','Tarefas','Financeiro','Lançamentos','Extrato IA','Documentos','Relatórios','Notas'];
+const GP_TABS_DEFAULT=['KPIs','Tarefas','Financeiro','Lançamentos','Extrato IA','Documentos','Relatórios','Notas'];
+const FS_TABS_DEFAULT=['KPIs','Tarefas','Financeiro','Lançamentos','Extrato IA','Documentos','Relatórios','Notas'];
+const DW_TABS_DEFAULT=['KPIs','Tarefas','Financeiro','Lançamentos','Extrato IA','Documentos','Relatórios','Notas'];
+const OF_TABS_DEFAULT=['KPIs','Tarefas','Financeiro','Lançamentos','Extrato IA','Documentos','Relatórios','Notas'];
 
 function getEmpModulos(empresaId){
   const stored=localStorage.getItem('orion_modulos_'+empresaId);
@@ -4822,6 +4993,9 @@ function renderTab(){
   }
   else if(curTab==='Financeiro'){
     renderFinanceiro(e, c);
+  }
+  else if(curTab==='Lançamentos'){
+    renderLancamentos(e, c);
   }
   else if(curTab==='Notas'){
     const notasKey='orion_notas_'+curEmp;
@@ -6402,7 +6576,7 @@ const TAB_MODULE_MAP = {
   'KPIs':'dashboard','OKRs':'dashboard','Tarefas':'dashboard',
   'Pipeline':'analytics','CRM':'analytics','Pacientes':'analytics',
   'Projetos':'analytics','Equipe':'analytics',
-  'Financeiro':'financeiro','Fundos':'financeiro','Rentabilidade':'financeiro',
+  'Financeiro':'financeiro','Lançamentos':'financeiro','Fundos':'financeiro','Rentabilidade':'financeiro',
   'Patrimônio':'financeiro','Investimentos':'financeiro',
   'Fluxo Pessoal':'financeiro','Honorários':'financeiro',
   'Projeções':'analytics',
@@ -9498,9 +9672,300 @@ function renderLancList(empresaId){
 }
 
 function deleteLancamento(empresaId, lancId){
-  const lancs = getLancamentos(empresaId).filter(l=>l.id!==lancId);
+  // Soft delete — mantém o registro e marca status/deleted (FASE 2)
+  const lancs = getLancamentos(empresaId);
+  const l = lancs.find(x=>x.id===lancId);
+  if(!l) return;
+  l.status = 'excluído';
+  l.deleted = true;
+  l.deletedAt = new Date().toISOString();
   saveLancamentos(empresaId, lancs);
-  sbDelete('lancamentos', lancId);
+  try{ if(typeof sbPush==='function') sbPush('lancamentos', {id:l.id, empresa_id:empresaId, status:'excluído', deleted:true}); }catch(e){}
+  renderTab();
+}
+
+// ── LANÇAMENTOS UNIFICADOS (FASE 2) ──────────────────────────────────────
+// Agrega manual (orion_lanc_) + EIA aprovados (orion_extrato_ia_/orion_eia_)
+// Shape unificado: {id, data, descricao, valor, tipo, categoria, origem, status, deleted, _src, _docId, _entryId}
+//  - origem: 'manual' | 'ia'
+//  - tipo: 'entrada' | 'saida' | 'transferencia' | 'investimento'
+//  - status: 'pendente' | 'aprovado' | 'corrigido' | 'rejeitado' | 'excluído'
+const LANC_STATUS_MAP_EIA = {pending:'pendente', approved:'aprovado', rejected:'rejeitado', corrected:'corrigido'};
+let lancFilter = { periodo:'', categoria:'', tipo:'', status:'', search:'' };
+
+function lancUnifMapManualTipo(lanc){
+  if(lanc.type==='income') return 'entrada';
+  if(lanc.type==='expense') return 'saida';
+  if(lanc.type==='transfer') return 'transferencia';
+  if(lanc.type==='investment') return 'investimento';
+  return lanc.tipo || 'outro';
+}
+function lancUnifNormalizeStatusManual(s){
+  if(!s) return 'aprovado';
+  const low = String(s).toLowerCase();
+  if(['aprovado','approved','confirmado'].includes(low)) return 'aprovado';
+  if(['pendente','pending'].includes(low)) return 'pendente';
+  if(['rejeitado','rejected'].includes(low)) return 'rejeitado';
+  if(['corrigido','corrected'].includes(low)) return 'corrigido';
+  if(['excluído','excluido','deleted'].includes(low)) return 'excluído';
+  return low;
+}
+
+function lancGetUnified(empresaId){
+  const out = [];
+  // manual
+  const manuais = getLancamentos(empresaId) || [];
+  manuais.forEach(l=>{
+    const tipo = lancUnifMapManualTipo(l);
+    const valor = FMT.num(l.valor);
+    const isIncome = l.type==='income' || tipo==='entrada';
+    out.push({
+      id: l.id, data: l.data||'', descricao: l.descricao||'',
+      valor: isIncome ? Math.abs(valor) : -Math.abs(valor),
+      tipo, categoria: l.categoria || '', origem: 'manual',
+      status: l.deleted ? 'excluído' : lancUnifNormalizeStatusManual(l.status),
+      deleted: !!l.deleted, impacta_resultado: l.impacta_resultado!==false,
+      _src:'manual', _ref:l
+    });
+  });
+  // EIA (entries dentro de docs)
+  try{
+    const docs = (typeof eiaGet==='function') ? eiaGet(empresaId) : [];
+    (docs||[]).forEach(d=>{
+      (d.entries||[]).forEach(en=>{
+        const st = LANC_STATUS_MAP_EIA[en.status] || en.status || 'pendente';
+        const tipo = en.type==='saida' ? 'saida' : en.type==='entrada' ? 'entrada' : ((en.amount||0)>=0?'entrada':'saida');
+        out.push({
+          id: en.id, data: en.date||'', descricao: en.description||'',
+          valor: FMT.num(en.amount),
+          tipo, categoria: en.suggestedCategory || '',
+          origem: en.origin==='ai' ? 'ia' : (en.origin||'ia'),
+          status: en.deleted ? 'excluído' : (en.correctedFrom ? 'corrigido' : st),
+          deleted: !!en.deleted, impacta_resultado: true,
+          _src:'eia', _docId:d.id, _entryId:en.id, _ref:en
+        });
+      });
+    });
+  }catch(e){}
+  // Ordena por data desc
+  out.sort((a,b)=>(b.data||'').localeCompare(a.data||''));
+  return out;
+}
+
+function lancApplyFilters(list, filter){
+  return list.filter(l=>{
+    if(filter.periodo && !(l.data||'').startsWith(filter.periodo)) return false;
+    if(filter.categoria && l.categoria!==filter.categoria) return false;
+    if(filter.tipo && l.tipo!==filter.tipo) return false;
+    if(filter.status && l.status!==filter.status) return false;
+    if(filter.search){
+      const q = filter.search.toLowerCase();
+      if(!((l.descricao||'').toLowerCase().includes(q) || (l.categoria||'').toLowerCase().includes(q))) return false;
+    }
+    // Padrão: ocultar excluídos a menos que filter.status==='excluído'
+    if(l.deleted && filter.status!=='excluído') return false;
+    return true;
+  });
+}
+
+function lancSetFilter(key, val){
+  lancFilter[key] = val;
+  renderTab();
+}
+
+function renderLancamentos(e, c){
+  if(!hasPerm('financeiro','view',curEmp)){ renderAccessDenied(c,'Lançamentos'); return; }
+  const all = lancGetUnified(curEmp);
+  const filtered = lancApplyFilters(all, lancFilter);
+  const cats = [...new Set(all.map(x=>x.categoria).filter(Boolean))].sort();
+  const receitas = filtered.filter(l=>l.status==='aprovado' && l.valor>0).reduce((s,l)=>s+l.valor, 0);
+  const despesas = filtered.filter(l=>l.status==='aprovado' && l.valor<0).reduce((s,l)=>s+Math.abs(l.valor), 0);
+  const resultado = receitas - despesas;
+  const countByStatus = filtered.reduce((acc,l)=>{acc[l.status]=(acc[l.status]||0)+1;return acc;},{});
+
+  c.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px;flex-wrap:wrap">
+      <div>
+        <div class="slbl" style="margin:0">Lançamentos — ${escHtml(e.nome)}</div>
+        <div style="font-size:12px;color:var(--tx3);margin-top:2px">${filtered.length} registro(s) · manual + Extrato IA</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="btn-sm btn-ghost" onclick="lancClearFilters()">↺ Limpar filtros</button>
+        <button class="btn-sm btn-blue" onclick="openModal('modal-lancamento')">+ Novo lançamento</button>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-grid mb">
+      <div class="kpi-card"><div class="lbl">Receitas (aprovadas)</div><div class="val-sm txt-green">${FMT.brl(receitas)}</div></div>
+      <div class="kpi-card"><div class="lbl">Despesas (aprovadas)</div><div class="val-sm txt-red">${FMT.brl(despesas)}</div></div>
+      <div class="kpi-card"><div class="lbl">Resultado</div><div class="val-sm" style="color:${resultado>=0?'var(--green)':'var(--red)'}">${FMT.brl(resultado)}</div></div>
+      <div class="kpi-card"><div class="lbl">Pendentes</div><div class="val-sm" style="color:var(--amber)">${countByStatus['pendente']||0}</div></div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card mb" style="padding:12px 14px">
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px">
+        <div><div class="lbl" style="margin-bottom:4px">Período (YYYY-MM)</div>
+          <input class="inp" type="month" value="${escHtml(lancFilter.periodo)}" onchange="lancSetFilter('periodo',this.value)"/></div>
+        <div><div class="lbl" style="margin-bottom:4px">Categoria</div>
+          <select class="inp" onchange="lancSetFilter('categoria',this.value)">
+            <option value="">Todas</option>
+            ${cats.map(k=>`<option ${lancFilter.categoria===k?'selected':''}>${escHtml(k)}</option>`).join('')}
+          </select></div>
+        <div><div class="lbl" style="margin-bottom:4px">Tipo</div>
+          <select class="inp" onchange="lancSetFilter('tipo',this.value)">
+            <option value="">Todos</option>
+            ${['entrada','saida','transferencia','investimento'].map(t=>`<option ${lancFilter.tipo===t?'selected':''} value="${t}">${t}</option>`).join('')}
+          </select></div>
+        <div><div class="lbl" style="margin-bottom:4px">Status</div>
+          <select class="inp" onchange="lancSetFilter('status',this.value)">
+            <option value="">Todos (exceto excluídos)</option>
+            ${['pendente','aprovado','corrigido','rejeitado','excluído'].map(s=>`<option ${lancFilter.status===s?'selected':''} value="${s}">${s}</option>`).join('')}
+          </select></div>
+        <div><div class="lbl" style="margin-bottom:4px">Buscar</div>
+          <input class="inp" type="text" placeholder="descrição/categoria" value="${escHtml(lancFilter.search)}" oninput="lancFilter.search=this.value" onchange="renderTab()"/></div>
+      </div>
+    </div>
+
+    <!-- Tabela -->
+    <div class="card">
+      <div class="eia-table-scroll">
+        <table class="eia-table">
+          <thead><tr>
+            <th>Data</th><th>Descrição</th><th>Tipo</th>
+            <th class="num">Valor</th><th>Categoria</th>
+            <th>Origem</th><th>Status</th><th></th>
+          </tr></thead>
+          <tbody>
+            ${filtered.length===0 ? `<tr><td colspan="8" style="padding:20px;text-align:center;color:var(--tx3);font-size:13px">Nenhum lançamento para os filtros aplicados.</td></tr>` : filtered.map(l=>lancUnifRenderRow(l)).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+function lancUnifRenderRow(l){
+  const valorCol = l.valor>=0?'var(--green)':'var(--red)';
+  const sign = l.valor>=0?'+':'−';
+  const stCol = l.status==='aprovado'?'var(--green)':l.status==='rejeitado'?'var(--red)':l.status==='corrigido'?'var(--purple)':l.status==='excluído'?'var(--tx3)':'var(--amber)';
+  const orCol = l.origem==='ia'?'var(--purple)':'var(--tx3)';
+  const tipoCol = l.tipo==='entrada'?'var(--green)':l.tipo==='saida'?'var(--red)':l.tipo==='transferencia'?'var(--blue3)':'var(--purple)';
+  const dt = l.data ? new Date(l.data+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'2-digit'}) : '—';
+  const canAct = l.status!=='excluído';
+  const origemLbl = l.origem==='ia' ? 'IA' : 'manual';
+  return `<tr class="${l.deleted?'eia-row-low':''}">
+    <td class="eia-cell-date">${dt}</td>
+    <td class="eia-cell-desc">${escHtml(l.descricao||'—')}</td>
+    <td><span class="eia-cat-pill" style="color:${tipoCol};border-color:${tipoCol}40">${l.tipo}</span></td>
+    <td class="eia-cell-amount num" style="color:${valorCol}">${sign} ${FMT.brl(Math.abs(l.valor))}</td>
+    <td><span class="eia-cat-pill">${escHtml(l.categoria||'—')}</span></td>
+    <td><span style="color:${orCol};font-size:10px;text-transform:uppercase;letter-spacing:.08em">${origemLbl}</span></td>
+    <td><span class="eia-cat-pill" style="color:${stCol};border-color:${stCol}40">${l.status}</span></td>
+    <td class="eia-cell-actions">
+      ${canAct && l.status!=='aprovado' ? `<button class="eia-act-btn eia-act-app" title="Aprovar" onclick="lancUnifApprove('${l._src}','${escHtml(l._docId||'')}','${l.id}')">✓</button>` : ''}
+      ${canAct ? `<button class="eia-act-btn eia-act-edit" title="Editar" onclick="lancUnifEdit('${l._src}','${escHtml(l._docId||'')}','${l.id}')">✎</button>` : ''}
+      ${canAct && l.status!=='rejeitado' ? `<button class="eia-act-btn eia-act-rej" title="Rejeitar" onclick="lancUnifReject('${l._src}','${escHtml(l._docId||'')}','${l.id}')">✕</button>` : ''}
+      ${canAct ? `<button class="eia-act-btn" style="color:var(--red)" title="Excluir (soft)" onclick="lancUnifSoftDelete('${l._src}','${escHtml(l._docId||'')}','${l.id}')">🗑</button>` : ''}
+    </td>
+  </tr>`;
+}
+
+function lancClearFilters(){ lancFilter = {periodo:'', categoria:'', tipo:'', status:'', search:''}; renderTab(); }
+
+function lancUnifApprove(src, docId, id){
+  if(src==='manual'){
+    const lancs = getLancamentos(curEmp); const l = lancs.find(x=>x.id===id); if(!l) return;
+    l.status = 'aprovado'; l.deleted=false; saveLancamentos(curEmp, lancs);
+  } else {
+    const list = eiaGet(curEmp); const d = list.find(x=>x.id===docId); if(!d) return;
+    const en = (d.entries||[]).find(x=>x.id===id); if(!en) return;
+    en.status = 'approved'; en.deleted=false; eiaSave(curEmp, list);
+  }
+  renderTab();
+}
+function lancUnifReject(src, docId, id){
+  if(src==='manual'){
+    const lancs = getLancamentos(curEmp); const l = lancs.find(x=>x.id===id); if(!l) return;
+    l.status = 'rejeitado'; saveLancamentos(curEmp, lancs);
+  } else {
+    const list = eiaGet(curEmp); const d = list.find(x=>x.id===docId); if(!d) return;
+    const en = (d.entries||[]).find(x=>x.id===id); if(!en) return;
+    en.status = 'rejected'; eiaSave(curEmp, list);
+  }
+  renderTab();
+}
+function lancUnifSoftDelete(src, docId, id){
+  if(!confirm('Excluir este lançamento? (soft delete — pode ser restaurado alterando o status)')) return;
+  if(src==='manual'){
+    const lancs = getLancamentos(curEmp); const l = lancs.find(x=>x.id===id); if(!l) return;
+    l.deleted = true; l.status='excluído'; l.deletedAt=new Date().toISOString(); saveLancamentos(curEmp, lancs);
+  } else {
+    const list = eiaGet(curEmp); const d = list.find(x=>x.id===docId); if(!d) return;
+    const en = (d.entries||[]).find(x=>x.id===id); if(!en) return;
+    en.deleted = true; en.status='rejected'; en.deletedAt=new Date().toISOString(); eiaSave(curEmp, list);
+  }
+  renderTab();
+}
+function lancUnifEdit(src, docId, id){
+  const unified = lancGetUnified(curEmp).find(x=>x.id===id && x._src===src && (src==='manual' || x._docId===docId));
+  if(!unified){ showToast('Lançamento não encontrado'); return; }
+  const catsExistentes = (typeof CATEGORIAS!=='undefined' && Array.isArray(CATEGORIAS)) ? CATEGORIAS.map(c=>c.nome) : [];
+  const catsEia = (typeof EIA_CATS!=='undefined') ? EIA_CATS : [];
+  const cats = [...new Set([...catsExistentes, ...catsEia, unified.categoria].filter(Boolean))];
+  const tipos = ['entrada','saida','transferencia','investimento'];
+  const html = `<div class="fs-rent2-modal" style="width:480px">
+    <button class="fs-rent2-modal-close" onclick="document.getElementById('lanc-edit-modal').remove()">&times;</button>
+    <h2>Editar lançamento</h2>
+    <div class="fs-rent2-lbl">Data</div>
+    <input class="inp" id="le-data" type="date" value="${escHtml(unified.data||'')}"/>
+    <div class="fs-rent2-lbl">Descrição</div>
+    <input class="inp" id="le-desc" type="text" value="${escHtml(unified.descricao||'')}"/>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div><div class="fs-rent2-lbl">Tipo</div>
+        <select class="inp" id="le-tipo">${tipos.map(t=>`<option ${unified.tipo===t?'selected':''} value="${t}">${t}</option>`).join('')}</select></div>
+      <div><div class="fs-rent2-lbl">Valor (absoluto)</div>
+        <input class="inp" id="le-valor" type="number" step="0.01" value="${Math.abs(unified.valor||0)}"/></div>
+    </div>
+    <div class="fs-rent2-lbl">Categoria</div>
+    <select class="inp" id="le-cat">${cats.map(c=>`<option ${unified.categoria===c?'selected':''}>${escHtml(c)}</option>`).join('')}</select>
+    <div class="fs-rent2-modal-actions">
+      <button class="fs-rent2-btn" onclick="document.getElementById('lanc-edit-modal').remove()">Cancelar</button>
+      <button class="fs-rent2-btn fs-rent2-btn-primary" onclick="lancUnifApplyEdit('${src}','${escHtml(docId||'')}','${id}')">Salvar como corrigido</button>
+    </div>
+  </div>`;
+  const el = document.createElement('div');
+  el.className='overlay'; el.id='lanc-edit-modal';
+  el.onclick=function(ev){ if(ev.target===el) el.remove(); };
+  el.innerHTML=html;
+  document.body.appendChild(el);
+}
+function lancUnifApplyEdit(src, docId, id){
+  const data = document.getElementById('le-data').value;
+  const desc = document.getElementById('le-desc').value;
+  const tipo = document.getElementById('le-tipo').value;
+  const valorAbs = FMT.num(document.getElementById('le-valor').value);
+  const cat = document.getElementById('le-cat').value;
+  const sign = (tipo==='entrada') ? 1 : -1;
+  if(src==='manual'){
+    const lancs = getLancamentos(curEmp); const l = lancs.find(x=>x.id===id); if(!l) return;
+    l.data = data; l.descricao = desc; l.categoria = cat; l.valor = Math.abs(valorAbs);
+    l.type = tipo==='entrada'?'income':tipo==='saida'?'expense':tipo==='transferencia'?'transfer':'investment';
+    l.status = 'corrigido';
+    saveLancamentos(curEmp, lancs);
+  } else {
+    const list = eiaGet(curEmp); const d = list.find(x=>x.id===docId); if(!d) return;
+    const en = (d.entries||[]).find(x=>x.id===id); if(!en) return;
+    en.correctedFrom = en.correctedFrom || en.suggestedCategory;
+    en.date = data; en.description = desc; en.suggestedCategory = cat;
+    en.amount = sign * Math.abs(valorAbs);
+    en.type = tipo==='entrada'?'entrada':tipo==='saida'?'saida':tipo;
+    en.status = 'approved'; // corrigido → considerado aprovado
+    en.correctedAt = new Date().toISOString();
+    eiaSave(curEmp, list);
+  }
+  const m = document.getElementById('lanc-edit-modal'); if(m) m.remove();
+  showToast('Lançamento corrigido e aprovado');
   renderTab();
 }
 
@@ -10893,7 +11358,12 @@ function logAction(action,detail){
 }
 
 // ── START ──────────────────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded',()=>{
+document.addEventListener('DOMContentLoaded', async ()=>{
+  // FASE 2B — se URL indica fluxo de recuperação, exibe tela de reset antes do autoLogin
+  try{
+    const recovered = await authDetectRecovery();
+    if(recovered) return;
+  }catch(e){}
   autoLogin();
 });
 </script>

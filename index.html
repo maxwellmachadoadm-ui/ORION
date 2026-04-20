@@ -2383,6 +2383,170 @@ html body { font-size: 12px !important; }
 #sb-dw, #sb-cdl,
 .sb-item[data-emp="dw"], .sb-item[data-emp="cdl"],
 [data-emp-id="dw"], [data-emp-id="cdl"] { display: none !important; }
+
+/* ═══ FASE B — HIERARQUIA DE DECISÃO (tipografia forte + spacing uniforme) ═══ */
+/* Hero title 40px */
+.home-v2-title,.home-v2-header h1.home-v2-title{
+  font-family:'Syne',sans-serif !important;
+  font-size:40px !important;font-weight:800 !important;
+  letter-spacing:-.5px !important;line-height:1.1 !important;color:#f1f5f9 !important;
+  background:none !important;-webkit-text-fill-color:initial !important;background-clip:initial !important;
+}
+/* Section label: Syne 13px bold uppercase ls:2.5px */
+.home-v2-section-label{
+  font-family:'Syne',sans-serif !important;
+  font-size:13px !important;font-weight:700 !important;
+  text-transform:uppercase !important;letter-spacing:2.5px !important;
+  color:#94a3b8 !important;margin-top:24px !important;margin-bottom:14px !important;
+}
+.home-v2-section-label:first-of-type{margin-top:0 !important}
+/* Spacing da main uniforme 24px entre blocos */
+.home-v2-main{gap:24px !important;display:flex !important;flex-direction:column !important}
+.home-v2-main > *{margin-top:0 !important;margin-bottom:0 !important}
+
+/* KPI value grande 30px */
+.home-v2-kpi-val{
+  font-family:'Syne',sans-serif !important;
+  font-size:30px !important;font-weight:800 !important;
+  letter-spacing:-.5px !important;line-height:1.1 !important;
+  margin:4px 0 6px !important;color:#f1f5f9 !important;white-space:nowrap !important;
+}
+/* KPI label 12px uppercase */
+.home-v2-kpi-head,.home-v2-kpi-card .home-v2-kpi-head span:last-child{
+  font-family:'DM Sans',sans-serif !important;
+  font-size:12px !important;font-weight:500 !important;
+  text-transform:uppercase !important;letter-spacing:.6px !important;color:#94a3b8 !important;
+}
+.home-v2-kpi-card{padding:20px !important;min-height:124px !important}
+
+/* Empresa card — tipografia forte */
+.home-v2-emp-name{
+  font-size:18px !important;font-weight:700 !important;
+  font-family:'Syne',sans-serif !important;line-height:1.2 !important;
+  white-space:normal !important;overflow:visible !important;text-overflow:clip !important;
+}
+.home-v2-emp-desc{font-size:13px !important;color:#94a3b8 !important;white-space:normal !important;overflow:visible !important}
+.home-v2-emp-card{padding:20px !important}
+
+/* ─ BLOCO 1 — ORION recomenda hoje (wide protagonist) ─ */
+.home-v2-recommend-wide{
+  background:linear-gradient(135deg,rgba(59,130,246,.04) 0%,rgba(167,139,250,.04) 50%,rgba(245,158,11,.04) 100%),#0d1225;
+  border:1px solid #1e2a45;border-radius:12px;padding:24px;
+  box-shadow:0 8px 24px rgba(167,139,250,.04);position:relative;overflow:hidden;
+}
+.home-v2-recommend-wide::after{
+  content:'';position:absolute;left:0;right:0;bottom:0;height:2px;
+  background:linear-gradient(90deg,rgba(59,130,246,.35),rgba(167,139,250,.35),rgba(245,158,11,.35));
+}
+.home-v2-recommend-wide .home-v2-recommend-head{
+  display:flex;align-items:center;gap:10px;margin-bottom:16px;
+}
+.home-v2-recommend-wide .home-v2-recommend-icon{font-size:20px;line-height:1}
+.home-v2-recommend-wide .home-v2-recommend-title{
+  font-family:'Syne',sans-serif !important;font-size:20px !important;font-weight:800 !important;
+  color:#f1f5f9 !important;letter-spacing:-.2px !important;
+}
+.home-v2-recommend-badge{
+  font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;
+  padding:4px 10px;border-radius:99px;background:rgba(245,158,11,.12);color:#f59e0b;
+  border:1px solid rgba(245,158,11,.3);letter-spacing:.3px;
+}
+.home-v2-recommend-cta{
+  margin-left:auto;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;
+  color:#60a5fa;cursor:pointer;transition:color .15s;
+}
+.home-v2-recommend-cta:hover{color:#93c5fd}
+.home-v2-rec-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:14px;
+}
+.home-v2-rec-card{
+  background:#0a0f1e;border:1px solid #1e2a45;border-radius:10px;padding:16px;
+  display:flex;flex-direction:column;gap:8px;cursor:pointer;transition:border-color .15s,background .15s;
+}
+.home-v2-rec-card:hover{border-color:rgba(245,158,11,.4);background:#0d1428}
+.home-v2-rec-card-head{display:flex;align-items:center;gap:8px}
+.home-v2-rec-level{
+  font-family:'DM Sans',sans-serif;font-size:10px;font-weight:700;
+  padding:3px 8px;border-radius:4px;letter-spacing:1.2px;
+}
+.home-v2-rec-level.alta{background:rgba(239,68,68,.15);color:#ef4444}
+.home-v2-rec-level.media{background:rgba(245,158,11,.15);color:#f59e0b}
+.home-v2-rec-level.baixa{background:rgba(96,165,250,.15);color:#60a5fa}
+.home-v2-rec-emp{
+  font-family:'DM Sans',sans-serif;font-size:10px;font-weight:700;
+  padding:2px 8px;border-radius:4px;letter-spacing:.8px;
+}
+.home-v2-rec-title{
+  font-family:'Syne',sans-serif;font-size:15px;font-weight:700;
+  color:#f1f5f9;line-height:1.3;
+}
+.home-v2-rec-action{
+  font-family:'DM Sans',sans-serif;font-size:12px;font-weight:400;
+  color:#94a3b8;line-height:1.4;
+}
+.home-v2-rec-btn{
+  margin-top:auto;align-self:flex-start;
+  font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;
+  background:#f59e0b;color:#080c18;border:none;padding:6px 12px;border-radius:6px;
+  cursor:pointer;transition:background .15s;
+}
+.home-v2-rec-btn:hover{background:#fbbf24}
+.home-v2-rec-empty{
+  font-family:'DM Sans',sans-serif;font-size:13px;color:#94a3b8;padding:12px 0;
+}
+@media (max-width:1100px){
+  .home-v2-rec-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:720px){
+  .home-v2-rec-grid{grid-template-columns:1fr}
+}
+
+/* ─ BLOCO 2 — Insights no card empresa ─ */
+.home-v2-emp-insights{
+  display:flex;flex-direction:column;gap:1px;
+  background:#1e2a45;border-radius:8px;overflow:hidden;margin:2px 0;
+}
+.home-v2-emp-insight{
+  display:flex;align-items:center;gap:8px;
+  height:28px;padding:0 10px;background:#0a0f1e;
+  font-family:'DM Sans',sans-serif;font-size:12px;color:#cbd5e1;
+}
+.home-v2-emp-insight-ico{width:16px;text-align:center;font-size:12px;font-weight:700;flex-shrink:0}
+.home-v2-emp-insight.risco .home-v2-emp-insight-ico{color:#ef4444}
+.home-v2-emp-insight.op .home-v2-emp-insight-ico{color:#10b981}
+.home-v2-emp-insight.atencao .home-v2-emp-insight-ico{color:#f59e0b}
+.home-v2-emp-insight.estavel .home-v2-emp-insight-ico{color:#60a5fa}
+.home-v2-emp-cta{
+  font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;
+  background:transparent;border:1px solid rgba(245,158,11,.4);color:#f59e0b;
+  padding:6px 12px;border-radius:6px;cursor:pointer;transition:all .15s;
+}
+.home-v2-emp-cta:hover{background:rgba(245,158,11,.1);border-color:#f59e0b}
+
+/* ─ BLOCO 3 — Alertas agrupados por empresa ─ */
+.home-v2-alert-group{margin-top:10px;padding-top:10px;border-top:1px solid #1e2a45}
+.home-v2-alert-group:first-of-type{margin-top:8px;border-top:none;padding-top:0}
+.home-v2-alert-group-head{
+  display:flex;align-items:center;gap:8px;margin-bottom:6px;
+}
+.home-v2-alert-emp-badge{
+  font-family:'DM Sans',sans-serif;font-size:10px;font-weight:700;
+  padding:2px 7px;border-radius:4px;letter-spacing:.8px;
+}
+.home-v2-alert-emp-name{
+  font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;color:#cbd5e1;flex:1;
+}
+.home-v2-alert-emp-count{
+  font-family:'DM Sans',sans-serif;font-size:10px;font-weight:600;
+  padding:1px 6px;border-radius:99px;background:rgba(255,255,255,.06);color:#94a3b8;
+}
+.home-v2-alert-row{
+  display:flex;align-items:center;gap:8px;padding:4px 0;
+}
+.home-v2-alert-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.home-v2-alert-text{
+  font-family:'DM Sans',sans-serif;font-size:11.5px;color:#94a3b8;line-height:1.35;
+}
 </style>
 </head>
 <body>
@@ -2583,6 +2747,9 @@ html body { font-size: 12px !important; }
   <!-- LAYOUT -->
   <div class="home-v2-layout">
     <div class="home-v2-main">
+      <!-- FASE B — ORION protagonista (wide, topo da main) -->
+      <div class="home-v2-recommend home-v2-recommend-wide" id="home-recommend"></div>
+
       <div class="home-v2-section-label">Prioridades do Dia</div>
       <div class="home-v2-prio-grid" id="home-prio-grid"></div>
 
@@ -2597,7 +2764,6 @@ html body { font-size: 12px !important; }
     </div>
 
     <div class="home-v2-side">
-      <div class="home-v2-recommend" id="home-recommend"></div>
       <div class="home-v2-side-card" id="home-alerts"></div>
       <div class="home-v2-side-card" id="home-quick"></div>
       <div class="home-v2-side-card" id="home-meeting"></div>
@@ -4296,6 +4462,31 @@ function renderHomeV2Kpis(){
   </div>`).join('');
 }
 
+// FASE B — gera até 3 micro-insights da empresa a partir de regras de negócio
+function generateEmpInsights(e){
+  const out = [];
+  const margem = e.fat>0 ? (e.result/e.fat)*100 : 0;
+  const cresc = Number(e.cresc)||0;
+  const score = Number(e.score)||0;
+  // Regra: margem em queda acentuada
+  if(cresc < -3) out.push({icon:'↘', type:'risco', text:`Margem em queda ${cresc.toFixed(1)}%`});
+  // Regra: crescimento acelerado
+  if(cresc > 20) out.push({icon:'↗', type:'op',    text:`Crescimento acelerado +${cresc.toFixed(0)}%`});
+  else if(cresc > 0 && cresc <= 20 && out.length<3) out.push({icon:'↗', type:'op', text:`Tendência positiva +${cresc.toFixed(1)}%`});
+  // Regra: inadimplência (valor hardcoded na plataforma)
+  const inadimp = e.id==='of'?8.7:e.id==='dw'?3.2:e.id==='cdl'?2.1:e.id==='fs'?0:0;
+  if(inadimp > 5) out.push({icon:'⚠', type:'risco', text:`Inadimplência ${inadimp}% (limite 5%)`});
+  // Regra: health score
+  if(score < 60) out.push({icon:'⚠', type:'atencao', text:`Health score em atenção (${score})`});
+  else if(score >= 80 && out.length<3) out.push({icon:'✓', type:'estavel', text:`Health score saudável (${score})`});
+  // Regra: tarefas alta prioridade pendentes
+  const alta = (e.tarefas||[]).filter(t=>t && !t.k && t.p==='alta').length;
+  if(alta > 0) out.push({icon:'⚠', type:'atencao', text:`${alta} tarefa${alta===1?'':'s'} de alta prioridade`});
+  // Regra: margem baixa
+  if(margem < 5 && margem >= 0 && e.fat>0) out.push({icon:'↘', type:'risco', text:`Margem baixa: ${margem.toFixed(0)}%`});
+  return out.slice(0,3);
+}
+
 function renderHomeV2EmpCard(e, fullWidth){
   const st = homeV2EmpStatus(e);
   const metaPct = e.meta>0 ? Math.min(100, (e.fat/e.meta)*100) : 0;
@@ -4304,6 +4495,12 @@ function renderHomeV2EmpCard(e, fullWidth){
   const crescS = e.cresc>=0?'▲':'▼';
   const logoHtml = (typeof empLogoHTML==='function') ? empLogoHTML(e.id,36) : '';
   const sigla = logoHtml || escHtml(e.sigla||(e.nome||'').slice(0,2).toUpperCase());
+  const insights = generateEmpInsights(e);
+  const insightsHtml = insights.length===0
+    ? ''
+    : `<div class="home-v2-emp-insights">
+         ${insights.map(i=>`<div class="home-v2-emp-insight ${i.type}"><span class="home-v2-emp-insight-ico">${i.icon}</span><span>${escHtml(i.text)}</span></div>`).join('')}
+       </div>`;
   return `<div class="home-v2-emp-card${fullWidth?' full':''}" style="--emp-c:${e.cor};--emp-c2:${e.cor}88" onclick="openEmp('${e.id}')">
     <div class="home-v2-emp-head">
       <div class="home-v2-emp-id">
@@ -4320,6 +4517,7 @@ function renderHomeV2EmpCard(e, fullWidth){
       <div><div class="home-v2-metric-lbl">Margem</div><div class="home-v2-metric-val">${margem}</div></div>
       <div><div class="home-v2-metric-lbl">Tendência</div><div class="home-v2-metric-val ${crescC}">${crescS} ${Math.abs(e.cresc||0).toFixed(1)}%</div></div>
     </div>
+    ${insightsHtml}
     <div class="home-v2-emp-progress">
       <div class="home-v2-emp-progress-labels">
         <span>${FMT.brlK(e.fat)}</span><span>Meta ${FMT.brlK(e.meta)}</span>
@@ -4334,7 +4532,7 @@ function renderHomeV2EmpCard(e, fullWidth){
           <span class="home-v2-score-status" style="color:${homeV2ScoreColor(e.score||50)}">${homeV2ScoreLabel(e.score||50)}</span>
         </div>
       </div>
-      <div class="home-v2-emp-go">→</div>
+      <button class="home-v2-emp-cta" onclick="event.stopPropagation();openEmp('${e.id}')">Analisar empresa →</button>
     </div>
   </div>`;
 }
@@ -4358,43 +4556,77 @@ function renderHomeV2Recommend(){
   if(!el) return;
   let recs = [];
   if(typeof orionRecommendAll==='function'){
-    recs = orionRecommendAll().slice(0,5);
+    recs = orionRecommendAll();
   }
-  const chipCls = u=>u==='critical'?'hi':u==='high'?'urg':u==='low'?'op':'urg';
-  const chipLabel = u=>u==='critical'?'Crítico':u==='high'?'Alta':u==='medium'?'Média':'Oportunidade';
-  el.innerHTML = `<div class="home-v2-recommend-head">
+  const top3 = recs.slice(0,3);
+  const total = recs.length;
+  const lvlLabel = u=>u==='critical'?'ALTA':u==='high'?'ALTA':u==='medium'?'MÉDIA':'BAIXA';
+  const lvlCls = u=>(u==='critical'||u==='high')?'alta':u==='medium'?'media':'baixa';
+  const empSigla = id => (EMPS[id]&&EMPS[id].sigla) || (id||'').toUpperCase();
+  const empColor = id => (EMPS[id]&&EMPS[id].cor) || 'var(--blue)';
+  const cards = top3.length===0
+    ? `<div class="home-v2-rec-empty">✓ Nenhuma recomendação crítica agora — operação saudável.</div>`
+    : top3.map(r=>`<div class="home-v2-rec-card" onclick="openEmp('${escHtml(r.empId)}')">
+        <div class="home-v2-rec-card-head">
+          <span class="home-v2-rec-level ${lvlCls(r.urgency)}">${lvlLabel(r.urgency)}</span>
+          <span class="home-v2-rec-emp" style="background:${empColor(r.empId)}22;color:${empColor(r.empId)};border:1px solid ${empColor(r.empId)}55">${escHtml(empSigla(r.empId))}</span>
+        </div>
+        <div class="home-v2-rec-title">${escHtml(r.problem||r.action||'Recomendação')}</div>
+        <div class="home-v2-rec-action">${escHtml(r.action||r.explain||'')}</div>
+        <button class="home-v2-rec-btn" onclick="event.stopPropagation();openEmp('${escHtml(r.empId)}')">Agir →</button>
+      </div>`).join('');
+  el.innerHTML = `
+    <div class="home-v2-recommend-head">
       <div class="home-v2-recommend-icon">🤖</div>
       <div class="home-v2-recommend-title">ORION recomenda hoje</div>
-      <span style="color:var(--tx3);font-size:14px">»</span>
+      ${total>0?`<span class="home-v2-recommend-badge">${total} recomendação${total===1?'':'ões'} ativa${total===1?'':'s'}</span>`:''}
+      <span class="home-v2-recommend-cta" onclick="navOpenEmpTab('Extrato IA')">Ver plano completo →</span>
     </div>
-    ${recs.length===0 ? '<div style="font-size:11px;color:var(--tx3);padding:10px 0">Sem alertas críticos. Operação saudável. 🎉</div>' :
-      recs.map(r=>`<div class="home-v2-rec-item" onclick="openEmp('${r.empId}')" style="cursor:pointer" title="${escHtml(r.explain||'')}">
-        <span class="home-v2-rec-check">${r.urgency==='critical'?'!':r.urgency==='high'?'▲':'✓'}</span>
-        <span class="home-v2-rec-text">${escHtml(r.action||r.problem||'')} ${r.emp?`<span style="color:var(--tx3);font-size:10px">· ${escHtml(r.emp)}</span>`:''}</span>
-        <span class="home-v2-rec-chip ${chipCls(r.urgency)}">${chipLabel(r.urgency)}</span>
-      </div>`).join('')}
-    <div class="home-v2-recommend-foot" onclick="navOpenEmpTab('Extrato IA')" style="cursor:pointer">Ver plano completo →</div>`;
+    <div class="home-v2-rec-grid">${cards}</div>`;
 }
 
 function renderHomeV2Alerts(){
   const el = document.getElementById('home-alerts');
   if(!el) return;
-  const emps = getActiveEmps();
-  const dw = emps.find(e=>e.id==='dw');
-  const fs = emps.find(e=>e.id==='fs');
-  const items = [
-    {kind:'crit', n:'2 críticos', sub: dw?dw.nome+': Margem abaixo do ideal':'—'},
-    {kind:'warn', n:'1 atenção',  sub: dw?dw.nome+': CAC elevado':'—'},
-    {kind:'op',   n:'1 oportunidade', sub: fs?fs.nome+': Alta demanda':'—'}
-  ];
-  el.innerHTML = `<div class="home-v2-side-title"><span>Alertas Ativos</span><span class="home-v2-side-badge">4</span></div>
-    ${items.map(a=>`<div class="home-v2-alert-item">
-      <div class="home-v2-alert-icon ${a.kind}">${a.kind==='crit'?'!':a.kind==='warn'?'▲':'★'}</div>
-      <div class="home-v2-alert-body">
-        <div class="home-v2-alert-lbl">${escHtml(a.n)}</div>
-        <div class="home-v2-alert-sub">${escHtml(a.sub)}</div>
-      </div>
-    </div>`).join('')}
+  // FASE B — agrupar alertas por empresa (empresas ativas apenas)
+  const activeEmps = getActiveEmps();
+  const alerts = (typeof getAlerts==='function') ? getAlerts().filter(a=>!a.read) : [];
+  // Associa alerta → empresa por match de nome no texto
+  const byEmp = {};
+  activeEmps.forEach(e=>{ byEmp[e.id] = {emp:e, items:[]}; });
+  alerts.forEach(a=>{
+    const emp = activeEmps.find(e=> (a.text||'').toLowerCase().includes((e.nome||'').toLowerCase()));
+    if(emp) byEmp[emp.id].items.push(a);
+  });
+  const severityRank = {red:0, amber:1, green:2};
+  const groups = Object.values(byEmp)
+    .filter(g=>g.items.length>0)
+    .map(g=>{
+      g.items.sort((a,b)=>(severityRank[a.level]||9)-(severityRank[b.level]||9));
+      g.topSeverity = severityRank[g.items[0].level] || 9;
+      return g;
+    })
+    .sort((a,b)=>a.topSeverity-b.topSeverity);
+  const totalUnread = alerts.length;
+  if(groups.length===0){
+    el.innerHTML = `<div class="home-v2-side-title"><span>Alertas Ativos</span><span class="home-v2-side-badge">0</span></div>
+      <div style="font-size:12px;color:var(--tx3);padding:10px 0">Nenhum alerta pendente. ✓</div>`;
+    return;
+  }
+  const dotColor = lvl => lvl==='red'?'var(--red)':lvl==='amber'?'var(--amber)':'var(--green)';
+  el.innerHTML = `<div class="home-v2-side-title"><span>Alertas por Empresa</span><span class="home-v2-side-badge">${totalUnread}</span></div>
+    ${groups.map(g=>`
+      <div class="home-v2-alert-group">
+        <div class="home-v2-alert-group-head">
+          <span class="home-v2-alert-emp-badge" style="background:${g.emp.cor}22;color:${g.emp.cor};border:1px solid ${g.emp.cor}55">${escHtml(g.emp.sigla)}</span>
+          <span class="home-v2-alert-emp-name">${escHtml(g.emp.nome)}</span>
+          <span class="home-v2-alert-emp-count">${g.items.length}</span>
+        </div>
+        ${g.items.slice(0,3).map(a=>`<div class="home-v2-alert-row">
+          <span class="home-v2-alert-dot" style="background:${dotColor(a.level)}"></span>
+          <span class="home-v2-alert-text">${escHtml(a.text||'')}</span>
+        </div>`).join('')}
+      </div>`).join('')}
     <div style="font-size:11px;color:var(--blue3);margin-top:8px;cursor:pointer;font-weight:600" onclick="toggleAlertsDd()">Ver todos os alertas →</div>`;
 }
 

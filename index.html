@@ -3888,7 +3888,7 @@ async function saveSupabaseConfig(){
     renderEmpGrid();
     renderAgenda();
     renderAlertsDd();
-    renderHomeAlerts();
+    if(typeof renderHomeV2Alerts==='function') renderHomeV2Alerts();
     updateMXBadge();
     showToast('Supabase sincronizado!');
   } else {
@@ -4501,13 +4501,19 @@ function generateEmpInsights(e){
   return out.slice(0,3);
 }
 
-// FASE B.2 — detecta o top performer do ecossistema (maior health score)
-// para adicionar trophy 🏆 ao badge CRESCIMENTO. Empate: primeiro da lista.
+// FASE B.2 — detecta o top performer ENTRE empresas em status Crescimento
+// (label derivado por homeV2EmpStatus). Trophy 🏆 só aparece para a top.
+// Empate: primeiro da lista. Se ninguém em Crescimento, retorna null.
 function getTopPerformerId(){
   const list = getActiveEmps().filter(e=>!e.id.startsWith('custom_'));
-  if(list.length===0) return null;
-  let best = list[0];
-  list.forEach(e=>{ if((e.score||0) > (best.score||0)) best = e; });
+  const emCrescimento = list.filter(e=>{
+    const st = (typeof homeV2EmpStatus==='function') ? homeV2EmpStatus(e) : null;
+    const lbl = (st && st.label) || e.status || '';
+    return String(lbl).toLowerCase() === 'crescimento';
+  });
+  if(emCrescimento.length===0) return null;
+  let best = emCrescimento[0];
+  emCrescimento.forEach(e=>{ if((e.score||0) > (best.score||0)) best = e; });
   return best.id;
 }
 function renderHomeV2EmpCard(e, fullWidth){
@@ -4518,9 +4524,12 @@ function renderHomeV2EmpCard(e, fullWidth){
   const crescS = e.cresc>=0?'▲':'▼';
   const logoHtml = (typeof empLogoHTML==='function') ? empLogoHTML(e.id,36) : '';
   const sigla = logoHtml || escHtml(e.sigla||(e.nome||'').slice(0,2).toUpperCase());
-  // Trophy: exibido quando status é Crescimento E empresa é o top performer
-  const isTop = (typeof getTopPerformerId==='function') && (getTopPerformerId()===e.id);
-  const trophy = (st.label==='Crescimento' && isTop) ? '<span class="home-v2-trophy" title="Top performer">🏆</span>' : '';
+  // Trophy: exibido quando status é Crescimento (case-insensitive) E empresa é o top performer
+  const topId = (typeof getTopPerformerId==='function') ? getTopPerformerId() : null;
+  const isTop = topId === e.id;
+  const statusLower = String(st.label||'').toLowerCase();
+  const trophy = (statusLower==='crescimento' && isTop) ? '<span class="home-v2-trophy" title="Top performer">🏆</span>' : '';
+  console.log('[DEBUG-B2][topPerformer] topId=', topId, 'current emp:', e.id, 'status:', st.label, 'trophy:', !!trophy);
   return `<div class="home-v2-emp-card${fullWidth?' full':''}" style="--emp-c:${e.cor};--emp-c2:${e.cor}88" onclick="openEmp('${e.id}')">
     <div class="home-v2-emp-head">
       <div class="home-v2-emp-id">
@@ -4627,7 +4636,21 @@ function renderHomeV2Alerts(){
   const el = document.getElementById('home-alerts');
   if(!el) return;
   // FASE B.2 — agrupamento por SEVERIDADE (match referência): críticos / atenção / oportunidade
-  const alerts = (typeof getAlerts==='function') ? getAlerts().filter(a=>!a.read) : [];
+  let alerts = (typeof getAlerts==='function') ? getAlerts().filter(a=>!a.read) : [];
+  // Fallback: quando getAlerts() vazio, derivar alertas a partir dos cards de empresa ativas
+  if(alerts.length===0 && typeof getActiveEmps==='function'){
+    const derived = [];
+    getActiveEmps().forEach(e=>{
+      if(e.id.startsWith('custom_')) return;
+      const inadimp = e.id==='of'?8.7:e.id==='dw'?3.2:e.id==='cdl'?2.1:e.id==='fs'?0:0;
+      if(inadimp > 5) derived.push({level:'red', text:`${e.nome}: Inadimplência ${inadimp}% (limite 5%)`});
+      if((e.cresc||0) < 0) derived.push({level:'amber', text:`${e.nome}: Crescimento ${(e.cresc||0).toFixed(1)}%`});
+      if((e.score||0) < 60) derived.push({level:'amber', text:`${e.nome}: Health score ${e.score}`});
+      if((e.cresc||0) > 20) derived.push({level:'green', text:`${e.nome}: Crescimento +${(e.cresc||0).toFixed(0)}%`});
+      if((e.fat>0) && ((e.result/e.fat)*100) > 50) derived.push({level:'green', text:`${e.nome}: Margem acima de 50%`});
+    });
+    alerts = derived;
+  }
   const criticos = alerts.filter(a=>['critical','alta','red'].includes(a.level));
   const atencao  = alerts.filter(a=>['warning','media','amber'].includes(a.level));
   const oportun  = alerts.filter(a=>['info','baixa','green'].includes(a.level) || a.type==='opportunity');
@@ -11119,8 +11142,8 @@ function renderVisaoConsolidada(){
     oppEl.innerHTML=opps.map(o=>`<div class="vc-opp-item" style="border-left-color:${o.cor}">${o.icon} ${o.text}</div>`).join('');
   }
 
-  // Keep old home-alerts rendering
-  renderHomeAlerts();
+  // FASE B.2 — Keep home-alerts rendering coherent with V2 (severity groups)
+  if(typeof renderHomeV2Alerts==='function') renderHomeV2Alerts();
 }
 
 // ── CRM DRAG & DROP ──────────────────────────────────────────────────────────

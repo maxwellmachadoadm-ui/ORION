@@ -11,6 +11,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="ORION">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<!-- ORION Supabase config (deploy-time): preencher content="" com os valores públicos -->
+<meta name="orion-sb-url" content="">
+<meta name="orion-sb-key" content="">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
@@ -3428,11 +3431,41 @@ function LS(k,v){if(v===undefined)return localStorage.getItem('orion_'+k);localS
 // ── SUPABASE DATA LAYER ──────────────────────────────────────────────────
 let sb = null;
 
+// Resolve Supabase URL + anon key a partir de múltiplas fontes (ordem de prioridade):
+//  1) window.ORION_ENV (injetado por deploy ou console)
+//  2) <meta name="orion-sb-url"> / <meta name="orion-sb-key">
+//  3) localStorage (orion_sb_url / orion_sb_key) — fluxo antigo do menu Config
+// Ao encontrar em (1) ou (2), persiste em localStorage p/ inicializações futuras.
+function resolveSupabaseConfig(){
+  let url='', key='';
+  try{
+    if(typeof window!=='undefined' && window.ORION_ENV){
+      url = window.ORION_ENV.SUPABASE_URL || window.ORION_ENV.VITE_SUPABASE_URL || '';
+      key = window.ORION_ENV.SUPABASE_ANON_KEY || window.ORION_ENV.VITE_SUPABASE_ANON_KEY || '';
+    }
+  }catch(e){}
+  if(!url || !key){
+    try{
+      const mu = document.querySelector('meta[name="orion-sb-url"]');
+      const mk = document.querySelector('meta[name="orion-sb-key"]');
+      if(mu && mu.content) url = url || mu.content.trim();
+      if(mk && mk.content) key = key || mk.content.trim();
+    }catch(e){}
+  }
+  if(!url) url = localStorage.getItem('orion_sb_url')||'';
+  if(!key) key = localStorage.getItem('orion_sb_key')||'';
+  // Persiste p/ próximos boots se encontrou via ENV/meta
+  try{
+    if(url && !localStorage.getItem('orion_sb_url')) localStorage.setItem('orion_sb_url', url);
+    if(key && !localStorage.getItem('orion_sb_key')) localStorage.setItem('orion_sb_key', key);
+  }catch(e){}
+  return {url, key};
+}
+
 function initSupabase(){
-  const url = localStorage.getItem('orion_sb_url');
-  const key = localStorage.getItem('orion_sb_key');
+  const {url, key} = resolveSupabaseConfig();
   if(url && key && typeof supabase !== 'undefined'){
-    try { sb = supabase.createClient(url, key); } catch(e){ sb = null; }
+    try { sb = supabase.createClient(url, key); } catch(e){ sb = null; console.warn('[initSupabase] createClient falhou:', e && e.message); }
   }
 }
 
@@ -3737,7 +3770,7 @@ async function authDetectRecovery(){
   }catch(e){}
   return false;
 }
-function forgotPassword(){
+async function forgotPassword(){
   const email = (document.getElementById('login-email')||{}).value || '';
   if(!email){
     alert('Informe seu e-mail no campo acima e clique novamente em "Esqueci minha senha".');
@@ -3748,35 +3781,31 @@ function forgotPassword(){
     return;
   }
   try{ if(typeof audit==='function') audit('auth.password_reset_request', {type:'auth',id:email,label:email}, null, {}); }catch(e){}
-  // FASE 2B — fluxo oficial Supabase Auth (sem mecanismo paralelo quando configurado)
+  // Garante inicialização do cliente Supabase (multi-source resolver)
   try{ if(typeof initSupabase==='function' && !sb) initSupabase(); }catch(e){}
-  if(typeof sb!=='undefined' && sb && sb.auth && typeof sb.auth.resetPasswordForEmail==='function'){
+  const {url: sbUrl} = (typeof resolveSupabaseConfig==='function') ? resolveSupabaseConfig() : {url:''};
+  console.log('[forgotPassword] sb:', !!sb, 'url:', sbUrl);
+  // Supabase Auth — fluxo oficial (PRIMEIRO e único caminho quando sb existe)
+  if(sb && sb.auth && typeof sb.auth.resetPasswordForEmail==='function'){
     const redirectTo = window.location.origin + window.location.pathname + '#recover';
-    sb.auth.resetPasswordForEmail(email, {redirectTo}).then(({error})=>{
-      if(error){
-        showToast('Erro Supabase Auth: '+(error.message||'verifique sua configuração')+' — usando fallback local');
-        fallbackResendEmail(email);
-      } else {
-        showToast('Link enviado via Supabase Auth. Verifique seu e-mail.');
+    try{
+      const result = await sb.auth.resetPasswordForEmail(email, {redirectTo});
+      console.log('[forgotPassword] resetPasswordForEmail result:', result);
+      if(result && result.error){
+        showToast('Erro ao enviar link: '+(result.error.message||'tente novamente'));
+        return;
       }
-    }).catch(()=>{ fallbackResendEmail(email); });
-    return;
+      showToast('Link de recuperação enviado! Verifique seu e-mail.');
+      return; // ← não cai em nenhum fallback
+    }catch(err){
+      console.warn('[forgotPassword] exceção Supabase:', err && err.message);
+      showToast('Erro de rede ao contatar Supabase. Tente novamente.');
+      return;
+    }
   }
-  // Fallback: endpoint Resend existente (compat)
-  fallbackResendEmail(email);
-}
-function fallbackResendEmail(email){
-  fetch('/api/reset-password', {
-    method: 'POST',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({ email })
-  })
-  .then(r => r.json())
-  .then(d => {
-    if(d.ok) showToast('Link enviado! Verifique seu email.');
-    else showToast('Erro ao enviar. Tente novamente.');
-  })
-  .catch(() => showToast('Erro de rede. Tente novamente.'));
+  // Sem cliente Supabase — NÃO chama /api/reset-password (endpoint não é deployado no build estático)
+  console.warn('[forgotPassword] Supabase não configurado. Configure SUPABASE_URL/ANON_KEY.');
+  showToast('Recuperação de senha indisponível — Supabase Auth não está configurado. Peça ao admin para configurar em Configurações › Supabase.');
 }
 
 async function doLogin(){

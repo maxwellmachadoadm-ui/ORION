@@ -3742,33 +3742,56 @@ async function doResetPassword(){
       const u = users.find(x=>x.email===data.user.email);
       if(u){ u.pass = btoa(p1); LS('users', JSON.stringify(users)); }
     }
-    showToast('Senha atualizada com sucesso — faça login com a nova senha.');
-    // Limpa hash e volta ao login
-    if(history && history.replaceState) history.replaceState(null, '', window.location.pathname);
+    // Limpa hash/query da URL
+    try{ if(history && history.replaceState) history.replaceState(null, '', window.location.pathname); }catch(e){}
+    // signOut p/ invalidar a sessão de recovery (usuário deve re-autenticar com a nova senha)
+    try{ if(sb && sb.auth && typeof sb.auth.signOut==='function') await sb.auth.signOut(); }catch(e){}
+    // Limpa sessão local para evitar auto-enterPlatform
+    try{ localStorage.removeItem('orion_session'); }catch(e){}
+    showToast('Senha atualizada — faça login com a nova senha.');
     showLogin();
   }catch(err){
+    console.warn('[doResetPassword] erro:', err && err.message);
     showToast('Erro de rede. Tente novamente.');
   }
 }
 
-// Detecta link de recuperação do Supabase: hash contém type=recovery
+// Detecta link de recuperação do Supabase — 3 formatos:
+//  (a) hash com type=recovery ou access_token= (fluxo implicit antigo)
+//  (b) query com type=recovery ou code= (fluxo PKCE novo)
+//  (c) hash = '#recover' (nosso redirectTo explicito)
+// Retorna true se modo recovery — chamador DEVE abortar autoLogin nesse caso.
 async function authDetectRecovery(){
   try{
     const h = window.location.hash || '';
-    // Supabase envia: #access_token=...&type=recovery&...
-    if(h.indexOf('type=recovery')>=0 || h==='#recover'){
-      if(typeof initSupabase==='function' && !sb) initSupabase();
-      if(typeof sb!=='undefined' && sb && sb.auth && typeof sb.auth.getSession==='function'){
-        // Supabase trata o hash automaticamente e expõe session
-        try{ await sb.auth.getSession(); }catch(e){}
-      }
-      document.getElementById('login-screen').classList.remove('hidden');
-      document.getElementById('platform').classList.add('hidden');
-      showResetForm();
-      return true;
+    const q = window.location.search || '';
+    console.log('[authDetectRecovery] hash:', h, 'search:', q);
+    const hashHasRecovery = (h.indexOf('type=recovery')>=0) || (h.indexOf('access_token=')>=0) || h==='#recover';
+    const queryHasRecovery = (q.indexOf('type=recovery')>=0) || (q.indexOf('code=')>=0);
+    const isRecovery = hashHasRecovery || queryHasRecovery;
+    console.log('[authDetectRecovery] isRecovery:', isRecovery);
+    if(!isRecovery) return false;
+    // Inicializa cliente Supabase se ainda não criado
+    if(typeof initSupabase==='function' && !sb) initSupabase();
+    // Fluxo PKCE: troca 'code=' por sessão se aplicável
+    if(queryHasRecovery && q.indexOf('code=')>=0 && sb && sb.auth && typeof sb.auth.exchangeCodeForSession==='function'){
+      try{
+        const ex = await sb.auth.exchangeCodeForSession(window.location.href);
+        console.log('[authDetectRecovery] exchangeCodeForSession:', ex && ex.error ? ex.error.message : 'ok');
+      }catch(e){ console.warn('[authDetectRecovery] exchangeCodeForSession exceção:', e && e.message); }
+    } else if(sb && sb.auth && typeof sb.auth.getSession==='function'){
+      // Fluxo implicit — Supabase lê o hash automaticamente
+      try{ await sb.auth.getSession(); }catch(e){}
     }
-  }catch(e){}
-  return false;
+    // Força UI de reset (bloqueia autoLogin / plataforma)
+    const ls = document.getElementById('login-screen'); if(ls) ls.classList.remove('hidden');
+    const pl = document.getElementById('platform'); if(pl) pl.classList.add('hidden');
+    if(typeof showResetForm==='function') showResetForm();
+    return true;
+  }catch(e){
+    console.warn('[authDetectRecovery] erro:', e && e.message);
+    return false;
+  }
 }
 async function forgotPassword(){
   const email = (document.getElementById('login-email')||{}).value || '';

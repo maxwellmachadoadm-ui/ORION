@@ -2564,6 +2564,50 @@ html body { font-size: 12px !important; }
 .rec-drill-empty{font-family:'DM Sans',sans-serif;font-size:12px;color:#94a3b8;padding:20px;text-align:center;background:#0a0f1e;border:1px dashed #1e2a45;border-radius:8px}
 .rec-drill-steps{display:flex;flex-direction:column;gap:6px;font-family:'DM Sans',sans-serif;font-size:12.5px;color:#cbd5e1;line-height:1.5}
 
+/* Ciclo 5 — Plano do Dia (copiloto executivo) */
+.orion-plan-day{
+  padding:14px 16px;border:1px solid rgba(245,158,11,.3);border-radius:10px;
+  background:linear-gradient(135deg,rgba(245,158,11,.08),rgba(245,158,11,.02));
+  margin-bottom:16px;
+}
+.orion-plan-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.orion-plan-title{
+  font-family:'DM Sans',sans-serif;font-size:11px;font-weight:700;
+  letter-spacing:.15em;color:#f59e0b;text-transform:uppercase;
+}
+.orion-plan-count{font-family:'DM Sans',sans-serif;font-size:11px;color:#94a3b8;opacity:.85}
+.orion-plan-list{display:flex;flex-direction:column;gap:4px}
+.orion-plan-item{
+  display:grid;grid-template-columns:24px 1fr auto auto;gap:10px;align-items:center;
+  padding:8px 10px;font-family:'DM Sans',sans-serif;font-size:13px;color:#cbd5e1;
+  cursor:pointer;border-radius:6px;transition:background .15s;
+}
+.orion-plan-item:hover{background:rgba(245,158,11,.06)}
+.plan-rank{font-family:'Syne',sans-serif;font-weight:800;color:#f59e0b;font-size:14px}
+.plan-text{line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.plan-emp{
+  font-family:'DM Sans',sans-serif;font-size:10px;font-weight:700;color:#94a3b8;
+  text-transform:uppercase;letter-spacing:1px;
+  padding:2px 6px;border-radius:4px;background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.06);
+}
+.plan-impact{font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;white-space:nowrap}
+.plan-impact-pos{color:#10b981}
+.plan-impact-neg{color:#ef4444}
+.plan-urg-critical .plan-rank{color:#ef4444}
+.plan-urg-high .plan-rank{color:#f59e0b}
+.plan-urg-medium .plan-rank{color:#a78bfa}
+.plan-urg-low .plan-rank{color:#10b981}
+.orion-plan-foot{
+  margin-top:10px;padding-top:8px;border-top:1px solid rgba(245,158,11,.15);
+  font-family:'DM Sans',sans-serif;font-size:11px;color:#cbd5e1;
+}
+.orion-plan-foot strong{color:#f59e0b;font-weight:800}
+.orion-plan-empty{
+  padding:12px;text-align:center;color:#94a3b8;font-family:'DM Sans',sans-serif;
+  font-size:12.5px;font-style:italic;
+}
+
 /* ═══ FASE B.2 — Alertas agrupados por SEVERIDADE (não por empresa) ═══ */
 .home-v2-alert-sev{
   display:flex;align-items:flex-start;gap:10px;padding:8px 0;
@@ -2985,6 +3029,8 @@ html body { font-size: 12px !important; }
   <!-- LAYOUT -->
   <div class="home-v2-layout">
     <div class="home-v2-main">
+      <!-- Ciclo 5 — Plano do Dia (copiloto executivo) -->
+      <div id="home-plano-dia" class="orion-plan-day"></div>
       <div class="home-v2-section-label">Prioridades do Dia</div>
       <!-- FASE B.2 — top row: 3 prioridades + ORION na 4ª coluna (1fr 1fr 1fr 1.2fr) -->
       <div class="home-v2-top-row">
@@ -4843,6 +4889,44 @@ function renderEmpGrid(){
   }).join('');
 }
 
+// Ciclo 5 — render do Plano do Dia (topo da home)
+function renderHomeV2PlanoDoDia(){
+  const el = document.getElementById('home-plano-dia');
+  if(!el) return;
+  const plano = (typeof gerarPlanoDoDia==='function') ? gerarPlanoDoDia(3) : [];
+  if(plano.length === 0){
+    el.innerHTML = `<div class="orion-plan-head">
+        <span class="orion-plan-title">PLANO DO DIA · ORION</span>
+      </div>
+      <div class="orion-plan-empty">Sem ações pendentes hoje. ORION tá de boa.</div>`;
+    return;
+  }
+  const impactoTotal = calcularImpactoPlano(plano);
+  const itensHTML = plano.map((r, i) => {
+    const empLabel = (EMPS[r.empId] && EMPS[r.empId].sigla) || r.emp || r.empId || 'Empresa';
+    const urgClass = `plan-urg-${r.urgency||'medium'}`;
+    const impactLabel = (r.impact||0) >= 0
+      ? `+${FMT.brlK(r.impact||0)}`
+      : `-${FMT.brlK(Math.abs(r.impact||0))}`;
+    const impactCls = (r.impact||0) >= 0 ? 'plan-impact-pos' : 'plan-impact-neg';
+    return `<div class="orion-plan-item ${urgClass}" onclick="openRecDrill('${escHtml(r.empId)}','${escHtml(r.key)}')">
+      <span class="plan-rank">${i+1}.</span>
+      <span class="plan-text">${escHtml(r.problem||'Recomendação')}</span>
+      <span class="plan-emp">${escHtml(empLabel)}</span>
+      <span class="plan-impact ${impactCls}">${impactLabel}</span>
+    </div>`;
+  }).join('');
+  el.innerHTML = `
+    <div class="orion-plan-head">
+      <span class="orion-plan-title">PLANO DO DIA · ORION</span>
+      <span class="orion-plan-count">${plano.length} ${plano.length===1?'ação':'ações'}</span>
+    </div>
+    <div class="orion-plan-list">${itensHTML}</div>
+    <div class="orion-plan-foot">
+      Impacto total estimado: <strong>${impactoTotal>=0?'+':'−'}${FMT.brl(Math.abs(impactoTotal))}</strong>
+    </div>`;
+}
+
 function renderHomeV2Recommend(){
   const el = document.getElementById('home-recommend');
   if(!el) return;
@@ -5014,6 +5098,7 @@ function renderHomeV2(){
   renderHomeV2Prioridades();
   renderHomeV2Kpis();
   renderEmpGrid();
+  if(typeof renderHomeV2PlanoDoDia==='function') renderHomeV2PlanoDoDia();
   renderHomeV2Recommend();
   renderHomeV2Alerts();
   renderHomeV2Quick();
@@ -9414,6 +9499,26 @@ function orionRecommendAll(){
   return uniq;
 }
 
+// ─── Ciclo 5 — Plano do Dia (copiloto executivo) ────────────────────────────
+function gerarPlanoDoDia(limite = 3){
+  const recs = (typeof orionRecommendAll==='function') ? orionRecommendAll() : [];
+  return recs
+    .filter(r => (typeof getRecStatus==='function' ? getRecStatus(r.empId, r.key) : 'pending') !== 'done')
+    .sort((a, b) => {
+      const urgRank = {critical:0, high:1, medium:2, low:3};
+      const urgDiff = (urgRank[a.urgency]??9) - (urgRank[b.urgency]??9);
+      if(urgDiff !== 0) return urgDiff;
+      const impactDiff = (b.impact || 0) - (a.impact || 0);
+      if(impactDiff !== 0) return impactDiff;
+      return (a.empId || '').localeCompare(b.empId || '');
+    })
+    .slice(0, limite);
+}
+
+function calcularImpactoPlano(planoRecs){
+  return (planoRecs||[]).reduce((acc, r) => acc + (r.impact || 0), 0);
+}
+
 // Agrupa por urgência (para painéis)
 function orionGroupByUrgency(recs){
   const groups = {critical:[], high:[], medium:[], low:[]};
@@ -9440,6 +9545,7 @@ function orionCreateTaskFromRec(empId, recKey){
   showToast('Tarefa criada pelo ORION');
   curEmp = prev;
   if(typeof renderHomeV2Recommend==='function') renderHomeV2Recommend();
+  if(typeof renderHomeV2PlanoDoDia==='function') renderHomeV2PlanoDoDia();
 }
 
 function orionUrgencyBadge(urg){
@@ -9519,6 +9625,7 @@ function openRecDrill(empId, recKey){
       closeModal('modal-rec-drill');
       if(window.curEmp) { if(typeof renderTab==='function') renderTab(); }
       else { if(typeof renderHomeV2Recommend==='function') renderHomeV2Recommend(); }
+      if(typeof renderHomeV2PlanoDoDia==='function') renderHomeV2PlanoDoDia();
     };
   }
   // Renderizador por chave

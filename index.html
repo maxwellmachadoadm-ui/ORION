@@ -3141,6 +3141,52 @@ html body { font-size: 12px !important; }
 .ws-acao-lbl{font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;color:#cbd5e1;letter-spacing:.3px}
 @media (max-width:900px){.ws-acoes{grid-template-columns:repeat(3,1fr)}}
 
+/* ═══ Ciclo 12A — Central CEO v3 Fase 1 — KpiCard com sparkline ═══ */
+.kpi-card-v3{
+  background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0));
+  border:1px solid rgba(255,255,255,0.06);
+  border-radius:14px;
+  padding:18px 20px;
+  display:flex;flex-direction:column;gap:10px;
+  transition:border-color .15s, transform .15s;
+}
+.kpi-card-v3:hover{border-color:rgba(255,255,255,0.12);transform:translateY(-1px)}
+.kpi-card-v3__label{
+  font-family:'Inter Variable','Inter',system-ui,sans-serif;
+  font-size:11px;font-weight:600;
+  letter-spacing:0.12em;text-transform:uppercase;
+  color:var(--tx3);opacity:0.75;
+}
+.kpi-card-v3__row{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+.kpi-card-v3__value{
+  font-family:'Inter Variable','Inter',system-ui,sans-serif;
+  font-size:28px;font-weight:800;line-height:1;
+  font-variant-numeric:tabular-nums;letter-spacing:-0.02em;
+  color:var(--tx);
+}
+.kpi-card-v3__spark{width:80px;height:24px;opacity:0.85;flex-shrink:0}
+.kpi-card-v3__delta{
+  font-family:'Inter Variable','Inter',system-ui,sans-serif;
+  font-size:12px;font-weight:500;
+  display:flex;align-items:center;gap:5px;
+}
+.kpi-card-v3__delta--up{color:var(--green,#10b981)}
+.kpi-card-v3__delta--down{color:var(--red,#ef4444)}
+.kpi-card-v3__arrow{font-size:14px;font-weight:700;line-height:1}
+/* Tones aplicam cor no valor principal */
+.kpi-card-v3--primary .kpi-card-v3__value{color:var(--blue3,#60a5fa)}
+.kpi-card-v3--positive .kpi-card-v3__value{color:var(--green,#10b981)}
+.kpi-card-v3--warn .kpi-card-v3__value{color:var(--amber,#f59e0b)}
+.kpi-card-v3--critical .kpi-card-v3__value{color:var(--red,#ef4444)}
+@media (max-width:1024px){
+  #home-v3-sandbox > div:last-child{grid-template-columns:repeat(2,1fr)!important}
+}
+@media (max-width:640px){
+  #home-v3-sandbox > div:last-child{grid-template-columns:1fr!important}
+  .kpi-card-v3__value{font-size:22px}
+}
+/* ═══ /Ciclo 12A ═══ */
+
 /* ═══════════════════════════════════════════════════════════════════
    Ciclo 10A.1 — FIX tipografia KPIs inline drill-down.
    Último bloco CSS: cascade + alta specificity vencem qualquer
@@ -5540,6 +5586,131 @@ function renderHomeV2Activity(){
     </div>`).join('')}`;
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// Ciclo 12A — Central CEO v3 Fase 1: aggregator + KpiCard com sparkline
+// Ativação preview: localStorage.setItem('orionV3Preview','1') + reload
+// ═══════════════════════════════════════════════════════════════════════════
+function _v3TrendMock(targetValue, months = 12, volatility = 0.15){
+  // Gera série suave de N meses terminando no targetValue (base + noise determinístico leve)
+  const t = [];
+  let cur = targetValue * (1 - Math.random() * volatility);
+  for(let i=0; i<months; i++){
+    const progress = i / (months-1);
+    const base = cur + (targetValue - cur) * progress;
+    const noise = (Math.random() - 0.5) * 2 * volatility * Math.abs(targetValue) * 0.3;
+    t.push(base + noise);
+  }
+  t[months-1] = targetValue; // enforce último = atual
+  return t;
+}
+
+function getConsolidatedKPIs(){
+  const emps = (typeof EMPS === 'object' && EMPS)
+    ? Object.values(EMPS).filter(e => e && e.id !== 'gp' && !e.archived && !String(e.id||'').startsWith('custom_'))
+    : [];
+  const totFat = emps.reduce((s,e)=>s+(Number(e.fat)||0), 0);
+  const totRes = emps.reduce((s,e)=>s+(Number(e.result)||0), 0);
+  const margem = totFat > 0 ? (totRes/totFat)*100 : 0;
+  const avgScore = emps.length ? (emps.reduce((s,e)=>s+(Number(e.score)||0),0) / emps.length) : 0;
+
+  const trendFat = _v3TrendMock(totFat);
+  const trendRes = _v3TrendMock(totRes);
+  const trendMar = _v3TrendMock(margem, 12, 0.08);
+  const trendScore = _v3TrendMock(avgScore, 12, 0.05);
+
+  const deltaPct = (arr) => {
+    if(!arr || arr.length<2) return 0;
+    const prev = arr[arr.length-2], cur = arr[arr.length-1];
+    return prev === 0 ? 0 : ((cur - prev) / Math.abs(prev)) * 100;
+  };
+  const fmtVar = (n, suf='% vs mês anterior') => (n>=0?'+':'') + n.toFixed(1) + suf;
+  const fmtVarPts = (n) => (n>=0?'+':'') + Math.round(n) + ' pts vs mês anterior';
+
+  const dFat = deltaPct(trendFat);
+  const dRes = deltaPct(trendRes);
+  const dMar = deltaPct(trendMar);
+  const dScoreAbs = (trendScore[11] - trendScore[10]);
+
+  return {
+    faturamento:      { valor: totFat, deltaPct: dFat, trend: trendFat, variacao: fmtVar(dFat) },
+    resultadoLiquido: { valor: totRes, deltaPct: dRes, trend: trendRes, variacao: fmtVar(dRes) },
+    margemLiquida:    { valor: margem, deltaPct: dMar, trend: trendMar, variacao: fmtVar(dMar) },
+    healthScore:      { valor: Math.round(avgScore), deltaAbs: Math.round(dScoreAbs), trend: trendScore, variacao: fmtVarPts(dScoreAbs) }
+  };
+}
+
+function renderKpiCard(opts){
+  const { label, value, format='brl', delta, deltaLabel, trend=[], tone='primary' } = opts || {};
+  const toneColor = tone==='positive' ? 'var(--green,#10b981)'
+    : tone==='warn' ? 'var(--amber,#f59e0b)'
+    : tone==='critical' ? 'var(--red,#ef4444)'
+    : 'var(--blue,#3b82f6)';
+
+  // Format value
+  let formatted = String(value);
+  if(format === 'brl' && typeof FMT !== 'undefined' && FMT.brlK) formatted = FMT.brlK(Number(value)||0);
+  else if(format === 'pct') formatted = (Number(value)||0).toFixed(1) + '%';
+  else if(format === 'score') formatted = String(Math.round(Number(value)||0));
+  else if(format === 'number') formatted = String(Math.round(Number(value)||0));
+
+  // Sparkline SVG (polyline, sem preenchimento)
+  let sparkSvg = '';
+  if(Array.isArray(trend) && trend.length >= 2){
+    const min = Math.min(...trend), max = Math.max(...trend);
+    const range = max - min || 1;
+    const w = 100, h = 30;
+    const points = trend.map((v, i) => {
+      const x = (i/(trend.length-1)) * w;
+      const y = h - ((v - min) / range) * h;
+      return x.toFixed(1) + ',' + y.toFixed(1);
+    }).join(' ');
+    sparkSvg = `<svg class="kpi-card-v3__spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><polyline points="${points}" stroke="${toneColor}" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  }
+
+  const deltaN = Number(delta) || 0;
+  const deltaUp = deltaN >= 0;
+  const deltaIcon = deltaUp ? '↑' : '↓';
+  const deltaCls = deltaUp ? 'up' : 'down';
+  const deltaTxt = deltaLabel || (Math.abs(deltaN).toFixed(1) + '% vs mês anterior');
+
+  return `<div class="kpi-card-v3 kpi-card-v3--${tone}">
+    <div class="kpi-card-v3__label">${escHtml(label||'')}</div>
+    <div class="kpi-card-v3__row">
+      <div class="kpi-card-v3__value">${formatted}</div>
+      ${sparkSvg}
+    </div>
+    <div class="kpi-card-v3__delta kpi-card-v3__delta--${deltaCls}">
+      <span class="kpi-card-v3__arrow">${deltaIcon}</span>
+      <span>${escHtml(deltaTxt)}</span>
+    </div>
+  </div>`;
+}
+
+function renderV3KpiSandbox(){
+  if(localStorage.getItem('orionV3Preview') !== '1') return;
+  const container = document.querySelector('.home-v2-main');
+  if(!container) return;
+  let mount = document.getElementById('home-v3-sandbox');
+  if(!mount){
+    mount = document.createElement('div');
+    mount.id = 'home-v3-sandbox';
+    mount.style.cssText = 'margin:20px 0 24px;padding:20px;border:1px dashed rgba(59,130,246,.35);border-radius:14px;background:rgba(59,130,246,.02)';
+    container.prepend(mount);
+  }
+  const k = getConsolidatedKPIs();
+  mount.innerHTML = `
+    <div style="font-size:11px;font-weight:700;letter-spacing:.14em;opacity:.55;margin-bottom:14px;text-transform:uppercase;color:var(--tx2)">🧪 Preview Central CEO v3 — Fase 1 (aggregator + KpiCard)</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
+      ${renderKpiCard({ label:'Faturamento', value:k.faturamento.valor, format:'brl', delta:k.faturamento.deltaPct, deltaLabel:k.faturamento.variacao, trend:k.faturamento.trend, tone:'primary' })}
+      ${renderKpiCard({ label:'Resultado Líquido', value:k.resultadoLiquido.valor, format:'brl', delta:k.resultadoLiquido.deltaPct, deltaLabel:k.resultadoLiquido.variacao, trend:k.resultadoLiquido.trend, tone:'positive' })}
+      ${renderKpiCard({ label:'Margem Líquida', value:k.margemLiquida.valor, format:'pct', delta:k.margemLiquida.deltaPct, deltaLabel:k.margemLiquida.variacao, trend:k.margemLiquida.trend, tone: k.margemLiquida.valor>=15?'warn':'critical' })}
+      ${renderKpiCard({ label:'Health Score', value:k.healthScore.valor, format:'score', delta:k.healthScore.deltaAbs, deltaLabel:k.healthScore.variacao, trend:k.healthScore.trend, tone: k.healthScore.valor>=70?'positive':k.healthScore.valor>=50?'warn':'critical' })}
+    </div>`;
+}
+// ═══════════════════════════════════════════════════════════════════════════
+// FIM Ciclo 12A — Central CEO v3 Fase 1
+// ═══════════════════════════════════════════════════════════════════════════
+
 function renderHomeV2(){
   // Ciclo 8: removida chamada a renderHomeV2Prioridades (bloco consolidado com Plano do Dia).
   // Função preservada no código para compatibilidade caso o container volte no redesign futuro.
@@ -5552,6 +5723,8 @@ function renderHomeV2(){
   renderHomeV2Meeting();
   renderHomeV2Impactos();
   renderHomeV2Activity();
+  // Ciclo 12A — Sandbox preview v3 (opt-in via localStorage.orionV3Preview='1')
+  if(typeof renderV3KpiSandbox === 'function') renderV3KpiSandbox();
 }
 
 // ── CEO ──────────────────────────────────────────────────────────────────

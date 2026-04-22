@@ -2452,6 +2452,143 @@ html body .val-sm, html body .ws-kn .val { font-size: var(--text-md) !important;
 html body .home-v2-emp-name, html body .ws-n { font-size: var(--text-md) !important; font-weight: 700 !important; }
 html body .lbl, html body [class*="-lbl"], html body [class*="-label"] { font-size: var(--text-xs) !important; font-weight: 600 !important; text-transform: uppercase !important; letter-spacing: .08em !important; color: var(--tx2) !important; }
 
+/* Ciclo 10B — polish Home (maxxxi ref). Só visual, zero lógica. */
+/* Cards de empresa — refinamento tipográfico + barra de meta + border-left por status */
+html body .home-v2-emp-card{
+  padding:20px!important;border-radius:14px!important;
+  background:rgba(255,255,255,.015)!important;
+  border:1px solid var(--br)!important;
+  border-left:3px solid var(--emp-c,var(--blue))!important;
+  transition:transform .15s,border-color .15s!important;
+}
+html body .home-v2-emp-card:hover{border-color:rgba(255,255,255,.12)!important;transform:translateY(-2px)!important}
+html body .home-v2-emp-head{margin-bottom:16px!important;gap:14px!important}
+html body .home-v2-emp-sigla{
+  width:48px!important;height:48px!important;border-radius:10px!important;
+  font-family:var(--font-display)!important;font-size:17px!important;font-weight:800!important;
+}
+html body .home-v2-emp-name{
+  font-family:var(--font-display)!important;font-size:var(--text-md)!important;
+  font-weight:700!important;letter-spacing:-.01em!important;color:var(--tx)!important;
+}
+html body .home-v2-emp-desc{font-size:var(--text-xs)!important;color:var(--tx3)!important;opacity:.85;margin-top:3px!important}
+/* KPIs internos do card (Resultado/Margem/Tendência) — DM Sans 17px */
+html body .home-v2-emp-metrics{
+  padding:14px 0!important;gap:14px!important;
+  border-top:1px solid rgba(255,255,255,.04)!important;
+  border-bottom:1px solid rgba(255,255,255,.04)!important;
+}
+html body .home-v2-emp-metrics .home-v2-metric-lbl{
+  font-size:10px!important;font-weight:600!important;
+  letter-spacing:.12em!important;text-transform:uppercase!important;
+  color:var(--tx3)!important;opacity:.7;margin-bottom:4px!important;
+}
+html body .home-v2-emp-metrics .home-v2-metric-val{
+  font-family:var(--font-sans)!important;font-size:17px!important;font-weight:700!important;
+  font-variant-numeric:tabular-nums!important;letter-spacing:-.005em!important;
+}
+html body .home-v2-emp-metrics .home-v2-metric-val.pos{color:var(--green)!important}
+html body .home-v2-emp-metrics .home-v2-metric-val.neg{color:var(--red)!important}
+/* Barra de meta */
+html body .home-v2-emp-progress-labels{
+  font-size:var(--text-xs)!important;margin:12px 0 6px!important;
+}
+html body .home-v2-emp-progress-labels span:first-child{font-weight:700!important;color:var(--tx)!important}
+html body .home-v2-emp-progress-labels span:last-child{color:var(--tx3)!important;opacity:.75}
+html body .home-v2-emp-progress-bar{
+  height:4px!important;border-radius:2px!important;
+  background:rgba(255,255,255,.06)!important;overflow:hidden!important;
+}
+html body .home-v2-emp-progress-fill{
+  height:100%!important;background:var(--emp-c,var(--blue))!important;transition:width .3s!important;
+}
+/* Footer — score + seta */
+html body .home-v2-emp-footer{
+  margin-top:16px!important;padding-top:14px!important;
+  border-top:1px solid rgba(255,255,255,.04)!important;
+}
+html body .home-v2-emp-go{
+  background:transparent!important;color:var(--tx)!important;opacity:.45!important;
+  font-size:18px!important;border:none!important;transition:opacity .15s,transform .15s,background .15s!important;
+}
+html body .home-v2-emp-card:hover .home-v2-emp-go{opacity:1!important;transform:translateX(2px)!important}
+
+/* ORION Recomenda — refinar items + badges de severidade */
+html body .home-v2-rec-item{padding:12px 0!important;gap:12px!important;align-items:flex-start!important}
+html body .home-v2-rec-check{
+  width:22px!important;height:22px!important;border-radius:6px!important;
+  background:rgba(16,185,129,.15)!important;color:var(--green)!important;
+  font-size:12px!important;font-weight:700!important;flex-shrink:0;
+}
+html body .home-v2-rec-text{
+  font-size:var(--text-sm)!important;line-height:1.4!important;color:var(--tx)!important;
+}
+html body .home-v2-rec-pill{
+  padding:3px 9px!important;border-radius:999px!important;
+  font-size:10px!important;font-weight:700!important;
+  letter-spacing:.06em!important;text-transform:uppercase!important;
+  color:#fff!important;flex-shrink:0;border:none!important;
+}
+html body .home-v2-rec-pill.urg{background:var(--red)!important}
+html body .home-v2-rec-pill.hi{background:var(--amber)!important}
+html body .home-v2-rec-pill.op{background:var(--green)!important}
+
+/* KPIs Consolidados da Home — DM Sans 28px + delta colorido */
+html body .home-v2-kpi-card{
+  padding:18px 20px!important;border-radius:12px!important;
+  background:rgba(255,255,255,.015)!important;
+  border:1px solid var(--br)!important;
+  min-height:auto!important;
+}
+html body .home-v2-kpi-card .home-v2-kpi-head{
+  display:flex!important;gap:8px!important;align-items:center!important;margin-bottom:10px!important;
+}
+html body .home-v2-kpi-card .home-v2-kpi-icon{
+  width:28px!important;height:28px!important;border-radius:6px!important;
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  font-size:14px!important;flex-shrink:0;
+}
+html body .home-v2-kpi-card .home-v2-kpi-val{
+  font-family:var(--font-sans)!important;font-size:26px!important;font-weight:800!important;
+  font-variant-numeric:tabular-nums!important;letter-spacing:-.01em!important;
+  margin:4px 0!important;
+}
+html body .home-v2-kpi-card .home-v2-kpi-delta{
+  font-size:var(--text-xs)!important;font-weight:600!important;
+}
+html body .home-v2-kpi-card .home-v2-kpi-delta.up{color:var(--green)!important}
+html body .home-v2-kpi-card .home-v2-kpi-delta.down{color:var(--red)!important}
+
+/* Ações Rápidas — grid mais respirável + hover suave */
+html body .home-v2-actions-row{gap:10px!important}
+html body .home-v2-action-btn{
+  padding:16px 10px!important;border-radius:10px!important;
+  background:rgba(255,255,255,.03)!important;border:1px solid var(--br)!important;
+  display:flex!important;flex-direction:column!important;align-items:center!important;gap:8px!important;
+  transition:background .15s,border-color .15s,transform .1s!important;
+}
+html body .home-v2-action-btn:hover{
+  background:rgba(255,255,255,.07)!important;border-color:rgba(255,255,255,.14)!important;
+  transform:translateY(-1px)!important;
+}
+html body .home-v2-action-ico{font-size:20px!important;color:var(--amber)!important}
+html body .home-v2-action-lbl{
+  font-size:var(--text-xs)!important;font-weight:600!important;
+  letter-spacing:.04em!important;color:var(--tx2)!important;
+}
+html body .home-v2-action-btn:hover .home-v2-action-lbl{color:var(--tx)!important}
+
+/* Responsivo Home */
+@media (max-width:1280px){
+  html body .home-v2-actions-row{flex-wrap:wrap!important}
+  html body .home-v2-action-btn{flex:1 1 30%!important;min-width:100px!important}
+}
+@media (max-width:768px){
+  html body .home-v2-emp-card{padding:16px!important}
+  html body .home-v2-emp-metrics{grid-template-columns:1fr 1fr!important}
+  html body .home-v2-action-btn{flex:1 1 45%!important}
+}
+
 /* Ciclo 10A — polish drill-down empresa (maxxxi ref). Só visual, zero lógica. */
 /* Breadcrumb ws-crumbs (já existe, refina opacity + hover) */
 html body .ws-crumbs{padding:12px 0 14px 0!important;margin-bottom:0!important;font-size:var(--text-xs)!important;opacity:.85}

@@ -3590,6 +3590,10 @@ html body { font-size: 12px !important; }
         <input class="fs-rent2-inp" id="fs-rent2-turma-alunos" type="number" min="0" placeholder="Ex.: 60"/>
       </div>
     </div>
+    <div class="fs-rent2-lbl">Meta Individual (R$)</div>
+    <input class="fs-rent2-inp" id="fs-rent2-turma-meta" type="text" inputmode="decimal" placeholder="Ex.: 30.000" oninput="FSSimV10.maskBRL(this)"/>
+    <div class="fs-rent2-lbl">Observações</div>
+    <textarea class="fs-rent2-inp" id="fs-rent2-turma-obs" rows="3" placeholder="Notas internas sobre a turma (opcional)" style="resize:vertical;min-height:60px;font-family:inherit"></textarea>
     <div class="fs-rent2-modal-actions">
       <button class="fs-rent2-btn" onclick="closeModal('modal-fs-rent2-turma')">Cancelar</button>
       <button class="fs-rent2-btn fs-rent2-btn-primary" onclick="fsRent2SaveTurma()">Salvar</button>
@@ -7300,8 +7304,12 @@ function fsRent2OpenNovaTurma(){
   document.getElementById('fs-rent2-turma-prev').value='';
   document.getElementById('fs-rent2-turma-rep').value='';
   document.getElementById('fs-rent2-turma-alunos').value='';
+  // Ciclo 9 — novos campos
+  const metaEl = document.getElementById('fs-rent2-turma-meta'); if(metaEl) metaEl.value='';
+  const obsEl = document.getElementById('fs-rent2-turma-obs'); if(obsEl) obsEl.value='';
   document.getElementById('fs-rent2-turma-title').textContent='Nova Turma';
   openModal('modal-fs-rent2-turma');
+  setTimeout(()=>{ try{ document.getElementById('fs-rent2-turma-nome').focus(); }catch(e){} }, 100);
 }
 
 function fsRent2OpenEditTurma(id){
@@ -7314,6 +7322,10 @@ function fsRent2OpenEditTurma(id){
   document.getElementById('fs-rent2-turma-prev').value=t.prev||'';
   document.getElementById('fs-rent2-turma-rep').value=t.representante||'';
   document.getElementById('fs-rent2-turma-alunos').value=t.alunos||'';
+  // Ciclo 9 — novos campos (com fallbacks p/ turmas antigas sem esses dados)
+  const metaEl = document.getElementById('fs-rent2-turma-meta');
+  if(metaEl) metaEl.value = t.metaIndividual ? (typeof FSSimV10!=='undefined' ? FSSimV10.fmtBRL(t.metaIndividual) : String(t.metaIndividual)) : '';
+  const obsEl = document.getElementById('fs-rent2-turma-obs'); if(obsEl) obsEl.value = t.observacoes || '';
   document.getElementById('fs-rent2-turma-title').textContent='Editar Turma';
   openModal('modal-fs-rent2-turma');
 }
@@ -7326,18 +7338,36 @@ function fsRent2SaveTurma(){
   const prev = document.getElementById('fs-rent2-turma-prev').value;
   const representante = document.getElementById('fs-rent2-turma-rep').value.trim();
   const alunos = parseInt(document.getElementById('fs-rent2-turma-alunos').value)||0;
+  // Ciclo 9 — novos campos
+  const metaStr = (document.getElementById('fs-rent2-turma-meta')||{}).value || '';
+  const metaIndividual = (typeof FSSimV10!=='undefined' && FSSimV10.parseBRL) ? FSSimV10.parseBRL(metaStr) : (parseFloat(metaStr)||0);
+  const observacoes = ((document.getElementById('fs-rent2-turma-obs')||{}).value || '').trim();
   if(!nome){ showToast('Informe o nome da turma'); return; }
+  if(alunos < 0){ showToast('Nº de alunos inválido'); return; }
   const turmas = fsRent2GetTurmas();
+  const nowIso = new Date().toISOString();
   if(id){
     const t = turmas.find(x=>x.id===id);
-    if(t){ t.nome=nome; t.curso=curso; t.inicio=inicio; t.prev=prev; t.representante=representante; t.alunos=alunos; }
+    if(t){
+      t.nome=nome; t.curso=curso; t.inicio=inicio; t.prev=prev;
+      t.representante=representante; t.alunos=alunos;
+      t.metaIndividual = metaIndividual;
+      t.observacoes = observacoes;
+      t.updatedAt = nowIso;
+    }
   } else {
-    turmas.push({id:'t'+Date.now(), nome, curso, inicio, prev, representante, alunos, meses:[]});
+    turmas.push({
+      id:'t'+Date.now(), nome, curso, inicio, prev, representante, alunos,
+      metaIndividual, observacoes, meses:[],
+      createdAt: nowIso, updatedAt: nowIso
+    });
   }
   fsRent2SaveTurmas(turmas);
   closeModal('modal-fs-rent2-turma');
   showToast(id?'Turma atualizada':'Turma criada');
   renderTab();
+  // Ciclo 9 — recarrega dropdown do simulador v10 se aberto
+  if(typeof FSSimV10!=='undefined' && FSSimV10.carregarTurmas) FSSimV10.carregarTurmas();
 }
 
 function fsRent2DeleteTurma(id){
@@ -7345,6 +7375,8 @@ function fsRent2DeleteTurma(id){
   fsRent2SaveTurmas(fsRent2GetTurmas().filter(t=>t.id!==id));
   showToast('Turma excluída');
   renderTab();
+  // Ciclo 9 — recarrega dropdown do simulador v10 se aberto
+  if(typeof FSSimV10!=='undefined' && FSSimV10.carregarTurmas) FSSimV10.carregarTurmas();
 }
 
 // ── CRUD LANÇAMENTOS ───────────────────────────────────────────────────────
@@ -10698,11 +10730,12 @@ function fsRent2RenderTurmas(body){
       `<div class="fs-rent2-table-wrap">
         <table class="fs-rent2-table">
           <thead><tr>
-            <th>Nome</th><th>Curso</th><th>Início</th><th>Formatura</th><th>Representante</th><th class="num">Formandos</th><th class="num">Lançamentos</th><th class="num">Saldo</th><th></th>
+            <th>Nome</th><th>Curso</th><th>Início</th><th>Formatura</th><th>Representante</th><th class="num">Formandos</th><th class="num">Meta Ind.</th><th class="num">Lançamentos</th><th class="num">Saldo</th><th></th>
           </tr></thead>
           <tbody>
             ${turmas.map(t=>{
               const calc = fsRent2Calc(t);
+              const metaStr = t.metaIndividual ? FMT.brl(t.metaIndividual) : '—';
               return `<tr>
                 <td>${escHtml(t.nome||'—')}</td>
                 <td>${escHtml(t.curso||'—')}</td>
@@ -10710,6 +10743,7 @@ function fsRent2RenderTurmas(body){
                 <td>${escHtml(t.prev||'—')}</td>
                 <td>${escHtml(t.representante||'—')}</td>
                 <td class="num">${t.alunos||0}</td>
+                <td class="num">${metaStr}</td>
                 <td class="num">${(t.meses||[]).length}</td>
                 <td class="num pos"><b>${FMT.brl(calc.saldo)}</b></td>
                 <td class="num" style="white-space:nowrap">

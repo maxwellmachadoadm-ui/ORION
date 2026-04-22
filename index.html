@@ -2548,6 +2548,9 @@ html body { font-size: 12px !important; }
   display:grid;grid-template-columns:repeat(3,1fr);gap:14px;grid-column:1/4;
 }
 .home-v2-top-row #home-recommend{grid-column:4/5}
+/* Ciclo 8: layout compacto quando só há ORION Recomenda (Prioridades removidas) */
+.home-v2-top-row.home-v2-top-row-compact{grid-template-columns:1fr!important;margin-bottom:16px}
+.home-v2-top-row.home-v2-top-row-compact #home-recommend{grid-column:1/-1}
 @media (max-width:1200px){
   .home-v2-top-row{grid-template-columns:1fr 1fr;grid-auto-rows:auto}
   .home-v2-top-row .home-v2-prio-grid{grid-column:1/3;grid-template-columns:repeat(3,1fr)}
@@ -3110,10 +3113,9 @@ html body { font-size: 12px !important; }
     <div class="home-v2-main">
       <!-- Ciclo 5 — Plano do Dia (copiloto executivo) -->
       <div id="home-plano-dia" class="orion-plan-day"></div>
-      <div class="home-v2-section-label">Prioridades do Dia</div>
-      <!-- FASE B.2 — top row: 3 prioridades + ORION na 4ª coluna (1fr 1fr 1fr 1.2fr) -->
-      <div class="home-v2-top-row">
-        <div class="home-v2-prio-grid" id="home-prio-grid"></div>
+      <!-- Ciclo 8: removido bloco "Prioridades do Dia" (redundante com Plano do Dia + cards de empresa).
+           ORION Recomenda virou card compacto secundário em linha própria. -->
+      <div class="home-v2-top-row home-v2-top-row-compact">
         <div class="home-v2-recommend" id="home-recommend"></div>
       </div>
 
@@ -3606,6 +3608,32 @@ html body { font-size: 12px !important; }
       <button class="btn-sm btn-ghost" onclick="closeModal('modal-rec-drill')">Fechar</button>
       <button class="btn-sm" id="modal-rec-drill-resolve" style="background:#10b981;color:#fff;border:none">✓ Marcar como resolvido</button>
       <button class="btn-sm btn-blue" id="modal-rec-drill-cta">Abrir módulo →</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CADASTRO CONTRATO (Ciclo 8) -->
+<div class="overlay hidden" id="modal-cadastro-contrato" onclick="if(event.target===this)closeModal('modal-cadastro-contrato')">
+  <div class="modal" style="position:relative;width:480px;border-left:3px solid #3b82f6">
+    <button class="modal-close" onclick="closeModal('modal-cadastro-contrato')">&times;</button>
+    <h2 id="modal-cc-title">Cadastrar Contrato</h2>
+    <div style="font-size:12px;color:var(--tx3);margin-bottom:14px" id="modal-cc-sub"></div>
+    <input type="hidden" id="modal-cc-empid"/>
+    <div class="lbl">Cliente / Nome do contrato</div>
+    <input class="inp" id="cc-cliente" placeholder="Ex: João da Silva"/>
+    <div class="lbl">Valor total (R$)</div>
+    <input class="inp" id="cc-valor" type="text" inputmode="decimal" placeholder="Ex: 30.000" oninput="FSSimV10.maskBRL(this)"/>
+    <div class="lbl">Data de vencimento</div>
+    <input class="inp" id="cc-vencimento" type="text" inputmode="numeric" maxlength="10" placeholder="dd.mm.aaaa" oninput="FSSimV10.maskData(this)" onblur="FSSimV10.validarData(this)"/>
+    <div class="lbl">Status</div>
+    <select class="inp" id="cc-status">
+      <option value="ativo">Em dia</option>
+      <option value="inadim">Atrasado</option>
+      <option value="quitado">Quitado</option>
+    </select>
+    <div class="modal-actions">
+      <button class="btn-sm btn-ghost" onclick="closeModal('modal-cadastro-contrato')">Cancelar</button>
+      <button class="btn-sm btn-blue" onclick="salvarContrato()">Salvar contrato</button>
     </div>
   </div>
 </div>
@@ -5233,7 +5261,8 @@ function renderHomeV2Activity(){
 }
 
 function renderHomeV2(){
-  renderHomeV2Prioridades();
+  // Ciclo 8: removida chamada a renderHomeV2Prioridades (bloco consolidado com Plano do Dia).
+  // Função preservada no código para compatibilidade caso o container volte no redesign futuro.
   renderHomeV2Kpis();
   renderEmpGrid();
   if(typeof renderHomeV2PlanoDoDia==='function') renderHomeV2PlanoDoDia();
@@ -6163,6 +6192,8 @@ function renderTab(){
       const dias=ct.fim?Math.ceil((new Date(ct.fim)-new Date())/(86400000)):999;
       const sc=ct.status==='ativo'&&dias>30?'var(--green)':ct.status==='ativo'&&dias>0?'var(--amber)':'var(--red)';
       const sl=ct.status==='ativo'&&dias<=0?'Vencido':ct.status==='ativo'&&dias<=30?'Vence em '+dias+'d':ct.status==='ativo'?'Ativo':ct.status==='inadim'?'Inadimplente':'Negociação';
+      const isInadim = ct.status==='inadim' || (ct.status==='ativo' && dias<=0);
+      const quitarBtn = (isInadim && ct.status!=='quitado') ? `<button class="btn-sm btn-ghost" style="font-size:11px;padding:4px 8px;margin-right:4px" onclick="marcarContratoQuitado(${i})">✓ Quitar</button>` : '';
       return `<div class="contract-item" style="border-left:3px solid ${sc}">
         <div style="flex:1">
           <div style="font-size:14px;font-weight:600;margin-bottom:3px">${ct.cliente||ct.n||'Sem nome'}</div>
@@ -6172,9 +6203,13 @@ function renderTab(){
           <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:${co}">${ct.valor?FMT.brl(ct.valor):ct.v||'—'}</div>
           <span class="stag" style="color:${sc};background:${sc}18">${sl}</span>
         </div>
+        ${quitarBtn}
         <button class="task-del" onclick="deleteContrato(${i})">🗑</button>
       </div>`;
-    }).join('')||'<div style="padding:20px;text-align:center;color:var(--tx3)">Nenhum contrato.</div>';
+    }).join('')||`<div style="padding:20px;text-align:center;color:var(--tx3)">
+      Nenhum contrato cadastrado.<br/>
+      <button class="btn-sm btn-blue" style="margin-top:12px" onclick="openCadastroContrato(curEmp)">+ Cadastrar primeiro contrato</button>
+    </div>`;
   }
   else if(curTab==='Riscos'){
     c.innerHTML=e.riscos.map(r=>{
@@ -12228,15 +12263,72 @@ function getContratos(empId){
 }
 function saveContratos(empId, cts){ localStorage.setItem('orion_contratos_'+empId, JSON.stringify(cts)) }
 function addContrato(){
-  const cliente=prompt('Cliente/Nome:'); if(!cliente)return;
-  const valor=parseFloat(prompt('Valor mensal (R$):')||'0');
-  const inicio=prompt('Data início (YYYY-MM-DD):')||new Date().toISOString().slice(0,10);
-  const fim=prompt('Data fim (YYYY-MM-DD):')||'';
-  const cts=getContratos(curEmp);
-  cts.push({cliente,valor,inicio,fim,status:'ativo',id:crypto.randomUUID()});
-  saveContratos(curEmp,cts);renderTab();
+  // Ciclo 8: abre modal em vez de prompts nativos
+  openCadastroContrato(curEmp);
 }
 function deleteContrato(i){ const cts=getContratos(curEmp);cts.splice(i,1);saveContratos(curEmp,cts);renderTab() }
+
+// ─── Ciclo 8 — Modal de cadastro de contrato ──────────────────────────────
+function openCadastroContrato(empId){
+  if(!empId){ if(typeof showError==='function') showError('Selecione uma empresa antes de cadastrar'); return; }
+  const emp = EMPS[empId];
+  if(!emp){ return; }
+  document.getElementById('modal-cc-empid').value = empId;
+  document.getElementById('modal-cc-title').textContent = 'Cadastrar Contrato — '+(emp.nome||empId);
+  document.getElementById('modal-cc-sub').textContent = 'Os dados alimentam o cálculo real de inadimplência do Motor LITE.';
+  document.getElementById('cc-cliente').value = '';
+  document.getElementById('cc-valor').value = '';
+  document.getElementById('cc-vencimento').value = '';
+  document.getElementById('cc-status').value = 'ativo';
+  openModal('modal-cadastro-contrato');
+  setTimeout(()=>{ try{ document.getElementById('cc-cliente').focus(); }catch(e){} }, 100);
+}
+
+function salvarContrato(){
+  const empId = document.getElementById('modal-cc-empid').value;
+  if(!empId){ if(typeof showError==='function') showError('Empresa não identificada'); return; }
+  const cliente = document.getElementById('cc-cliente').value.trim();
+  const valorStr = document.getElementById('cc-valor').value;
+  const vencStr = document.getElementById('cc-vencimento').value.trim();
+  const status = document.getElementById('cc-status').value || 'ativo';
+  if(!cliente){ if(typeof showError==='function') showError('Informe o nome do cliente'); return; }
+  const valor = (typeof FSSimV10!=='undefined' && FSSimV10.parseBRL) ? FSSimV10.parseBRL(valorStr) : parseFloat(valorStr)||0;
+  // Data vencimento: converte dd.mm.aaaa → yyyy-mm-dd (para ordenação/comparação)
+  let fim = '';
+  if(vencStr){
+    const dt = (typeof FSSimV10!=='undefined' && FSSimV10.parseData) ? FSSimV10.parseData(vencStr) : null;
+    if(!dt){ if(typeof showError==='function') showError('Data inválida. Use dd.mm.aaaa'); return; }
+    fim = dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');
+  }
+  const cts = getContratos(empId);
+  const novo = {
+    id: (typeof crypto!=='undefined' && crypto.randomUUID)?crypto.randomUUID():'ct'+Date.now(),
+    cliente, valor, fim, status,
+    inicio: new Date().toISOString().slice(0,10),
+    _createdAt: new Date().toISOString()
+  };
+  cts.push(novo);
+  saveContratos(empId, cts);
+  closeModal('modal-cadastro-contrato');
+  if(typeof showToast==='function') showToast('Contrato cadastrado para '+(EMPS[empId]?.nome||empId));
+  // Re-render: workspace (se ativo) + home (Plano do Dia + alertas)
+  if(window.curEmp && typeof renderTab==='function') renderTab();
+  if(typeof renderHomeV2==='function' && !window.curEmp) renderHomeV2();
+  if(typeof renderHomeV2PlanoDoDia==='function') renderHomeV2PlanoDoDia();
+}
+
+// Ciclo 8 — marcar contrato como quitado (usado dentro da aba Contratos)
+function marcarContratoQuitado(idx){
+  if(!window.curEmp) return;
+  const cts = getContratos(curEmp);
+  if(cts[idx]){
+    cts[idx].status = 'quitado';
+    cts[idx]._quitadoAt = new Date().toISOString();
+    saveContratos(curEmp, cts);
+    if(typeof showToast==='function') showToast('Contrato marcado como quitado');
+    if(typeof renderTab==='function') renderTab();
+  }
+}
 
 // ── PIPELINE CRUD ──────────────────────────────────────────────────────────
 let pipeDragId=null;

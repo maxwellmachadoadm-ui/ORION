@@ -3137,6 +3137,58 @@ html body { font-size: 12px !important; }
 .ws-acao-item:hover .ws-acao-ico{color:#fbbf24}
 .ws-acao-lbl{font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;color:#cbd5e1;letter-spacing:.3px}
 @media (max-width:900px){.ws-acoes{grid-template-columns:repeat(3,1fr)}}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Ciclo 10A.1 — FIX tipografia KPIs inline drill-down.
+   Último bloco CSS: cascade + alta specificity vencem qualquer
+   override anterior em Syne (linhas 2290-2360 batalha tipográfica).
+   ═══════════════════════════════════════════════════════════════════ */
+/* KPIs inline do cabeçalho da empresa — DM Sans 22px 700 (maxxxi ref) */
+html body #ws-header .ws-header-right .ws-kn .nv,
+html body .ws-header-inner .ws-header-right .ws-kn .nv,
+html body .ws-header-right .ws-kn .nv{
+  font-family:'DM Sans','system-ui',sans-serif!important;
+  font-size:22px!important;
+  font-weight:700!important;
+  letter-spacing:-.005em!important;
+  font-variant-numeric:tabular-nums!important;
+  line-height:1.2!important;
+}
+/* Labels dos KPIs inline — 10px uppercase letter-spacing .14em */
+html body #ws-header .ws-header-right .ws-kn .nl,
+html body .ws-header-inner .ws-header-right .ws-kn .nl,
+html body .ws-header-right .ws-kn .nl{
+  font-family:'DM Sans',sans-serif!important;
+  font-size:10px!important;
+  font-weight:600!important;
+  letter-spacing:.14em!important;
+  text-transform:uppercase!important;
+  color:var(--tx3)!important;
+  opacity:.85;
+  margin-bottom:3px!important;
+}
+/* Título "Extrato IA" e similares — reduzir de 28px p/ 24px */
+html body .eia-root .eia-title,
+html body .eia-root h2.eia-title{
+  font-family:'Syne',sans-serif!important;
+  font-size:24px!important;
+  font-weight:800!important;
+  letter-spacing:-.3px!important;
+  line-height:1.2!important;
+}
+/* Stats dentro de EIA v2 — DM Sans 22px (não 20 como estava no 10A) */
+html body .eia-v2-stat .val{
+  font-family:'DM Sans',sans-serif!important;
+  font-size:22px!important;
+  font-weight:800!important;
+  font-variant-numeric:tabular-nums!important;
+}
+/* Responsivo < 1280 volta para 19px (grid comprimido) */
+@media (max-width:1280px){
+  html body #ws-header .ws-header-right .ws-kn .nv,
+  html body .ws-header-inner .ws-header-right .ws-kn .nv,
+  html body .ws-header-right .ws-kn .nv{font-size:19px!important}
+}
 </style>
 </head>
 <body>

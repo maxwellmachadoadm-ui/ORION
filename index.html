@@ -2452,6 +2452,30 @@ html body .val-sm, html body .ws-kn .val { font-size: var(--text-md) !important;
 html body .home-v2-emp-name, html body .ws-n { font-size: var(--text-md) !important; font-weight: 700 !important; }
 html body .lbl, html body [class*="-lbl"], html body [class*="-label"] { font-size: var(--text-xs) !important; font-weight: 600 !important; text-transform: uppercase !important; letter-spacing: .08em !important; color: var(--tx2) !important; }
 
+/* Extratos IA Fase 1 — UI v2 (coexiste com EIA clássica) */
+.eia-v2-header{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:20px;flex-wrap:wrap}
+.eia-v2-title{font-family:var(--font-display);font-size:var(--text-lg);font-weight:700;color:var(--tx);margin:0}
+.eia-v2-sub{font-size:var(--text-xs);color:var(--tx3);margin:4px 0 0}
+.eia-v2-actions{display:flex;gap:8px;flex-wrap:wrap}
+.eia-v2-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.eia-v2-stat{padding:14px 16px;border-radius:10px;background:rgba(255,255,255,.02);border:1px solid var(--br);display:flex;flex-direction:column;gap:6px}
+.eia-v2-stat .lbl{font-size:var(--text-xs);font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--tx3);opacity:.85}
+.eia-v2-stat .val{font-family:var(--font-sans);font-size:20px;font-weight:800;color:var(--tx);font-variant-numeric:tabular-nums}
+.eia-v2-list{display:flex;flex-direction:column;gap:0;border-top:1px solid var(--br)}
+.eia-v2-tx{display:grid;grid-template-columns:96px 1fr 140px 200px 100px;gap:12px;padding:10px 4px;align-items:center;border-bottom:1px solid rgba(255,255,255,.04);font-size:var(--text-sm)}
+.eia-v2-tx-data{color:var(--tx3);font-variant-numeric:tabular-nums}
+.eia-v2-tx-desc{color:var(--tx);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.eia-v2-tx-valor{font-weight:700;font-variant-numeric:tabular-nums;text-align:right}
+.eia-v2-tx-valor.pos{color:var(--green)}
+.eia-v2-tx-valor.neg{color:var(--red)}
+.eia-v2-cat-badge{display:inline-block;padding:3px 8px;border-radius:6px;background:rgba(59,130,246,.12);color:var(--blue3);font-size:11px;font-weight:600;margin-right:6px}
+.eia-v2-conf{font-size:11px;color:var(--tx3);opacity:.75}
+.eia-v2-ok{color:var(--green);font-weight:800;font-size:16px}
+.eia-v2-empty{text-align:center;color:var(--tx3);padding:40px;font-size:var(--text-sm)}
+.eia-v2-err{padding:16px;border:1px solid var(--red);border-left:3px solid var(--red);border-radius:8px;background:rgba(239,68,68,.06);color:var(--red);font-size:var(--text-sm)}
+.eia-v2-loading{padding:40px;text-align:center;color:var(--tx3);font-size:var(--text-sm)}
+@media (max-width:1280px){.eia-v2-stats{grid-template-columns:repeat(2,1fr)}.eia-v2-tx{grid-template-columns:80px 1fr 120px}}
+
 /* Ciclo 10B — polish Home (maxxxi ref). Só visual, zero lógica. */
 /* Cards de empresa — refinamento tipográfico + barra de meta + border-left por status */
 html body .home-v2-emp-card{
@@ -6816,6 +6840,325 @@ function editProjecoes(){ /* no-op: agora é inline */ }
 // Ciclo 7 — Simulador v10 (4 planos: VARIÁVEL, FIXO, BALÃO, FUTURO)
 // Portado de simuladores/projecao-forme-seguro-v10.html
 // ════════════════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════
+// Extratos IA Fase 1 — parser CSV + heurísticas + Claude Haiku fallback + Supabase
+// Coexiste com renderExtratoIA existente (não substitui). Ativada via botão.
+// ════════════════════════════════════════════════════════════════════════════
+const EIAv2 = (function(){
+  // Parser CSV com detecção automática de delimitador
+  function parseCSV(text){
+    const firstLine = (text||'').split('\n')[0] || '';
+    const commaCount = (firstLine.match(/,/g) || []).length;
+    const semiCount = (firstLine.match(/;/g) || []).length;
+    const tabCount = (firstLine.match(/\t/g) || []).length;
+    const delimiter = tabCount > Math.max(commaCount, semiCount) ? '\t' :
+                      semiCount > commaCount ? ';' : ',';
+    const lines = (text||'').split('\n').filter(l=>l.trim());
+    if(lines.length < 2) return {headers:[], rows:[], delimiter};
+    const headers = parseCSVLine(lines[0], delimiter).map(h=>h.trim().toLowerCase().replace(/['"]/g,''));
+    const rows = [];
+    for(let i=1;i<lines.length;i++){
+      const cols = parseCSVLine(lines[i], delimiter);
+      if(cols.length < 2) continue;
+      const row = {};
+      headers.forEach((h, idx)=>{ row[h] = (cols[idx]||'').trim().replace(/['"]/g,''); });
+      rows.push(row);
+    }
+    return {headers, rows, delimiter};
+  }
+
+  function parseCSVLine(line, delimiter){
+    const result = [];
+    let current = '', inQuotes = false;
+    for(const char of line){
+      if(char === '"'){ inQuotes = !inQuotes; continue; }
+      if(char === delimiter && !inQuotes){ result.push(current); current = ''; continue; }
+      current += char;
+    }
+    result.push(current);
+    return result;
+  }
+
+  // Normaliza linha do CSV em transação estruturada
+  function normalizarTransacao(row){
+    const data = row['data'] || row['date'] || row['dt'] || row['data_transacao'] || row['data movim.'] || '';
+    const desc = row['descrição'] || row['descricao'] || row['description'] || row['histórico'] || row['historico'] || row['desc'] || '';
+    let valor = row['valor'] || row['value'] || row['amount'] || row['vlr'] || '0';
+    // Normaliza valor: R$ 1.234,56 → 1234.56 | -50,00 → -50.00
+    valor = String(valor).replace(/[R$\s]/g,'').replace(/\./g,'').replace(',','.');
+    const valorNum = parseFloat(valor) || 0;
+    // Normaliza data (dd/mm/yyyy, dd-mm-yyyy, yyyy-mm-dd)
+    let dataISO = '';
+    const dateMatch = String(data).match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
+    if(dateMatch){
+      let [_, dia, mes, ano] = dateMatch;
+      if(ano.length === 2) ano = '20' + ano;
+      dataISO = ano+'-'+String(mes).padStart(2,'0')+'-'+String(dia).padStart(2,'0');
+    } else if(/^\d{4}-\d{2}-\d{2}/.test(data)){
+      dataISO = String(data).substring(0, 10);
+    }
+    const tipo = valorNum >= 0 ? 'credito' : 'debito';
+    return {
+      data_transacao: dataISO,
+      descricao: String(desc).trim(),
+      valor: Math.abs(valorNum),
+      tipo,
+      raw_data: row
+    };
+  }
+
+  // Heurísticas locais de alta confiança (evita chamada IA quando óbvio)
+  const heuristicas = [
+    { padrao:/salário|salario|folha\s*pagamento/i, categoria:'Despesa Fixa', subcategoria:'Salários', confianca:0.95 },
+    { padrao:/aluguel|locaç/i, categoria:'Despesa Fixa', subcategoria:'Aluguel', confianca:0.98 },
+    { padrao:/energia|luz|cemig|enel|light|coelba|celpe|cpfl/i, categoria:'Despesa Fixa', subcategoria:'Energia', confianca:0.95 },
+    { padrao:/internet|vivo|claro|tim|oi\s|nextel|banda\s*larga/i, categoria:'Despesa Fixa', subcategoria:'Internet', confianca:0.90 },
+    { padrao:/tarifa|taxa.*banc|juros|iof|anuidade/i, categoria:'Financeiro', subcategoria:'Tarifas', confianca:0.95 },
+    { padrao:/pix.*recebido|ted.*recebido|doc.*recebido|crédito.*cliente/i, categoria:'Receita', subcategoria:'Serviços', confianca:0.85 },
+    { padrao:/uber|99\s*tax|99app|cabify|táxi|taxi/i, categoria:'Pessoal', subcategoria:'Transporte', confianca:0.90 },
+    { padrao:/ifood|rappi|uber.*eats|pedido|delivery/i, categoria:'Pessoal', subcategoria:'Alimentação', confianca:0.85 }
+  ];
+
+  function classificarLocal(descricao){
+    const d = descricao || '';
+    for(const h of heuristicas){
+      if(h.padrao.test(d)){
+        return {
+          categoria: h.categoria,
+          subcategoria: h.subcategoria,
+          confianca: h.confianca,
+          fonte_classificacao: 'heuristica'
+        };
+      }
+    }
+    return null;
+  }
+
+  // Chama Claude Haiku via endpoint serverless
+  async function classificarIA(transacoes){
+    try {
+      const response = await fetch('/api/classificar', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          descricoes: transacoes.map((t,i)=>({
+            id:String(i),
+            descricao:t.descricao,
+            valor:t.valor,
+            tipo:t.tipo
+          }))
+        })
+      });
+      if(!response.ok) return null;
+      const data = await response.json();
+      return data.classificacoes || [];
+    } catch(e){
+      console.error('EIAv2.classificarIA falhou:', e);
+      return null;
+    }
+  }
+
+  // Upload + parse + classificação + persistência Supabase
+  async function processarArquivo(file, empId){
+    if(!file || !empId){ if(typeof showToast==='function') showToast('Arquivo ou empresa inválida'); return; }
+    if(typeof sb === 'undefined' || !sb){ if(typeof showToast==='function') showToast('Supabase não configurado — configure em ⚙️ Supabase'); return; }
+    showToast('Processando CSV...');
+
+    const text = await file.text();
+    const parsed = parseCSV(text);
+    if(!parsed.rows || parsed.rows.length === 0){
+      showToast('CSV vazio ou mal formatado');
+      return;
+    }
+
+    const transacoes = parsed.rows
+      .map(r=>normalizarTransacao(r))
+      .filter(t=>t.descricao && t.valor > 0 && t.data_transacao);
+
+    if(transacoes.length === 0){
+      showToast('Nenhuma transação válida encontrada no CSV');
+      return;
+    }
+
+    showToast(transacoes.length+' transações encontradas. Classificando...');
+
+    // Autenticação
+    const { data:userData } = await sb.auth.getUser();
+    if(!userData || !userData.user){ showToast('Usuário não autenticado no Supabase'); return; }
+    const userId = userData.user.id;
+
+    // Datas do extrato
+    const datas = transacoes.map(t=>t.data_transacao).filter(Boolean).sort();
+    const periodo_inicio = datas[0] || null;
+    const periodo_fim = datas[datas.length-1] || null;
+
+    // 1) Inserir extrato
+    const { data:extrato, error:e1 } = await sb
+      .from('extratos')
+      .insert({
+        user_id: userId,
+        emp_id: empId,
+        nome_arquivo: file.name,
+        origem: 'csv',
+        periodo_inicio,
+        periodo_fim,
+        total_transacoes: transacoes.length,
+        status: 'processando'
+      })
+      .select()
+      .single();
+
+    if(e1 || !extrato){ console.error(e1); showToast('Erro ao criar extrato'); return; }
+
+    // 2) Classificar heurístico + coletar pendentes
+    const toClassifyIA = [];
+    const classificadas = transacoes.map((t, i)=>{
+      const local = classificarLocal(t.descricao);
+      if(local) return { ...t, ...local };
+      toClassifyIA.push({ idx:i, ...t });
+      return { ...t, categoria:null, subcategoria:null, confianca:0, fonte_classificacao:'pendente' };
+    });
+
+    // 3) Fallback Claude Haiku (máx 50 de uma vez, já particionado em lotes de 20 no endpoint)
+    if(toClassifyIA.length > 0){
+      const chunks = [];
+      for(let i=0;i<Math.min(toClassifyIA.length, 50);i+=20){
+        chunks.push(toClassifyIA.slice(i, i+20));
+      }
+      for(const chunk of chunks){
+        const iaResults = await classificarIA(chunk);
+        if(Array.isArray(iaResults)){
+          iaResults.forEach(r=>{
+            const chunkIdx = parseInt(r.id);
+            if(!isNaN(chunkIdx) && chunk[chunkIdx]){
+              const origIdx = chunk[chunkIdx].idx;
+              if(origIdx !== undefined && classificadas[origIdx]){
+                classificadas[origIdx].categoria = r.categoria;
+                classificadas[origIdx].subcategoria = r.subcategoria;
+                classificadas[origIdx].confianca = Number(r.confianca)||0.5;
+                classificadas[origIdx].fonte_classificacao = 'claude_haiku';
+              }
+            }
+          });
+        }
+      }
+    }
+
+    // 4) Inserir em lotes de 100
+    let inseridas = 0;
+    for(let i=0;i<classificadas.length;i+=100){
+      const lote = classificadas.slice(i, i+100).map(t=>({
+        extrato_id: extrato.id,
+        user_id: userId,
+        emp_id: empId,
+        data_transacao: t.data_transacao,
+        descricao: t.descricao,
+        valor: t.valor,
+        tipo: t.tipo,
+        categoria: t.categoria,
+        subcategoria: t.subcategoria,
+        confianca: t.confianca,
+        fonte_classificacao: t.fonte_classificacao,
+        raw_data: t.raw_data
+      }));
+      const { error:eInsert } = await sb.from('transacoes').insert(lote);
+      if(!eInsert) inseridas += lote.length;
+    }
+
+    // 5) Concluir
+    await sb.from('extratos').update({ status:'concluido' }).eq('id', extrato.id);
+    showToast(inseridas+' transações importadas via Claude Haiku');
+
+    // 6) Re-renderizar UI v2 se aberta
+    if(typeof renderExtratoIAv2 === 'function') renderExtratoIAv2(empId);
+  }
+
+  // Valida uma transação (marca como aprovada pelo usuário)
+  async function validar(txId){
+    if(typeof sb==='undefined' || !sb) return;
+    const { data:userData } = await sb.auth.getUser();
+    if(!userData || !userData.user) return;
+    await sb.from('transacoes').update({
+      validado: true,
+      validado_por: userData.user.id,
+      validado_em: new Date().toISOString()
+    }).eq('id', txId);
+    if(typeof showToast==='function') showToast('Transação validada');
+  }
+
+  function handleUpload(event, empId){
+    const file = event.target.files && event.target.files[0];
+    if(file) processarArquivo(file, empId);
+    // reset input para permitir reupload do mesmo arquivo
+    try{ event.target.value = ''; }catch(e){}
+  }
+
+  return {
+    parseCSV, parseCSVLine, normalizarTransacao,
+    heuristicas, classificarLocal, classificarIA,
+    processarArquivo, validar, handleUpload
+  };
+})();
+
+// Ciclo Extratos IA Fase 1 — UI v2 opcional (coexiste com renderExtratoIA)
+async function renderExtratoIAv2(empId){
+  const container = document.getElementById('ws-content');
+  if(!container || !empId) return;
+  if(typeof sb==='undefined' || !sb){
+    container.innerHTML = '<div class="eia-v2-err">Configure o Supabase em ⚙️ para usar a versão v2 do Extrato IA.</div>';
+    return;
+  }
+  const emp = (typeof EMPS!=='undefined' ? EMPS[empId] : null) || {nome:empId};
+  container.innerHTML = '<div class="eia-v2-loading">Carregando extratos…</div>';
+  // Buscar dados
+  let extratos = [], stats = [], txs = [];
+  try {
+    const rE = await sb.from('extratos').select('*').eq('emp_id', empId).order('created_at', {ascending:false});
+    extratos = rE.data || [];
+    const rS = await sb.from('transacoes').select('confianca,validado').eq('emp_id', empId);
+    stats = rS.data || [];
+    const rT = await sb.from('transacoes').select('*').eq('emp_id', empId).order('data_transacao', {ascending:false}).limit(50);
+    txs = rT.data || [];
+  } catch(e){
+    container.innerHTML = '<div class="eia-v2-err">Erro ao carregar Supabase: '+escHtml(e.message||'')+'</div>';
+    return;
+  }
+
+  const total = stats.length;
+  const pendentes = stats.filter(s=>!s.validado && (s.confianca||0)<0.85).length;
+  const confianca = total>0 ? Math.round(stats.reduce((a,s)=>a+(s.confianca||0),0)/total*100) : 0;
+
+  container.innerHTML = `
+    <div class="eia-v2-header">
+      <div>
+        <h2 class="eia-v2-title">Extrato IA v2 · ${escHtml(emp.nome||empId)}</h2>
+        <p class="eia-v2-sub">Claude Haiku 4.5 · Supabase · Classificação com aprendizado</p>
+      </div>
+      <div class="eia-v2-actions">
+        <input type="file" id="eia-v2-file-input" accept=".csv,text/csv" style="display:none" onchange="EIAv2.handleUpload(event, '${escHtml(empId)}')"/>
+        <button class="btn btn-blue" onclick="document.getElementById('eia-v2-file-input').click()">📤 Importar CSV</button>
+        <button class="btn btn-ghost" onclick="renderTab()">← Voltar UI clássica</button>
+      </div>
+    </div>
+    <div class="eia-v2-stats">
+      <div class="eia-v2-stat"><span class="lbl">DOCUMENTOS</span><span class="val">${extratos.length}</span></div>
+      <div class="eia-v2-stat"><span class="lbl">TRANSAÇÕES</span><span class="val">${total}</span></div>
+      <div class="eia-v2-stat"><span class="lbl">PENDENTES</span><span class="val">${pendentes}</span></div>
+      <div class="eia-v2-stat"><span class="lbl">CONFIANÇA MÉDIA</span><span class="val">${confianca}%</span></div>
+    </div>
+    <div class="eia-v2-list">${
+      txs.length===0
+        ? '<p class="eia-v2-empty">Nenhuma transação. Importe um CSV para começar.</p>'
+        : txs.map(t=>`<div class="eia-v2-tx">
+            <div class="eia-v2-tx-data">${escHtml(t.data_transacao||'')}</div>
+            <div class="eia-v2-tx-desc">${escHtml(t.descricao||'')}</div>
+            <div class="eia-v2-tx-valor ${t.tipo==='credito'?'pos':'neg'}">${t.tipo==='credito'?'+':'−'} ${FMT.brl(Number(t.valor)||0)}</div>
+            <div class="eia-v2-tx-cat"><span class="eia-v2-cat-badge">${escHtml(t.categoria||'Sem categoria')}</span><span class="eia-v2-conf">${Math.round((t.confianca||0)*100)}%</span></div>
+            <div class="eia-v2-tx-action">${t.validado?'<span class="eia-v2-ok">✓</span>':`<button class="btn-sm btn-ghost" onclick="EIAv2.validar('${t.id}').then(()=>renderExtratoIAv2('${escHtml(empId)}'))">Validar</button>`}</div>
+          </div>`).join('')
+    }</div>`;
+}
+
 const FSSimV10 = (function(){
   const MESES = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
   const STAGES = ["1 e 2","3 e 4","5 e 6","7 e 8","9 e 10","11 e 12","13 e 14","15 e 16"];
@@ -9278,6 +9621,7 @@ function renderExtratoIA(e,c,co){
       </div>
       <div class="flex aic gap8">
         ${totDocs>0?`<span class="home-v2-badge home-v2-badge-escalar">${totDocs} doc${totDocs===1?'':'s'} · ${totEntries} lançamentos</span>`:''}
+        <button class="btn btn-ghost btn-sm" onclick="renderExtratoIAv2('${escHtml(e.id)}')" title="Versão v2: Supabase + Claude Haiku + aprendizado persistido">🧪 UI v2 (Haiku)</button>
       </div>
     </div>
 

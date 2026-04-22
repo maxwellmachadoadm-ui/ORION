@@ -8,6 +8,10 @@
     {
       "src": "public/**",
       "use": "@vercel/static"
+    },
+    {
+      "src": "api/classificar.js",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
@@ -18,6 +22,10 @@
     {
       "src": "/orion-logo.svg",
       "dest": "/public/orion-logo.svg"
+    },
+    {
+      "src": "/api/classificar",
+      "dest": "/api/classificar.js"
     },
     {
       "src": "/(.*)",

@@ -3141,6 +3141,47 @@ html body { font-size: 12px !important; }
 .ws-acao-lbl{font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;color:#cbd5e1;letter-spacing:.3px}
 @media (max-width:900px){.ws-acoes{grid-template-columns:repeat(3,1fr)}}
 
+/* ═══ Ciclo 12A.0.1 — hardening defensivo layout Home ═══
+   Fix: cards de empresa renderizando letra-a-letra (texto vertical)
+   Força propriedades de layout contra qualquer regressão oculta. */
+html body .home-v2-emp-grid{
+  display:grid !important;
+  grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)) !important;
+  gap:14px !important;
+  grid-auto-flow:row !important;
+  writing-mode:horizontal-tb !important;
+  direction:ltr !important;
+}
+html body .home-v2-emp-card{
+  display:flex !important;
+  flex-direction:column !important;
+  min-width:0 !important;
+  box-sizing:border-box !important;
+  writing-mode:horizontal-tb !important;
+  direction:ltr !important;
+  text-orientation:mixed !important;
+}
+html body .home-v2-emp-card,
+html body .home-v2-emp-card *{
+  writing-mode:horizontal-tb !important;
+  text-orientation:mixed !important;
+  direction:ltr !important;
+}
+html body .home-v2-emp-name,
+html body .home-v2-emp-desc,
+html body .home-v2-metric-lbl,
+html body .home-v2-metric-val{
+  white-space:normal !important;
+  word-break:normal !important;
+  overflow-wrap:break-word !important;
+  overflow:visible !important;
+  line-break:auto !important;
+}
+html body .home-v2-emp-card .home-v2-emp-head{display:flex !important;flex-direction:row !important;align-items:center !important;gap:12px !important;min-width:0}
+html body .home-v2-emp-card .home-v2-emp-info{flex:1 1 auto;min-width:0}
+html body .home-v2-emp-metrics{display:grid !important;grid-template-columns:repeat(3,1fr) !important;gap:10px !important}
+/* ═══ /Ciclo 12A.0.1 ═══ */
+
 /* ═══ Ciclo 12A — Central CEO v3 Fase 1 — KpiCard com sparkline ═══ */
 .kpi-card-v3{
   background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0));

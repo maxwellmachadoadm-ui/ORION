@@ -6023,15 +6023,17 @@ function renderWS(){
         </div>
       </div>
       <div class="ws-header-right">
+        ${/* Ciclo 10A.3 — inline surgical: vence qualquer cascata CSS para DM Sans 22px 700 */''}
+        ${(()=>{ const _nvS="font-family:'DM Sans',Inter,sans-serif !important;font-weight:700 !important;font-size:22px !important;font-variant-numeric:tabular-nums !important;letter-spacing:-0.01em !important;line-height:1.2 !important;"; const _nlS="font-family:'DM Sans',Inter,sans-serif !important;font-size:10px !important;font-weight:600 !important;letter-spacing:0.14em !important;text-transform:uppercase !important;opacity:0.6 !important;margin-bottom:4px !important;"; window.__10a3_nvS=_nvS; window.__10a3_nlS=_nlS; return ''; })()}
         ${e.id!=='gp'?`
-        <div class="ws-kn"><div class="nl">Faturamento</div><div class="nv" style="color:${e.cor}">${fmt(e.fat)}</div></div>
-        <div class="ws-kn"><div class="nl">Resultado</div><div class="nv" style="color:${e.result>=0?'var(--green)':'var(--red)'}">${fmt(e.result)}</div></div>
-        <div class="ws-kn"><div class="nl">Crescimento</div><div class="nv" style="color:${cresc>=0?'var(--green)':'var(--red)'}">${cresc>=0?'+':''}${cresc}%</div></div>
-        <div class="ws-kn"><div class="nl">Health Score</div><div class="nv" style="color:${e.cor}">${e.score}</div></div>
+        <div class="ws-kn"><div class="nl" style="${window.__10a3_nlS}">Faturamento</div><div class="nv" style="${window.__10a3_nvS}color:${e.cor};">${fmt(e.fat)}</div></div>
+        <div class="ws-kn"><div class="nl" style="${window.__10a3_nlS}">Resultado</div><div class="nv" style="${window.__10a3_nvS}color:${e.result>=0?'var(--green)':'var(--red)'};">${fmt(e.result)}</div></div>
+        <div class="ws-kn"><div class="nl" style="${window.__10a3_nlS}">Crescimento</div><div class="nv" style="${window.__10a3_nvS}color:${cresc>=0?'var(--green)':'var(--red)'};">${cresc>=0?'+':''}${cresc}%</div></div>
+        <div class="ws-kn"><div class="nl" style="${window.__10a3_nlS}">Health Score</div><div class="nv" style="${window.__10a3_nvS}color:${e.cor};">${e.score}</div></div>
         `:`
-        <div class="ws-kn"><div class="nl">Patrimônio</div><div class="nv" style="color:${e.cor}">R$ 1,2M</div></div>
-        <div class="ws-kn"><div class="nl">Renda</div><div class="nv txt-green">R$ 52k/mês</div></div>
-        <div class="ws-kn"><div class="nl">Poupança</div><div class="nv txt-green">42%</div></div>
+        <div class="ws-kn"><div class="nl" style="${window.__10a3_nlS}">Patrimônio</div><div class="nv" style="${window.__10a3_nvS}color:${e.cor};">R$ 1,2M</div></div>
+        <div class="ws-kn"><div class="nl" style="${window.__10a3_nlS}">Renda</div><div class="nv txt-green" style="${window.__10a3_nvS}color:var(--green);">R$ 52k/mês</div></div>
+        <div class="ws-kn"><div class="nl" style="${window.__10a3_nlS}">Poupança</div><div class="nv txt-green" style="${window.__10a3_nvS}color:var(--green);">42%</div></div>
         `}
         <button class="btn btn-ia" onclick="toggleMXDrawer();mxAnalyzeActive()" title="Análise IA desta empresa">🤖 Análise IA</button>
       </div>

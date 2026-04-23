@@ -1,10 +1,12 @@
+/* Ciclo 13B — Home v4 render real */
+import { escHtml } from '../../shared/utils.js';
+
 /**
- * SectionHeader — cabeçalho numerado de seção (badge + label).
- * Stub Ciclo 13A.
- *
- * Contrato esperado (13B):
- *   SectionHeader(num, label) → string
+ * SectionHeader(num, label) — cabeçalho numerado de seção.
  */
-export default function SectionHeader(num = '', label = ''){
-  return `<div class="sec-hd sec-hd--stub" data-stub="section-header"><span class="sec-hd__num">${num}</span><span class="sec-hd__lbl">${label}</span></div>`;
+export default function SectionHeader(num, label){
+  return `<div class="sec-v4">
+    <span class="sec-v4__num">${escHtml(num)}</span>
+    <span class="sec-v4__lbl">${escHtml(label)}</span>
+  </div>`;
 }

@@ -3,30 +3,49 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>ORION — Central do CEO (v4 preview)</title>
+  <title>ORION — Central do CEO (Home v4)</title>
 
-  <!-- Supabase: stub vazio. Ciclo 13B preenche com URL/anon reais. -->
-  <meta name="supabase-url" content="">
-  <meta name="supabase-anon" content="">
+  <!-- Supabase: URL pública via meta. Anon key vem de window.ORION_ENV ou
+       localStorage('orion_sb_key') compartilhado com o monolito.
+       Ciclo 13B mantém somente URL bakeada; key não vai ao repositório. -->
+  <meta name="orion-sb-url" content="https://ouwlosgyikffrcdxhucw.supabase.co">
 
-  <!-- Fontes (mesma stack do monolito) -->
   <link rel="preconnect" href="https://rsms.me">
   <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800;900&display=swap">
 
-  <link rel="stylesheet" href="./home.css">
+  <link rel="stylesheet" href="/src/home/home.css">
 </head>
 <body>
-  <main id="home-root">
-    <!-- Bootstrap escreve aqui via home.js -->
-    <div class="boot-placeholder">
-      <h1>ORION — Home v4</h1>
-      <p>Bootstrap em andamento…</p>
+  <header class="topbar-v4">
+    <div class="topbar-v4__brand">
+      <span class="topbar-v4__mark">O</span>
+      <span class="topbar-v4__name">ORION</span>
+      <span class="topbar-v4__sub">CENTRAL DO CEO</span>
     </div>
-  </main>
+    <div class="topbar-v4__spacer"></div>
+    <a class="topbar-v4__link" href="/">Voltar ao monolito</a>
+  </header>
+  <div class="app-v4">
+    <aside class="sidenav-v4" aria-label="Navegação">
+      <a class="sidenav-v4__item sidenav-v4__item--active" href="#">Home</a>
+      <a class="sidenav-v4__item" href="/">Workspaces</a>
+      <a class="sidenav-v4__item" href="/">Visão CEO</a>
+      <a class="sidenav-v4__item" href="/">Agenda</a>
+      <a class="sidenav-v4__item" href="/">Admin</a>
+      <div class="sidenav-v4__hint">Ciclo 13C habilita esta nav</div>
+    </aside>
+    <main id="home-root" class="home-v4">
+      <div class="boot-placeholder">
+        <h1>Carregando Home v4…</h1>
+        <p>Conectando ao Supabase e agregando dados do portfólio.</p>
+      </div>
+    </main>
+    <aside id="side-right" class="home-v4__aside-mount" aria-label="Painel lateral"></aside>
+  </div>
 
-  <script type="module" src="./home.js"></script>
+  <script type="module" src="/src/home/home.js"></script>
 </body>
 </html>

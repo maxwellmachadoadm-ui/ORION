@@ -5318,7 +5318,7 @@ async function initPlatform(){
     loadStoredCRM();
   }
   // render
-  renderHomeV2();
+  renderHomeV3(); /* Ciclo 12D — v3 default */
   renderVisaoConsolidada();
   renderAgenda();
   renderCEO();
@@ -5865,7 +5865,8 @@ function renderHomeV2Activity(){
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Ciclo 12A — Central CEO v3 Fase 1: aggregator + KpiCard com sparkline
-// Ativação preview: localStorage.setItem('orionV3Preview','1') + reload
+// Ciclo 12D — v3 vira Home default (flag orionV3Preview aposentada)
+// Rollback emergencial: localStorage.setItem('orionLegacyHome','1') + reload
 // ═══════════════════════════════════════════════════════════════════════════
 function _v3TrendMock(targetValue, months = 12, volatility = 0.15){
   // Gera série suave de N meses terminando no targetValue (base + noise determinístico leve)
@@ -6207,33 +6208,29 @@ function renderImpactosEsperados(){
   </div>`;
 }
 
-function renderV3KpiSandbox(){
-  if(localStorage.getItem('orionV3Preview') !== '1') return;
+/* Ciclo 12D — v3 default: renderHomeV3 substitui renderHomeV2 como Home real */
+function renderHomeV3(){
+  // Fallback emergencial: localStorage.setItem('orionLegacyHome','1') para voltar v2
+  if(localStorage.getItem('orionLegacyHome') === '1'){
+    if(typeof renderHomeV2 === 'function') renderHomeV2();
+    return;
+  }
   const container = document.querySelector('.home-v2-main');
   if(!container) return;
-  let mount = document.getElementById('home-v3-sandbox');
-  if(!mount){
-    mount = document.createElement('div');
-    mount.id = 'home-v3-sandbox';
-    container.prepend(mount);
-  }
+  // Ciclo 12D — substitui (não prepend) conteúdo main + limpa side legada
+  container.innerHTML = '';
+  const sideEl = document.querySelector('.home-v2-side');
+  if(sideEl) sideEl.innerHTML = '';
+  const mount = document.createElement('div');
+  mount.id = 'home-v3-root';
+  container.appendChild(mount);
+
   const k = getConsolidatedKPIs();
   const portfolio = (typeof getPortfolioEmpresas==='function') ? getPortfolioEmpresas() : [];
   const tarefas = (typeof getTarefasPrioritarias==='function') ? getTarefasPrioritarias(6) : [];
 
-  const hour = new Date().getHours();
-  const saudacao = hour < 6 ? 'BOA NOITE' : hour < 12 ? 'BOM DIA' : hour < 18 ? 'BOA TARDE' : 'BOA NOITE';
-  const userSess = (typeof currentUser==='function') ? currentUser() : null;
-  const nomeCompleto = (userSess && (userSess.name||userSess.nome)) ? String(userSess.name||userSess.nome) : 'Maxwell';
-  const primeiroNome = nomeCompleto.split(' ')[0].toUpperCase();
-
   mount.innerHTML = `
     <div class="v3-root">
-      <div class="v3-header">
-        <div class="v3-greet">${saudacao}, ${escHtml(primeiroNome)}</div>
-        <h1 class="v3-title">Central do CEO</h1>
-      </div>
-
       <div class="v3-main-grid">
         <div class="v3-main">
           <!-- 1. ORION RECOMENDA HOJE -->
@@ -6295,12 +6292,11 @@ function renderV3KpiSandbox(){
     </div>`;
 }
 // ═══════════════════════════════════════════════════════════════════════════
-// FIM Ciclo 12A — Central CEO v3 Fase 1
+// FIM Ciclo 12A — Central CEO v3 Fase 1 (migrado a Home default no Ciclo 12D)
 // ═══════════════════════════════════════════════════════════════════════════
 
+/* Ciclo 12D — renderHomeV2 mantido como fallback legado (acionado via flag orionLegacyHome) */
 function renderHomeV2(){
-  // Ciclo 8: removida chamada a renderHomeV2Prioridades (bloco consolidado com Plano do Dia).
-  // Função preservada no código para compatibilidade caso o container volte no redesign futuro.
   renderHomeV2Kpis();
   renderEmpGrid();
   if(typeof renderHomeV2PlanoDoDia==='function') renderHomeV2PlanoDoDia();
@@ -6310,8 +6306,6 @@ function renderHomeV2(){
   renderHomeV2Meeting();
   renderHomeV2Impactos();
   renderHomeV2Activity();
-  // Ciclo 12A — Sandbox preview v3 (opt-in via localStorage.orionV3Preview='1')
-  if(typeof renderV3KpiSandbox === 'function') renderV3KpiSandbox();
 }
 
 // ── CEO ──────────────────────────────────────────────────────────────────
@@ -6641,7 +6635,7 @@ function goHome(){
   curEmp=null;
   localStorage.removeItem('orion_empresa_ativa');
   showPage('home');
-  renderHomeV2();
+  renderHomeV3(); /* Ciclo 12D — v3 default */
   renderVisaoConsolidada();
   if(typeof renderWSSidebarModules==='function') renderWSSidebarModules();
 }
@@ -13828,7 +13822,7 @@ function salvarContrato(){
   if(typeof showToast==='function') showToast('Contrato cadastrado para '+(EMPS[empId]?.nome||empId));
   // Re-render: workspace (se ativo) + home (Plano do Dia + alertas)
   if(window.curEmp && typeof renderTab==='function') renderTab();
-  if(typeof renderHomeV2==='function' && !window.curEmp) renderHomeV2();
+  if(typeof renderHomeV3==='function' && !window.curEmp) renderHomeV3(); /* Ciclo 12D — v3 default */
   if(typeof renderHomeV2PlanoDoDia==='function') renderHomeV2PlanoDoDia();
 }
 

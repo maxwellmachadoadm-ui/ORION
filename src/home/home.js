@@ -48,15 +48,21 @@ function renderHeader(user){
         <div class="head-v4__greeting">${escHtml(greeting(nome))}</div>
         <h1 class="head-v4__title">Central do CEO</h1>
       </div>
-      <div class="head-v4__date">${escHtml(todayPtBR())}</div>
+      <div class="head-v4__right">
+        <div class="head-v4__date">${escHtml(todayPtBR())}</div>
+        <div class="head-v4__icons" aria-hidden="true"><span>🎯</span><span>🚀</span><span>⭐</span></div>
+      </div>
     </div>
   </header>`;
 }
 
-function renderBannerDegradado(){
-  return `<div class="banner-v4">
-    ⚠️ Supabase não configurado nesta sessão — exibindo dados vazios.
-    <a href="/">Abrir monolito para configurar</a>
+function renderLoginRequiredScreen(){
+  return `<div class="login-required-v4">
+    <div class="login-required-v4__icon" aria-hidden="true">🔒</div>
+    <h2 class="login-required-v4__title">Login necessário</h2>
+    <p class="login-required-v4__desc">A Central do CEO precisa de uma sessão autenticada para carregar seus dados consolidados.</p>
+    <a class="login-required-v4__cta" href="/?orionLegacyHome=1">Ir para o login →</a>
+    <p class="login-required-v4__hint">Após autenticar, você será redirecionado de volta automaticamente.</p>
   </div>`;
 }
 
@@ -156,6 +162,14 @@ async function bootstrap(){
 
   const user = await requireAuth();
 
+  // Ciclo 13C — sem usuário e sem Supabase: tela de Login. Não renderiza dashboard vazio.
+  if(!user && !sbConnected()){
+    root.innerHTML = renderLoginRequiredScreen();
+    return;
+  }
+  // Sem usuário mas Supabase OK: pode ser tela pública preview — mostra dashboard com dados se acessíveis
+  // (RLS bloqueia se não autenticado; aggregators retornam [] gracefully).
+
   const [kpis, portfolio, alertas, tarefas, lancamentos, insight] = await Promise.all([
     getConsolidatedKPIs(),
     getPortfolioEmpresas(),
@@ -165,10 +179,14 @@ async function bootstrap(){
     getOrionInsightPrioritario()
   ]);
 
-  const degradado = !sbConnected();
+  // Caso degradado raro: Supabase falhou completamente. Mostra login.
+  if(!sbConnected()){
+    root.innerHTML = renderLoginRequiredScreen();
+    return;
+  }
+
   const html = `
     ${renderHeader(user)}
-    ${degradado ? renderBannerDegradado() : ''}
     <div class="home-v4__hero-wrap">
       ${SectionHeader('1', 'ORION Recomenda Hoje')}
       ${OrionHero(insight)}

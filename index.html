@@ -14,6 +14,26 @@
 <!-- ORION Supabase config (deploy-time): preencher content="" com os valores públicos -->
 <meta name="orion-sb-url" content="https://ouwlosgyikffrcdxhucw.supabase.co">
 <meta name="orion-sb-key" content="sb_publishable_Jev5yRksM1Ott8_azbSVuQ_qvCUBTXV">
+<script>
+/* Ciclo 13C — Home v4 é a default. Redireciona / para /src/home/home.html.
+ * Guards: hash, qualquer query string, flag legacy, ou ?orionLegacyHome=1
+ * saem do redirect (preservando recovery, invite, navegação a partir da v4). */
+(function v4Redirect(){
+  try{
+    var path = location.pathname;
+    if(path !== '/' && path !== '/index.html') return;
+    if(location.hash) return;
+    var qs = location.search || '';
+    if(qs.indexOf('orionLegacyHome=1') >= 0){
+      try{ localStorage.setItem('orionLegacyHome','1'); }catch(e){}
+      return;
+    }
+    if(qs) return;
+    try{ if(localStorage.getItem('orionLegacyHome') === '1') return; }catch(e){}
+    location.replace('/src/home/home.html');
+  }catch(e){ /* nunca quebra o monolito */ }
+})();
+</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <!-- Ciclo 10A.5 — Inter variable font (weights completos 100-900) via @fontsource-variable; CSP-safe (cdn.jsdelivr.net já whitelisted em vercel.json) -->
@@ -15174,6 +15194,16 @@ document.addEventListener('DOMContentLoaded', async ()=>{
     if(recovered) return;
   }catch(e){}
   autoLogin();
+  // Ciclo 13C — captura ?nav= vindo da Home v4 e troca página após autoLogin
+  try{
+    var nav = new URLSearchParams(location.search).get('nav');
+    var allowed = { home:1, ceo:1, ws:1, agenda:1, admin:1 };
+    if(nav && allowed[nav]){
+      setTimeout(function(){
+        try{ if(typeof showPage === 'function') showPage(nav); }catch(e){}
+      }, 250);
+    }
+  }catch(e){}
 });
 </script>
 </body>

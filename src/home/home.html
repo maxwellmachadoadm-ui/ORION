@@ -5,10 +5,13 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>ORION — Central do CEO (Home v4)</title>
 
-  <!-- Supabase: URL pública via meta. Anon key vem de window.ORION_ENV ou
-       localStorage('orion_sb_key') compartilhado com o monolito.
-       Ciclo 13B mantém somente URL bakeada; key não vai ao repositório. -->
+  <!-- Ciclo 13C — config Supabase em três camadas:
+       1) /api/env.js (serverless, prioritário) injeta window.ORION_ENV
+       2) <meta orion-sb-url|key> (fallback estático, mesma key publishable do monolito)
+       3) localStorage (last resort, compartilhado same-origin com monolito) -->
   <meta name="orion-sb-url" content="https://ouwlosgyikffrcdxhucw.supabase.co">
+  <meta name="orion-sb-key" content="sb_publishable_Jev5yRksM1Ott8_azbSVuQ_qvCUBTXV">
+  <script src="/api/env.js"></script>
 
   <link rel="preconnect" href="https://rsms.me">
   <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
@@ -20,22 +23,28 @@
 </head>
 <body>
   <header class="topbar-v4">
-    <div class="topbar-v4__brand">
+    <a class="topbar-v4__brand" href="/src/home/home.html" aria-label="Início">
       <span class="topbar-v4__mark">O</span>
       <span class="topbar-v4__name">ORION</span>
       <span class="topbar-v4__sub">CENTRAL DO CEO</span>
+    </a>
+    <div class="topbar-v4__search" role="search">
+      <input class="topbar-v4__search-input" type="search" placeholder="Buscar empresa, lançamento, tarefa…" aria-label="Buscar">
     </div>
-    <div class="topbar-v4__spacer"></div>
-    <a class="topbar-v4__link" href="/">Voltar ao monolito</a>
+    <div class="topbar-v4__actions">
+      <a class="topbar-v4__notif" href="/?nav=ceo" aria-label="Visão CEO" title="Visão CEO">🔔</a>
+      <a class="topbar-v4__user" href="/?nav=admin" aria-label="Admin" title="Admin">
+        <span class="topbar-v4__avatar">M</span>
+      </a>
+    </div>
   </header>
   <div class="app-v4">
     <aside class="sidenav-v4" aria-label="Navegação">
-      <a class="sidenav-v4__item sidenav-v4__item--active" href="#">Home</a>
-      <a class="sidenav-v4__item" href="/">Workspaces</a>
-      <a class="sidenav-v4__item" href="/">Visão CEO</a>
-      <a class="sidenav-v4__item" href="/">Agenda</a>
-      <a class="sidenav-v4__item" href="/">Admin</a>
-      <div class="sidenav-v4__hint">Ciclo 13C habilita esta nav</div>
+      <a class="sidenav-v4__item sidenav-v4__item--active" href="/src/home/home.html"><span class="sidenav-v4__ico">🏠</span>Home</a>
+      <a class="sidenav-v4__item" href="/?nav=ceo"><span class="sidenav-v4__ico">👁️</span>Visão CEO</a>
+      <a class="sidenav-v4__item" href="/?nav=agenda"><span class="sidenav-v4__ico">📅</span>Agenda</a>
+      <a class="sidenav-v4__item" href="/?nav=admin"><span class="sidenav-v4__ico">⚙️</span>Admin</a>
+      <a class="sidenav-v4__item sidenav-v4__item--legacy" href="/?orionLegacyHome=1"><span class="sidenav-v4__ico">🗂️</span>Home v3 (legacy)</a>
     </aside>
     <main id="home-root" class="home-v4">
       <div class="boot-placeholder">

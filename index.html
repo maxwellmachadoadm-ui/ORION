@@ -3355,6 +3355,56 @@ html body .mx-section-hdr{font-size:10px!important;font-weight:700!important;let
 html body .mx-alert-item,html body .msg-bubble-ai,html body .msg-bubble-u{font-size:12px!important;line-height:1.5!important}
 /* ═══ /Ciclo 12C ═══ */
 
+/* ═══ Ciclo 12D.1 — fix layout v3 (header reduzido, hero full-width, KPI nowrap, sidebar isolada) ═══ */
+/* Reduz título Home (Syne 38-48px → Inter 26px) */
+html body #page-home .home-v2-header{padding:18px 28px 8px!important}
+html body #page-home .home-v2-header::before{display:none!important}
+html body #page-home .home-v2-header .home-v2-title{
+  font-size:26px!important;font-weight:700!important;letter-spacing:-0.02em!important;
+  font-family:'Inter Variable','Inter',system-ui,-apple-system,'Segoe UI',sans-serif!important;
+  background:none!important;-webkit-background-clip:initial!important;
+  -webkit-text-fill-color:var(--tx)!important;color:var(--tx)!important;
+  line-height:1.15!important;
+}
+html body #page-home .home-v2-header .home-v2-greeting,
+html body #page-home .home-v2-header #home-greeting{
+  font-size:10px!important;font-weight:600!important;letter-spacing:.14em!important;
+  text-transform:uppercase!important;opacity:.55!important;color:var(--tx3)!important;
+  margin-bottom:6px!important;
+}
+/* Hero full-width fora do grid + espaçamento */
+.v3-root{display:flex;flex-direction:column;gap:22px}
+.v3-root .v3-hero-row{margin:0}
+.v3-root .v3-main-grid{display:grid!important;grid-template-columns:minmax(0,1fr) 280px!important;gap:20px!important;align-items:start!important}
+.v3-root .v3-side{position:sticky!important;top:20px!important;height:fit-content!important;align-self:start!important}
+/* KPI: value nowrap + sparkline lateral compacto + linha alinhada ao centro */
+.v3-root .kpi-card-v3__row{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:10px!important}
+.v3-root .kpi-card-v3__value{font-size:22px!important;line-height:1!important;white-space:nowrap!important;font-variant-numeric:tabular-nums!important;letter-spacing:-0.02em!important;font-weight:700!important}
+.v3-root .kpi-card-v3__spark{width:70px!important;height:28px!important;flex-shrink:0!important;opacity:.9!important}
+.v3-root .kpi-card-v3__label{font-size:10px!important;letter-spacing:.14em!important;font-weight:600!important;opacity:.55!important;text-transform:uppercase!important}
+/* Empty state com subtítulo */
+.v3-root .v3-empty{padding:18px 18px;display:flex;flex-direction:column;align-items:center;gap:0}
+.v3-root .v3-empty__sub{font-size:11px;opacity:.55;margin-top:6px;display:block;font-weight:400}
+/* Responsivo v3 — usa .v3-root (independente do ID do mount) */
+@media (max-width:1024px){
+  .v3-root .v3-main-grid{grid-template-columns:1fr!important}
+  .v3-root .v3-side{position:static!important;top:auto!important}
+  .v3-root .v3-kpi-grid{grid-template-columns:repeat(2,1fr)!important}
+  .v3-root .v3-tasks-grid{grid-template-columns:repeat(2,1fr)!important}
+  .v3-root .qa-grid{grid-template-columns:repeat(3,1fr)!important}
+}
+@media (max-width:640px){
+  html body #page-home .home-v2-header .home-v2-title{font-size:22px!important}
+  .v3-root .v3-kpi-grid{grid-template-columns:1fr!important}
+  .v3-root .v3-tasks-grid{grid-template-columns:1fr!important}
+  .v3-root .qa-grid{grid-template-columns:repeat(2,1fr)!important}
+  .v3-root .pf-row{grid-template-columns:1fr!important;gap:8px!important}
+  .v3-root .pf-row__metric{text-align:left!important}
+  .v3-root .orion-hero__title{font-size:17px!important}
+  .v3-root .kpi-card-v3__spark{width:60px!important}
+}
+/* ═══ /Ciclo 12D.1 ═══ */
+
 /* ═══ Ciclo 12B — AlertPill + TaskCard (Fase 2) ═══ */
 .alert-pill{
   display:flex;gap:10px;padding:9px 12px;border-radius:10px;
@@ -6001,12 +6051,15 @@ function getTarefasPrioritarias(limite = 5){
     try {
       const recs = gerarPlanoDoDia(10) || [];
       recs.forEach(r => {
+        // Ciclo 12D.1 — pula recs sem título legível
+        const titulo = r.action || r.problem;
+        if(!titulo || !String(titulo).trim()) return;
         const prio = (r.urgency === 'critical' || r.urgency === 'high') ? 'alta'
                    : r.urgency === 'medium' ? 'media' : 'baixa';
         const imp = r.impact >= 5000 ? 'alto' : r.impact >= 1000 ? 'medio' : 'baixo';
         const empNome = (typeof EMPS !== 'undefined' && EMPS[r.empId] && EMPS[r.empId].nome) || r.emp || r.empId;
         tarefas.push({
-          titulo: r.action || r.problem || 'Ação',
+          titulo: titulo,
           empresa: empNome,
           prioridade: prio,
           impacto: imp,
@@ -6023,11 +6076,13 @@ function getTarefasPrioritarias(limite = 5){
   emps.forEach(e => {
     const t = Array.isArray(e.tarefas) ? e.tarefas : [];
     t.filter(x => x && !x.k).slice(0, 3).forEach(tk => {
+      // Ciclo 12D.1 — pula tarefas manuais sem título preenchido
+      if(!tk.t || !String(tk.t).trim()) return;
       const prio = String(tk.p || 'media').toLowerCase();
       const prioN = prio === 'alta' ? 'alta' : prio === 'baixa' ? 'baixa' : 'media';
       const impN = prioN === 'alta' ? 'alto' : prioN === 'baixa' ? 'baixo' : 'medio';
       tarefas.push({
-        titulo: tk.t || 'Tarefa sem título',
+        titulo: tk.t,
         empresa: e.nome || e.id,
         prioridade: prioN,
         impacto: impN,
@@ -6036,6 +6091,13 @@ function getTarefasPrioritarias(limite = 5){
       });
     });
   });
+  // Ciclo 12D.1 — filtro defensivo final: descarta qualquer placeholder que tenha vazado
+  for(let i=tarefas.length-1; i>=0; i--){
+    const tt = String(tarefas[i].titulo || '').trim();
+    if(!tt || tt === 'Tarefa sem título' || tt === 'Ação' || tt === 'Alerta'){
+      tarefas.splice(i, 1);
+    }
+  }
   // Dedupe por título+empresa, ordena por prioridade
   const rank = { alta: 0, media: 1, baixa: 2 };
   const seen = new Set();
@@ -6209,15 +6271,17 @@ function renderImpactosEsperados(){
 }
 
 /* Ciclo 12D — v3 default: renderHomeV3 substitui renderHomeV2 como Home real */
+/* Ciclo 12D.1 — fix layout v3: hero full-width, sidebar isolada, força visão consolidada */
 function renderHomeV3(){
   // Fallback emergencial: localStorage.setItem('orionLegacyHome','1') para voltar v2
   if(localStorage.getItem('orionLegacyHome') === '1'){
     if(typeof renderHomeV2 === 'function') renderHomeV2();
     return;
   }
+  // Ciclo 12D.1 — Home sempre renderiza visão CONSOLIDADA multi-empresa
+  // (ignora curEmp para evitar contaminação de drill-down empresa)
   const container = document.querySelector('.home-v2-main');
   if(!container) return;
-  // Ciclo 12D — substitui (não prepend) conteúdo main + limpa side legada
   container.innerHTML = '';
   const sideEl = document.querySelector('.home-v2-side');
   if(sideEl) sideEl.innerHTML = '';
@@ -6231,14 +6295,14 @@ function renderHomeV3(){
 
   mount.innerHTML = `
     <div class="v3-root">
+      <!-- 1. ORION RECOMENDA HOJE — hero full-width fora do grid (Ciclo 12D.1) -->
+      <section class="v3-section v3-hero-row">
+        ${renderSectionHeader('1', 'ORION Recomenda Hoje')}
+        ${renderOrionRecomendaHero()}
+      </section>
+
       <div class="v3-main-grid">
         <div class="v3-main">
-          <!-- 1. ORION RECOMENDA HOJE -->
-          <div class="v3-section">
-            ${renderSectionHeader('1', 'ORION Recomenda Hoje')}
-            ${renderOrionRecomendaHero()}
-          </div>
-
           <!-- 2. KPIS CONSOLIDADOS -->
           <div class="v3-section">
             ${renderSectionHeader('2', 'KPIs Consolidados')}
@@ -6254,7 +6318,9 @@ function renderHomeV3(){
           <div class="v3-section">
             ${renderSectionHeader('3', 'Portfólio de Empresas')}
             <div class="v3-portfolio">
-              ${portfolio.length === 0 ? '<div class="v3-empty">Nenhuma empresa no portfólio.</div>' : portfolio.map(p=>renderPortfolioCard(p)).join('')}
+              ${portfolio.length === 0
+                ? '<div class="v3-empty">Nenhuma empresa no portfólio.<span class="v3-empty__sub">Cadastre uma empresa para começar.</span></div>'
+                : portfolio.map(p=>renderPortfolioCard(p)).join('')}
             </div>
           </div>
 
@@ -6262,7 +6328,7 @@ function renderHomeV3(){
           <div class="v3-section">
             ${renderSectionHeader('4', 'Tarefas Prioritárias')}
             ${tarefas.length === 0
-              ? '<div class="v3-empty">Nenhuma tarefa prioritária.</div>'
+              ? '<div class="v3-empty">Nenhuma tarefa prioritária no momento.<span class="v3-empty__sub">Operação saudável ou sem dados ainda.</span></div>'
               : `<div class="v3-tasks-grid v3-tasks-grid--${Math.min(tarefas.length,3)}">${tarefas.map(t=>renderTaskCard(t)).join('')}</div>`}
           </div>
 

@@ -10,6 +10,10 @@
       "use": "@vercel/static"
     },
     {
+      "src": "src/**",
+      "use": "@vercel/static"
+    },
+    {
       "src": "api/classificar.js",
       "use": "@vercel/node"
     },
@@ -34,6 +38,10 @@
     {
       "src": "/api/parse-extrato",
       "dest": "/api/parse-extrato.js"
+    },
+    {
+      "src": "/src/(.*)",
+      "dest": "/src/$1"
     },
     {
       "src": "/(.*)",
